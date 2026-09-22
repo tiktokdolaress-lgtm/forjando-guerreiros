@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore } from 'lucide-react';
+import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
 import { today, fdmy, dstr, fmtD, daysBetween, parseD } from '@/lib/utils';
@@ -20,12 +20,32 @@ const I18N = {
   newProject: { pt: '+ NOVO PROJETO', en: '+ NEW PROJECT', es: '+ NUEVO PROYECTO' },
   filterAll: { pt: 'Todas', en: 'All', es: 'Todas' },
   filterToday: { pt: 'Para Hoje', en: 'For Today', es: 'Para Hoy' },
+  filterPostponed: { pt: 'Adiadas', en: 'Postponed', es: 'Pospuestas' },
   filterDone: { pt: 'Concluídas', en: 'Completed', es: 'Completadas' },
   filterActive: { pt: 'Ativos', en: 'Active', es: 'Activos' },
   filterArchived: { pt: 'Arquivados', en: 'Archived', es: 'Archivados' },
   progress: { pt: 'Progresso do Dia', en: 'Today\'s Progress', es: 'Progreso del Día' },
-  noTasks: { pt: 'Nenhuma operação nesta categoria.', en: 'No operations in this category.', es: 'Ninguna operación en esta categoría.' },
+  noTasks: { pt: 'Nenhuma operação nesta categoria.', en: 'No operations in this category.', es: 'Ninguna operação nesta categoria.' },
   noProjects: { pt: 'Nenhum projeto nesta categoria.', en: 'No projects in this category.', es: 'Ningún proyecto en esta categoría.' },
+  postponeModalTitle: { pt: 'ADIAR OPERAÇÃO', en: 'POSTPONE OPERATION', es: 'POSPONER OPERACIÓN' },
+  postponeModalDesc: { pt: 'Para quando você deseja postergar esta missão?', en: 'When do you want to postpone this mission to?', es: '¿Para cuándo deseas posponer esta misión?' },
+  postponePlus1: { pt: 'Amanhã (+1 dia)', en: 'Tomorrow (+1 day)', es: 'Mañana (+1 día)' },
+  postponePlus2: { pt: '+2 dias', en: '+2 days', es: '+2 días' },
+  postponePlus3: { pt: '+3 dias', en: '+3 days', es: '+3 días' },
+  postponePlus7: { pt: 'Próxima semana (+7 dias)', en: 'Next week (+7 days)', es: 'Próxima semana (+7 días)' },
+  postponeCustomDate: { pt: 'Escolher data específica:', en: 'Choose specific date:', es: 'Elegir fecha específica:' },
+  btnPostponeConfirm: { pt: 'Confirmar Adiamento', en: 'Confirm Postponement', es: 'Confirmar Aplazamiento' },
+  btnPostponeRemove: { pt: 'Remover Adiamento (Trazer para Hoje)', en: 'Remove Postponement (Bring to Today)', es: 'Quitar Aplazamiento (Traer a Hoy)' },
+  badgePostponed: { pt: '⏳ ADIADA', en: '⏳ POSTPONED', es: '⏳ POSPUESTA' },
+  badgeOverdue: { pt: '⚠️ ATRASADA', en: '⚠️ OVERDUE', es: '⚠️ ATRASADA' },
+  badgeProjectDelayed: { pt: '⚠️ ATRASADO', en: '⚠️ DELAYED', es: '⚠️ ATRASADO' },
+  projDelayedBoth: { pt: 'Projeto atrasado: possui tarefas atrasadas e adiadas', en: 'Project delayed: has overdue and postponed tasks', es: 'Proyecto retrasado: tiene tareas atrasadas y pospuestas' },
+  projDelayedPostponed: { pt: 'Projeto atrasado: tarefa vinculada foi adiada', en: 'Project delayed: linked task was postponed', es: 'Proyecto retrasado: tarea vinculada fue pospuesta' },
+  projDelayedOverdue: { pt: 'Projeto atrasado: tarefa vinculada está atrasada', en: 'Project delayed: linked task is overdue', es: 'Proyecto retrasado: tarea vinculada está atrasada' },
+  projDelayedDeadline: { pt: 'Projeto atrasado: prazo final ultrapassado', en: 'Project delayed: deadline exceeded', es: 'Proyecto retrasado: plazo final superado' },
+  toastPostponed: { pt: '⏳ Operação adiada!', en: '⏳ Operation postponed!', es: '⏳ ¡Operación pospuesta!' },
+  toastPostponeRemoved: { pt: '✓ Adiamento removido!', en: '✓ Postponement removed!', es: '✓ ¡Aplazamiento removido!' },
+  btnPostponeAction: { pt: 'Adiar', en: 'Postpone', es: 'Posponer' },
 };
 
 export default function OpsView() {
@@ -624,6 +644,144 @@ export default function OpsView() {
     AF.click();
   };
 
+  /* MODAL: Adiar Operação */
+  const openPostponeModal = (task) => {
+    const PostponeModalContent = () => {
+      const tod = today();
+      const addDaysStr = (n) => dstr(new Date(parseD(tod).getTime() + n * 86400000));
+      const minDate = addDaysStr(1);
+      const [chosenDate, setChosenDate] = useState(task.postponedTo || minDate);
+
+      const applyPostpone = (dateStr) => {
+        if (!dateStr) return;
+        update((s) => {
+          const t = (s.tasks || []).find((x) => String(x.id) === String(task.id));
+          if (t) {
+            t.postponedTo = dateStr;
+            t.postponed = true;
+            t.postponedAt = tod;
+          }
+        });
+        closeModal();
+        AF.click();
+        toast(`${tx.toastPostponed[curLang]} (${fmtD(dateStr)})`);
+      };
+
+      const removePostpone = () => {
+        update((s) => {
+          const t = (s.tasks || []).find((x) => String(x.id) === String(task.id));
+          if (t) {
+            delete t.postponedTo;
+            delete t.postponed;
+            delete t.postponedAt;
+          }
+        });
+        closeModal();
+        AF.click();
+        toast(tx.toastPostponeRemoved[curLang]);
+      };
+
+      return (
+        <div className="text-left">
+          <div className="pb-2 mb-3 border-b border-line">
+            <div className="flex items-center gap-2 text-gold">
+              <CalendarClock size={20} />
+              <h3 className="font-display text-lg sm:text-xl tracking-wide">
+                {tx.postponeModalTitle[curLang]}
+              </h3>
+            </div>
+            <p className="text-xs text-muted mt-1 truncate">
+              {task.txt}
+            </p>
+          </div>
+
+          <p className="text-xs text-muted mb-3 leading-relaxed">
+            {tx.postponeModalDesc[curLang]}
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <button
+              type="button"
+              className="p-2.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-xs font-mono font-bold flex flex-col items-center justify-center gap-0.5 transition-all text-center cursor-pointer"
+              onClick={() => applyPostpone(addDaysStr(1))}
+            >
+              <span className="text-ink">{tx.postponePlus1[curLang]}</span>
+              <span className="text-[10px] text-muted">{fmtD(addDaysStr(1))}</span>
+            </button>
+            <button
+              type="button"
+              className="p-2.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-xs font-mono font-bold flex flex-col items-center justify-center gap-0.5 transition-all text-center cursor-pointer"
+              onClick={() => applyPostpone(addDaysStr(2))}
+            >
+              <span className="text-ink">{tx.postponePlus2[curLang]}</span>
+              <span className="text-[10px] text-muted">{fmtD(addDaysStr(2))}</span>
+            </button>
+            <button
+              type="button"
+              className="p-2.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-xs font-mono font-bold flex flex-col items-center justify-center gap-0.5 transition-all text-center cursor-pointer"
+              onClick={() => applyPostpone(addDaysStr(3))}
+            >
+              <span className="text-ink">{tx.postponePlus3[curLang]}</span>
+              <span className="text-[10px] text-muted">{fmtD(addDaysStr(3))}</span>
+            </button>
+            <button
+              type="button"
+              className="p-2.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-xs font-mono font-bold flex flex-col items-center justify-center gap-0.5 transition-all text-center cursor-pointer"
+              onClick={() => applyPostpone(addDaysStr(7))}
+            >
+              <span className="text-ink">{tx.postponePlus7[curLang]}</span>
+              <span className="text-[10px] text-muted">{fmtD(addDaysStr(7))}</span>
+            </button>
+          </div>
+
+          <div className="p-2.5 rounded bg-surface2 border border-line/60 mb-3">
+            <span className="lbl mb-1.5 block text-xs">
+              {tx.postponeCustomDate[curLang]}
+            </span>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                min={minDate}
+                value={chosenDate}
+                onChange={(e) => setChosenDate(e.target.value)}
+                className="field flex-1 text-xs font-mono"
+              />
+              <button
+                type="button"
+                className="btn-gold px-3 text-xs font-bold font-mono"
+                onClick={() => applyPostpone(chosenDate)}
+              >
+                {tx.btnPostponeConfirm[curLang]}
+              </button>
+            </div>
+          </div>
+
+          {task.postponedTo && (
+            <div className="mb-3 p-2 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-2">
+              <span className="text-xs text-amber-400 font-mono">
+                {tx.badgePostponed[curLang]}: <b>{fmtD(task.postponedTo)}</b>
+              </span>
+              <button
+                type="button"
+                className="text-[11px] font-bold text-danger hover:underline font-mono"
+                onClick={removePostpone}
+              >
+                {tx.btnPostponeRemove[curLang]}
+              </button>
+            </div>
+          )}
+
+          <div className="mt-2 text-right">
+            <button type="button" className="btn-dark py-1.5 px-4 text-xs font-bold" onClick={closeModal}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      );
+    };
+    openModal(<PostponeModalContent />);
+  };
+
   /* Excluir Tarefa com Confirmação */
   const requestDeleteTask = (task) => {
     confirmAction({
@@ -847,6 +1005,7 @@ export default function OpsView() {
     if (x.archived) return false;
     const isDone = L.isDone(x, today());
     if (filter === 'done') return isDone;
+    if (filter === 'postponed') return !isDone && L.isTaskPostponed(x);
     if (filter === 'today') return L.repDue(x, today()) && !isDone;
     return true;
   });
@@ -942,13 +1101,14 @@ export default function OpsView() {
               {[
                 { id: 'today', label: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
                 { id: 'all', label: tx.filterAll[curLang], count: tasks.filter((t) => !t.archived).length },
+                { id: 'postponed', label: tx.filterPostponed[curLang], count: tasks.filter((t) => !t.archived && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
                 { id: 'done', label: tx.filterDone[curLang], count: tasks.filter((x) => !x.archived && L.isDone(x, today())).length },
               ].map((f) => (
                 <button
                   key={f.id}
                   type="button"
                   onClick={() => setFilter(f.id)}
-                  className={`shrink-0 text-xs font-mono px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${
+                  className={`shrink-0 text-xs font-mono px-3 py-1.5 rounded transition-all flex items-center gap-1.5 cursor-pointer ${
                     filter === f.id
                       ? 'bg-gold text-[#141414] font-bold shadow-sm'
                       : 'bg-surface2 text-muted hover:text-ink border border-line'
@@ -967,6 +1127,8 @@ export default function OpsView() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {displayedTasks.map((tItem) => {
                 const isDone = L.isDone(tItem, today());
+                const isPostponed = L.isTaskPostponed(tItem);
+                const isOverdue = L.isTaskOverdue(tItem);
                 const priColor = {
                   alta: 'border-danger/40 bg-danger/5 text-danger',
                   media: 'border-gold/40 bg-gold/5 text-gold',
@@ -980,6 +1142,10 @@ export default function OpsView() {
                     className={`flex items-center justify-between gap-2.5 p-2.5 rounded-r border transition-all ${
                       isDone
                         ? 'border-line/40 bg-surface/50 opacity-60'
+                        : isPostponed
+                        ? 'border-amber-500/40 bg-surface2/90 hover:border-amber-500/70'
+                        : isOverdue
+                        ? 'border-danger/40 bg-surface2/90 hover:border-danger/70'
                         : 'border-line bg-surface2/80 hover:border-gold/40'
                     }`}
                   >
@@ -1005,6 +1171,18 @@ export default function OpsView() {
                           <span className={`px-1.5 py-0.2 rounded border font-bold uppercase ${priColor}`}>
                             {tItem.pri}
                           </span>
+                          {isPostponed && (
+                            <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold flex items-center gap-1">
+                              <CalendarClock size={10} />
+                              <span>{tx.badgePostponed[curLang]} ({fmtD(tItem.postponedTo)})</span>
+                            </span>
+                          )}
+                          {isOverdue && !isPostponed && (
+                            <span className="px-1.5 py-0.2 rounded bg-danger/15 text-danger border border-danger/30 font-bold flex items-center gap-1">
+                              <AlertTriangle size={10} />
+                              <span>{tx.badgeOverdue[curLang]}</span>
+                            </span>
+                          )}
                           {tItem.time && (
                             <span className="flex items-center gap-0.5 text-gold2">
                               <Clock size={10} />
@@ -1026,6 +1204,21 @@ export default function OpsView() {
                     </div>
 
                     <div className="flex items-center gap-1 flex-none">
+                      {!isDone && (
+                        <button
+                          type="button"
+                          title={tx.btnPostponeAction[curLang]}
+                          onClick={() => openPostponeModal(tItem)}
+                          className={`p-1 rounded transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer ${
+                            isPostponed
+                              ? 'text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5'
+                              : 'text-muted hover:text-gold'
+                          }`}
+                        >
+                          <CalendarClock size={13} />
+                          <span className="text-[10px] hidden sm:inline">{tx.btnPostponeAction[curLang]}</span>
+                        </button>
+                      )}
                       <button
                         type="button"
                         title="Editar Operação"
@@ -1104,11 +1297,14 @@ export default function OpsView() {
                 const isArchived = proj.archived;
                 const steps = proj.steps || [];
                 const stepsDone = steps.filter((s) => s.done).length;
-                const projTasks = tasks.filter((t) => String(t.projectId) === String(proj.id) && !t.archived);
+                const projTasks = tasks.filter((t) => (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) && !t.archived);
                 const projTasksDone = projTasks.filter((t) => L.isDone(t, today())).length;
                 const totalItems = steps.length + projTasks.length;
                 const doneItems = stepsDone + projTasksDone;
                 const projPct = totalItems ? Math.round((doneItems / totalItems) * 100) : isCompleted ? 100 : 0;
+                const isProjectLate = L.isProjLate(S, proj);
+                const hasDelayedTask = projTasks.some((t) => L.isTaskOverdue(t));
+                const hasPostponedTask = projTasks.some((t) => L.isTaskPostponed(t));
 
                 return (
                   <Card
@@ -1118,6 +1314,8 @@ export default function OpsView() {
                         ? 'border-line bg-surface/30 opacity-60'
                         : isCompleted
                         ? 'border-line/40 bg-surface/50 opacity-75'
+                        : isProjectLate
+                        ? 'border-danger/50 bg-surface2/90 hover:border-danger'
                         : 'border-line bg-surface2/80 hover:border-gold/40'
                     }`}
                   >
@@ -1135,13 +1333,20 @@ export default function OpsView() {
                             <button
                               type="button"
                               onClick={() => toggleProjectStatus(proj)}
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold transition-all ${
                                 isCompleted
                                   ? 'border-gold bg-gold/15 text-gold'
+                                  : isProjectLate
+                                  ? 'border-danger/60 bg-danger/15 text-danger font-extrabold flex items-center gap-1 shadow-sm'
                                   : 'border-line bg-surface text-muted hover:text-ink'
                               }`}
                             >
-                              {isCompleted ? '✓ CONCLUÍDO' : 'EM ANDAMENTO'}
+                              {isCompleted ? '✓ CONCLUÍDO' : isProjectLate ? (
+                                <>
+                                  <AlertTriangle size={11} className="text-danger flex-none" />
+                                  <span>{tx.badgeProjectDelayed[curLang]}</span>
+                                </>
+                              ) : 'EM ANDAMENTO'}
                             </button>
                           )}
                           <button
@@ -1175,6 +1380,22 @@ export default function OpsView() {
                         <p className="text-xs text-muted mb-3 leading-relaxed">
                           {proj.desc}
                         </p>
+                      )}
+
+                      {/* Banner de Atraso se Projeto Atrasado */}
+                      {isProjectLate && !isCompleted && !isArchived && (
+                        <div className="mb-2.5 p-2 rounded bg-danger/10 border border-danger/30 flex items-center gap-1.5 text-xs text-danger">
+                          <AlertTriangle size={13} className="shrink-0 text-danger" />
+                          <span className="font-bold text-[11px] leading-tight">
+                            {hasDelayedTask && hasPostponedTask
+                              ? tx.projDelayedBoth[curLang]
+                              : hasPostponedTask
+                              ? tx.projDelayedPostponed[curLang]
+                              : hasDelayedTask
+                              ? tx.projDelayedOverdue[curLang]
+                              : tx.projDelayedDeadline[curLang]}
+                          </span>
+                        </div>
                       )}
 
                       {/* Barra de Progresso */}
@@ -1220,30 +1441,68 @@ export default function OpsView() {
                           <div className="space-y-1">
                             {projTasks.map((pt) => {
                               const done = L.isDone(pt, today());
+                              const isPtPostponed = L.isTaskPostponed(pt);
+                              const isPtOverdue = L.isTaskOverdue(pt);
                               return (
                                 <div
                                   key={pt.id}
-                                  className="flex items-center justify-between gap-1.5 p-1 px-1.5 rounded bg-surface2/60 text-xs border border-line/30"
+                                  className={`flex items-center justify-between gap-1.5 p-1.5 px-2 rounded text-xs border transition-all ${
+                                    done
+                                      ? 'bg-surface2/40 border-line/20 opacity-60'
+                                      : isPtPostponed
+                                      ? 'bg-amber-500/10 border-amber-500/30'
+                                      : isPtOverdue
+                                      ? 'bg-danger/10 border-danger/30'
+                                      : 'bg-surface2/60 border-line/30'
+                                  }`}
                                 >
                                   <div
                                     className="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
                                     onClick={() => toggleTask(pt.id)}
                                   >
-                                    <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
+                                    <div className={`w-3.5 h-3.5 rounded flex-none flex items-center justify-center border ${done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
                                       {done && <Check size={10} strokeWidth={3} />}
                                     </div>
-                                    <span className={`truncate text-[11px] ${done ? 'line-through text-muted' : 'text-ink'}`}>
-                                      {pt.txt}
-                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                      <span className={`truncate text-[11px] block ${done ? 'line-through text-muted' : 'text-ink'}`}>
+                                        {pt.txt}
+                                      </span>
+                                      <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                        {isPtPostponed && (
+                                          <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/15 px-1 rounded border border-amber-500/30 flex items-center gap-0.5">
+                                            <CalendarClock size={9} />
+                                            <span>{tx.badgePostponed[curLang]} ({fmtD(pt.postponedTo)})</span>
+                                          </span>
+                                        )}
+                                        {isPtOverdue && !isPtPostponed && (
+                                          <span className="text-[9px] font-mono font-bold text-danger bg-danger/15 px-1 rounded border border-danger/30 flex items-center gap-0.5">
+                                            <AlertTriangle size={9} />
+                                            <span>{tx.badgeOverdue[curLang]}</span>
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <button
-                                    type="button"
-                                    title="Desvincular do Projeto"
-                                    onClick={() => unlinkTask(pt.id)}
-                                    className="text-muted/60 hover:text-danger p-0.5 transition-colors"
-                                  >
-                                    <Unlink size={11} />
-                                  </button>
+                                  <div className="flex items-center gap-1 flex-none">
+                                    {!done && (
+                                      <button
+                                        type="button"
+                                        title={tx.btnPostponeAction[curLang]}
+                                        onClick={() => openPostponeModal(pt)}
+                                        className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
+                                      >
+                                        <CalendarClock size={12} />
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      title="Desvincular do Projeto"
+                                      onClick={() => unlinkTask(pt.id)}
+                                      className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
+                                    >
+                                      <Unlink size={11} />
+                                    </button>
+                                  </div>
                                 </div>
                               );
                             })}
