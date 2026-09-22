@@ -75,7 +75,18 @@ export default function OpsView() {
 
   const tasks = S.tasks || [];
   const projects = S.projects || [];
-  const todayTasks = tasks.filter((x) => !x.archived && L.repDue(x, today()));
+  const archivedProjectIds = useMemo(() => new Set(
+    projects.filter((p) => p && p.archived).map((p) => String(p.id))
+  ), [projects]);
+
+  const isTaskActive = useCallback((t) => {
+    if (!t || t.archived) return false;
+    const pId = t.projectId != null ? t.projectId : t.proj;
+    if (pId != null && archivedProjectIds.has(String(pId))) return false;
+    return true;
+  }, [archivedProjectIds]);
+
+  const todayTasks = tasks.filter((x) => isTaskActive(x) && L.repDue(x, today()));
   const completedToday = todayTasks.filter((x) => L.isDone(x, today())).length;
   const pct = todayTasks.length ? Math.round((completedToday / todayTasks.length) * 100) : 0;
 
@@ -817,7 +828,8 @@ export default function OpsView() {
   /* ARQUIVAR PROJETO COM ESCOLHA DE TAREFAS */
   const requestArchiveProject = (proj) => {
     const isArch = proj.archived;
-    const linkedTasks = tasks.filter((t) => String(t.projectId) === String(proj.id));
+    const isLinked = (t) => String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id);
+    const linkedTasks = tasks.filter((t) => isLinked(t));
 
     if (isArch) {
       // Desarquivar
@@ -830,7 +842,9 @@ export default function OpsView() {
             const p = (s.projects || []).find((x) => String(x.id) === String(proj.id));
             if (p) p.archived = false;
             (s.tasks || []).forEach((t) => {
-              if (String(t.projectId) === String(proj.id)) t.archived = false;
+              if (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) {
+                t.archived = false;
+              }
             });
           });
           AF.click();
@@ -860,7 +874,9 @@ export default function OpsView() {
                 const p = (s.projects || []).find((x) => String(x.id) === String(proj.id));
                 if (p) p.archived = true;
                 (s.tasks || []).forEach((t) => {
-                  if (String(t.projectId) === String(proj.id)) t.archived = true;
+                  if (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) {
+                    t.archived = true;
+                  }
                 });
               });
               closeModal();
@@ -878,7 +894,11 @@ export default function OpsView() {
                 const p = (s.projects || []).find((x) => String(x.id) === String(proj.id));
                 if (p) p.archived = true;
                 (s.tasks || []).forEach((t) => {
-                  if (String(t.projectId) === String(proj.id)) t.projectId = null;
+                  if (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) {
+                    t.projectId = null;
+                    t.proj = null;
+                    t.archived = false;
+                  }
                 });
               });
               closeModal();
@@ -903,7 +923,8 @@ export default function OpsView() {
 
   /* EXCLUIR PROJETO COM ESCOLHA DE TAREFAS */
   const requestDeleteProject = (proj) => {
-    const linkedTasks = tasks.filter((t) => String(t.projectId) === String(proj.id));
+    const isLinked = (t) => String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id);
+    const linkedTasks = tasks.filter((t) => isLinked(t));
 
     const DeleteModalChoice = () => (
       <div className="text-center p-1">
@@ -922,7 +943,7 @@ export default function OpsView() {
             onClick={() => {
               update((s) => {
                 s.projects = (s.projects || []).filter((p) => String(p.id) !== String(proj.id));
-                s.tasks = (s.tasks || []).filter((t) => String(t.projectId) !== String(proj.id));
+                s.tasks = (s.tasks || []).filter((t) => !isLinked(t));
               });
               closeModal();
               AF.click();
@@ -938,7 +959,10 @@ export default function OpsView() {
               update((s) => {
                 s.projects = (s.projects || []).filter((p) => String(p.id) !== String(proj.id));
                 (s.tasks || []).forEach((t) => {
-                  if (String(t.projectId) === String(proj.id)) t.projectId = null;
+                  if (isLinked(t)) {
+                    t.projectId = null;
+                    t.proj = null;
+                  }
                 });
               });
               closeModal();
@@ -965,7 +989,10 @@ export default function OpsView() {
   const unlinkTask = (taskId) => {
     update((s) => {
       const t = (s.tasks || []).find((x) => String(x.id) === String(taskId));
-      if (t) t.projectId = null;
+      if (t) {
+        t.projectId = null;
+        t.proj = null;
+      }
     });
     AF.click();
     toast('Tarefa desvinculada do projeto');
@@ -1017,7 +1044,7 @@ export default function OpsView() {
 
   /* Filtros de Tarefas */
   const displayedTasks = tasks.filter((x) => {
-    if (x.archived) return false;
+    if (!isTaskActive(x)) return false;
     const isDone = L.isDone(x, today());
     if (filter === 'done') return isDone;
     if (filter === 'postponed') return !isDone && L.isTaskPostponed(x);
@@ -1041,7 +1068,7 @@ export default function OpsView() {
           const Icon = cat.icon;
           const isSelected = activeMainTab === cat.id;
           const count = cat.id === 'tasks'
-            ? tasks.filter((t) => !t.archived).length
+            ? tasks.filter((t) => isTaskActive(t)).length
             : cat.id === 'projects'
             ? projects.filter((p) => !p.archived).length
             : projects.filter((p) => p.archived).length;
@@ -1120,9 +1147,9 @@ export default function OpsView() {
             <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
               {[
                 { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
-                { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => !t.archived).length },
-                { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => !t.archived && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
-                { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => !x.archived && L.isDone(x, today())).length },
+                { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => isTaskActive(t)).length },
+                { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => isTaskActive(t) && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
+                { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => isTaskActive(x) && L.isDone(x, today())).length },
               ].map((f) => (
                 <button
                   key={f.id}
@@ -1659,7 +1686,7 @@ export default function OpsView() {
             {projects.filter((p) => p.archived).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {projects.filter((p) => p.archived).map((proj) => {
-                  const projTasks = tasks.filter((t) => String(t.projectId) === String(proj.id));
+                  const projTasks = tasks.filter((t) => String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id));
                   return (
                     <div
                       key={proj.id}

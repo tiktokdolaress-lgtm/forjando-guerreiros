@@ -252,7 +252,18 @@ export default function QgView() {
   const mantra = mantraPool[S.phraseIdx % mantraPool.length];
   const pornFree = S.lastPorn ? Math.max(0, L.daysBetweenSafe(S.lastPorn)) : d;
   const mastFree = S.lastMast ? Math.max(0, L.daysBetweenSafe(S.lastMast)) : d;
-  const openTasks = S.tasks.filter((x) => L.repDue(x, today()) && !L.isDone(x, today())).slice(0, 5);
+  const archivedProjIds = new Set(
+    (S.projects || []).filter((p) => p && p.archived).map((p) => String(p.id))
+  );
+  const isTaskActive = (x) => {
+    if (!x || x.archived) return false;
+    const pId = x.projectId != null ? x.projectId : x.proj;
+    if (pId != null && archivedProjIds.has(String(pId))) return false;
+    return true;
+  };
+  const openTasks = (S.tasks || [])
+    .filter((x) => isTaskActive(x) && L.repDue(x, today()) && !L.isDone(x, today()))
+    .slice(0, 5);
   const goalMeta = MT(METAS.find((m) => m.d === S.goal));
   const lw = L.sosLast(S);
   const bioData = getBioPerksI18n(d, lang);
@@ -462,7 +473,7 @@ export default function QgView() {
 
   const ring = 213.6 * (1 - S.purity / 100);
 
-  const totalTasksToday = S.tasks.filter((x) => L.repDue(x, today()));
+  const totalTasksToday = (S.tasks || []).filter((x) => isTaskActive(x) && L.repDue(x, today()));
   const pendingTasksCount = totalTasksToday.filter((x) => !L.isDone(x, today())).length;
 
   const nextMantra = () => {
