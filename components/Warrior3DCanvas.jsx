@@ -298,18 +298,23 @@ export default function Warrior3DCanvas({
     if (!container) return;
 
     const cfg = getTier3DConfig(tierMin);
+    const h = height || 360;
 
-    // --- SETUP SCENE, CAMERA, RENDERER COM TRY/CATCH SEGURO ---
     let scene;
     let camera;
     let renderer;
+    let animationId;
+    let domElement;
+    let onPointerDown;
+    let onPointerMove;
+    let onPointerUp;
+    let handleResize;
 
     try {
       scene = new THREE.Scene();
       sceneRef.current = scene;
 
       const width = container.clientWidth || 340;
-      const h = height || 360;
 
       camera = new THREE.PerspectiveCamera(38, width / h, 0.1, 100);
       camera.position.set(0, 1.45, 4.4);
@@ -435,7 +440,6 @@ export default function Warrior3DCanvas({
     const warrior = new THREE.Group();
     warrior.position.y = 0.28;
     rootGroup.add(warrior);
-    warriorGroupRef.current = warrior;
 
     // Materiais
     const armorMaterial = new THREE.MeshStandardMaterial({
@@ -895,7 +899,7 @@ export default function Warrior3DCanvas({
     let angularVelocity = 0;
     let dragging = false;
 
-    const onPointerDown = (e) => {
+    onPointerDown = (e) => {
       dragging = true;
       setIsDragging(true);
       previousMouseX = e.clientX;
@@ -905,7 +909,7 @@ export default function Warrior3DCanvas({
       } catch (err) {}
     };
 
-    const onPointerMove = (e) => {
+    onPointerMove = (e) => {
       if (!dragging) return;
       const deltaX = e.clientX - previousMouseX;
       previousMouseX = e.clientX;
@@ -914,7 +918,7 @@ export default function Warrior3DCanvas({
       targetRotationY += angularVelocity;
     };
 
-    const onPointerUp = (e) => {
+    onPointerUp = (e) => {
       if (!dragging) return;
       dragging = false;
       setIsDragging(false);
@@ -923,7 +927,7 @@ export default function Warrior3DCanvas({
       } catch (err) {}
     };
 
-    const domElement = renderer.domElement;
+    domElement = renderer.domElement;
     domElement.style.touchAction = 'none';
     domElement.style.cursor = 'grab';
     domElement.addEventListener('pointerdown', onPointerDown);
@@ -932,8 +936,7 @@ export default function Warrior3DCanvas({
     domElement.addEventListener('pointercancel', onPointerUp);
 
     // --- LOOP DE ANIMAÇÃO A 60FPS ---
-    let clock = new THREE.Clock();
-    let animationId;
+    const clock = new THREE.Clock();
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
@@ -989,13 +992,18 @@ export default function Warrior3DCanvas({
       }
       emberParticles.geometry.attributes.position.needsUpdate = true;
 
-      renderer.render(scene, camera);
+      try {
+        renderer.render(scene, camera);
+      } catch (err) {
+        cancelAnimationFrame(animationId);
+        setWebGLError(true);
+      }
     };
 
     animate();
 
-    const handleResize = () => {
-      if (!container) return;
+    handleResize = () => {
+      if (!container || !renderer || !camera) return;
       const newW = container.clientWidth || 340;
       camera.aspect = newW / h;
       camera.updateProjectionMatrix();
@@ -1005,12 +1013,18 @@ export default function Warrior3DCanvas({
     window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationId);
-      domElement.removeEventListener('pointerdown', onPointerDown);
-      domElement.removeEventListener('pointermove', onPointerMove);
-      domElement.removeEventListener('pointerup', onPointerUp);
-      domElement.removeEventListener('pointercancel', onPointerUp);
-      window.removeEventListener('resize', handleResize);
+      if (animationId) cancelAnimationFrame(animationId);
+      if (domElement) {
+        if (onPointerDown) domElement.removeEventListener('pointerdown', onPointerDown);
+        if (onPointerMove) domElement.removeEventListener('pointermove', onPointerMove);
+        if (onPointerUp) {
+          domElement.removeEventListener('pointerup', onPointerUp);
+          domElement.removeEventListener('pointercancel', onPointerUp);
+        }
+      }
+      if (handleResize) {
+        window.removeEventListener('resize', handleResize);
+      }
 
       if (rendererRef.current) {
         try {

@@ -3,6 +3,7 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { Shield, Sparkles, Award, Play, Eye, Swords } from 'lucide-react';
 import { AF } from '@/lib/audio';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Importa o Canvas 3D dinamicamente sem SSR (Three.js precisa de window/WebGL)
 const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
@@ -176,14 +177,35 @@ export default function Warrior3DCard({
 
       {/* CANVAS 3D INTERATIVO (GIRA 360 COM MOUSE E CELULAR) */}
       <div className="relative z-10 w-full min-h-[340px] flex flex-col items-center justify-center">
-        <Warrior3DCanvas
-          tier={safeTier}
-          days={d}
-          height={340}
-          curLang={curLang}
-          interactive={true}
-          autoRotate={true}
-        />
+        <ErrorBoundary
+          fallback={
+            <div className="h-[340px] w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1b120a] to-[#0a0704] border border-amber-600/30">
+              <div className="text-7xl mb-2 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse">
+                {safeTier.icon || '🛡️'}
+              </div>
+              <div className="font-display text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
+                {safeTier.name}
+              </div>
+              <div className="text-xs font-mono text-amber-200/80 mt-1 max-w-xs">
+                {curLang === 'en'
+                  ? 'Stage ' + arm.stageNum + ' · ' + (safeTier.reward || 'Forged Armor')
+                  : 'Estágio ' + arm.stageNum + ' · ' + (safeTier.reward || 'Armadura Forjada')}
+              </div>
+              <div className="mt-3 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-600/40 text-[10px] font-mono text-amber-300">
+                {curLang === 'en' ? '⚔️ FORGE AVATAR ACTIVE' : '⚔️ AVATAR DA FORJA ATIVO'}
+              </div>
+            </div>
+          }
+        >
+          <Warrior3DCanvas
+            tier={safeTier}
+            days={d}
+            height={340}
+            curLang={curLang}
+            interactive={true}
+            autoRotate={true}
+          />
+        </ErrorBoundary>
       </div>
 
       {/* DETALHES DE CLASSE E PROGRESSÃO (COMO NO VÍDEO DO USUÁRIO) */}

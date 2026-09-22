@@ -21,13 +21,13 @@ export default class ErrorBoundary extends React.Component {
         return this.props.fallback;
       }
       return (
-        <div className="p-4 my-2 rounded-xl bg-amber-950/30 border border-amber-600/40 text-center text-amber-200">
-          <p className="text-xs font-mono">Elemento temporariamente indisponível.</p>
+        <div className="p-4 my-2 rounded-xl bg-gradient-to-b from-[#18110b] to-[#0c0805] border border-amber-600/40 text-center text-amber-200 shadow-lg">
+          <p className="text-xs font-mono text-amber-300/80 mb-2">Interface em sincronização com a Forja.</p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="mt-2 px-3 py-1 text-[11px] font-bold uppercase rounded bg-amber-600/30 border border-amber-500 text-amber-300"
+            className="px-4 py-1.5 text-xs font-mono font-bold uppercase rounded-lg bg-amber-600/30 hover:bg-amber-600/50 border border-amber-500 text-amber-200 transition-all"
           >
-            Recarregar componente
+            Sincronizar
           </button>
         </div>
       );
