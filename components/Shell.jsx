@@ -1,14 +1,16 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
 import { lifeMode, progressDays, allH } from '@/lib/logic';
 import { ensureSw, scheduleLocalTimers } from '@/lib/notify';
 import { AF } from '@/lib/audio';
+import { hasUnreadUpdates, CURRENT_APP_VERSION } from '@/lib/changelog';
 import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
+import ChangelogModal from './ChangelogModal';
 import QgView from './views/QgView';
 import ForgeView from './views/ForgeView';
 import OpsView from './views/OpsView';
@@ -22,13 +24,23 @@ const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats
 const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView };
 
 export default function Shell() {
-  const { S, tab, setTab, t, openModal, update } = useApp();
+  const { S, tab, setTab, t, openModal, closeModal, update } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const lifeLbl = (() => { const m = lifeMode(S); const LS = cx(lang, 'life', m) || LIFE_STATUS[m] || LIFE_STATUS.single; return LS.label; })();
   const go = (id) => { AF.click(); setTab(id); window.scrollTo({ top: 0 }); }
   const openSOS = () => { update((d) => { d.sos = (d.sos || 0) + 1; }); openModal(<SosModal />, 'full'); };
   const View = VIEWS[tab] || QgView;
   const TabIcon = ICONS[tab] || Castle;
+
+  /* Notificação visual automática quando houver nova atualização */
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && hasUnreadUpdates()) {
+      const timer = setTimeout(() => {
+        openModal(<ChangelogModal onClose={closeModal} />, 'dialog');
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [openModal, closeModal]);
 
   /* PWA: registra o service worker + agenda lembretes locais (hábitos ⏰ e check-in 20h) */
   React.useEffect(() => {
@@ -108,6 +120,15 @@ export default function Shell() {
 
             <div className="flex items-center gap-1.5 sm:gap-2 flex-none">
               <span className="chip flex-none text-[10.5px] sm:text-[11px] font-bold px-2 py-0.5">{lifeLbl}</span>
+              <button
+                type="button"
+                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
+                className="flex-none flex items-center gap-1 px-2 py-1.5 rounded-lg border border-amber-600/40 bg-amber-950/40 text-amber-300 text-[10.5px] sm:text-[11px] font-mono font-bold hover:bg-amber-900/60 hover:border-amber-500/60 transition-colors"
+                title="Decretos da Forja (Notas da Atualização)"
+              >
+                <Scroll size={12} className="text-amber-400" />
+                <span>{CURRENT_APP_VERSION}</span>
+              </button>
               <button
                 className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95"
                 onClick={() => go('settings')}

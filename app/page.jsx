@@ -181,23 +181,6 @@ export default function Landing() {
         <Link href="/app" className="btn-gold mt-8 px-10 py-4 text-[15px]">{L('cta_btn', '⚔️ ENTRAR PARA A FORJA')}</Link>
       </section>
 
-      {/* APOIO EM CRISE */}
-      <section className="border-t border-line bg-ok/5 px-5 py-10 text-center">
-        <h2 className="mb-3 font-display text-2xl tracking-wide text-ok">{L('cr_title', '💚 ISTO NÃO SUBSTITUI TERAPIA')}</h2>
-        <p className="mx-auto max-w-2xl text-[13px] leading-relaxed text-muted">
-          {lang === 'pt' ? (
-            <>
-              O Forjando Guerreiros é uma ferramenta de autodisciplina e registro pessoal. Em sofrimento intenso,
-              ideação de autolesão ou dependência que coloca sua vida em risco, procure um profissional de saúde —
-              e conte com a rede de apoio: <b className="text-ok">CVV 188</b> (24h, gratuito, sigiloso) · chat em{' '}
-              <b className="text-ok">cvv.org.br</b> · emergências médicas: <b className="text-ok">SAMU 192</b>.
-            </>
-          ) : (
-            L('cr_txt', '')
-          )}
-        </p>
-      </section>
-
       {/* FOOTER */}
       <footer className="border-t border-line px-5 py-8 text-center">
         <p className="text-[12px] font-bold tracking-[.14em] text-gold2">{L('ft_tag', 'FORJANDO GUERREIROS ⚔ RETENÇÃO & DISCIPLINA')}</p>

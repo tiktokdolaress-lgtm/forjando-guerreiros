@@ -4,7 +4,7 @@ import {
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
   Trophy, Palette, Check, Volume2, Shield, Database, ChevronRight, Lock,
-  MoreVertical
+  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Toggle, Chk, Empty } from '@/components/ui';
@@ -16,6 +16,8 @@ import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
 import { today, LSKEY } from '@/lib/utils';
 import { pushSupported, askPermission, subscribePush, unsubscribePush } from '@/lib/notify';
+import ChangelogModal from '../ChangelogModal';
+import { CURRENT_APP_VERSION } from '@/lib/changelog';
 
 const SUB_LBL_FALLBACK = {
   pt: { active: '✅ ATIVA', trialing: '🎁 TESTE GRÁTIS EM CURSO', inactive: '⛔ INATIVA', canceled: '🚫 CANCELADA', past_due: '⚠️ PAGAMENTO PENDENTE', local: '💾 MODO LOCAL' },
@@ -31,12 +33,13 @@ const THEMES = [
 
 const SETTINGS_CATEGORIES = [
   { id: 'general', key: 'cat_general', label: 'Geral & Visual', icon: Palette },
+  { id: 'feedback', key: 'cat_feedback', label: 'Sugestões & Bugs', icon: MessageSquarePlus },
   { id: 'security', key: 'cat_security', label: 'Segurança & Acesso', icon: Shield },
   { id: 'data', key: 'cat_data', label: 'Conta & Dados', icon: Database },
 ];
 
 export default function SettingsView() {
-  const { S, update, toast, confirmBox, auth, setPhase, setAuth, authRef, sub, refreshSub } = useApp();
+  const { S, update, toast, confirmBox, auth, setPhase, setAuth, authRef, sub, refreshSub, openModal, closeModal } = useApp();
   const st = S.settings;
   const lang = (st && st.lang) || 'pt';
   const currentTheme = st.theme || 'dark';
@@ -44,6 +47,66 @@ export default function SettingsView() {
   
   // Categorias para organização minimalista
   const [activeCategory, setActiveCategory] = useState('general');
+
+  // Estado da área de Feedbacks, Sugestões & Bugs
+  const [feedbackCategory, setFeedbackCategory] = useState('suggestion');
+  const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [feedbackContact, setFeedbackContact] = useState('');
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackHistory, setFeedbackHistory] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('fg_user_feedbacks') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const submitFeedback = async (e) => {
+    if (e) e.preventDefault();
+    const text = feedbackMsg.trim();
+    if (!text || text.length < 5) {
+      toast('⚠ Escreva pelo menos 5 caracteres na sua mensagem.');
+      return;
+    }
+    setFeedbackSending(true);
+    try {
+      AF.click();
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: feedbackCategory,
+          message: text,
+          contact: feedbackContact.trim() || authRef.current?.email || '',
+          appVersion: CURRENT_APP_VERSION,
+          userId: authRef.current?.userId || 'local',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      const newEntry = {
+        id: data.id || 'fb_' + Date.now(),
+        category: feedbackCategory,
+        message: text,
+        contact: feedbackContact.trim(),
+        date: new Date().toLocaleDateString('pt-BR'),
+        status: 'Registrado',
+      };
+      const updated = [newEntry, ...feedbackHistory].slice(0, 15);
+      setFeedbackHistory(updated);
+      try {
+        localStorage.setItem('fg_user_feedbacks', JSON.stringify(updated));
+      } catch (err) {}
+      setFeedbackMsg('');
+      setFeedbackContact('');
+      try { AF.win(); } catch (err) {}
+      toast('🛡️ Feedback forjado e enviado ao comando com sucesso!');
+    } catch (err) {
+      toast('⚠ Erro de conexão ao enviar feedback.');
+    } finally {
+      setFeedbackSending(false);
+    }
+  };
   
   const [pinCur, setPinCur] = useState('');
   const [pinNew, setPinNew] = useState('');
@@ -166,6 +229,7 @@ export default function SettingsView() {
   const subLabels = SUB_LBL_FALLBACK[lang] || SUB_LBL_FALLBACK.pt;
 
   const showGeneral = activeCategory === 'general';
+  const showFeedback = activeCategory === 'feedback';
   const showSecurity = activeCategory === 'security';
   const showData = activeCategory === 'data';
 
@@ -324,10 +388,204 @@ export default function SettingsView() {
               </div>
             </div>
           </Card>
+
+          {/* BANNER NOTAS DA ATUALIZAÇÃO NO GERAL */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-amber-600/40 bg-gradient-to-r from-amber-950/30 via-surface2/60 to-surface border-dashed">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-500/40 text-amber-400 flex-none">
+                  <Scroll size={16} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <b className="text-xs text-amber-200">Decretos da Forja (Notas da Atualização)</b>
+                    <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
+                      {CURRENT_APP_VERSION}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted truncate">
+                    Veja o que mudou nesta versão e acompanhe as melhorias da forja.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
+                className="flex-none px-3 py-1.5 rounded-lg border border-amber-500/50 bg-amber-950/80 text-amber-300 text-xs font-bold hover:bg-amber-900 transition-colors cursor-pointer"
+              >
+                Ver Novidades
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 2. SEÇÃO SEGURANÇA & ACESSO */}
+      {/* SEÇÃO 2: SUGESTÕES, BUGS & DECRETOS DA FORJA */}
+      {showFeedback && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
+          {/* FORMULÁRIO PRINCIPAL DE FEEDBACK */}
+          <Card className="lg:col-span-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <K><MessageSquarePlus size={13} className="mr-1 inline text-gold" /> CONSELHO DE GUERRA & FEEDBACK</K>
+                <span className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20">
+                  CANAL DIRETO
+                </span>
+              </div>
+              <p className="text-xs text-muted mb-3 leading-relaxed">
+                Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.
+              </p>
+
+              {/* Seletor de Tipo */}
+              <div className="mb-3">
+                <label className="block text-[11px] font-mono text-ink/80 mb-1.5 font-bold uppercase">
+                  TIPO DE MENSAGEM
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'suggestion', label: 'Sugestão', icon: '💡', desc: 'Nova ideia' },
+                    { id: 'bug', label: 'Relatar Bug', icon: '🐛', desc: 'Erro no app' },
+                    { id: 'ux', label: 'Usabilidade', icon: '⚔️', desc: 'Dificuldade' },
+                    { id: 'praise', label: 'Elogio', icon: '⭐', desc: 'Testemunho' },
+                  ].map((cat) => {
+                    const sel = feedbackCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => {
+                          try { AF.click(); } catch (e) {}
+                          setFeedbackCategory(cat.id);
+                        }}
+                        className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all cursor-pointer ${
+                          sel
+                            ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
+                            : 'border-line bg-surface2 text-muted hover:border-gold/40 hover:text-ink'
+                        }`}
+                      >
+                        <span className="text-base mb-0.5">{cat.icon}</span>
+                        <span className="text-[11px] leading-tight font-bold">{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Campo de Mensagem */}
+              <div className="mb-3">
+                <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
+                  SUA MENSAGEM / RELATO
+                </label>
+                <textarea
+                  value={feedbackMsg}
+                  onChange={(e) => setFeedbackMsg(e.target.value)}
+                  placeholder={
+                    feedbackCategory === 'bug'
+                      ? 'Descreva o que aconteceu, em qual tela ou aparelho, e o que deu errado...'
+                      : feedbackCategory === 'suggestion'
+                      ? 'Descreva a sua ideia ou recurso que tornaria o app ainda melhor...'
+                      : feedbackCategory === 'praise'
+                      ? 'Conte como o Forjando Guerreiros tem impactado sua disciplina e retenção...'
+                      : 'Conte-nos sua experiência ou dificuldade encontrada...'
+                  }
+                  rows={4}
+                  maxLength={1000}
+                  className="w-full rounded-lg border border-line bg-surface2 p-3 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none resize-none leading-relaxed"
+                />
+                <div className="flex justify-between items-center text-[10px] font-mono text-muted mt-1 px-1">
+                  <span>Mínimo 5 caracteres</span>
+                  <span>{feedbackMsg.length}/1000</span>
+                </div>
+              </div>
+
+              {/* Contato opcional */}
+              <div className="mb-3">
+                <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
+                  SEU CONTATO (OPCIONAL)
+                </label>
+                <input
+                  type="text"
+                  value={feedbackContact}
+                  onChange={(e) => setFeedbackContact(e.target.value)}
+                  placeholder="Seu e-mail ou @ para receber retorno, se desejar..."
+                  className="w-full rounded-lg border border-line bg-surface2 px-3 py-2 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              {/* Botão de Envio */}
+              <button
+                type="button"
+                onClick={submitFeedback}
+                disabled={feedbackSending || feedbackMsg.trim().length < 5}
+                className="w-full btn-gold py-2.5 text-xs font-bold uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow"
+              >
+                <Send size={14} />
+                <span>{feedbackSending ? 'ENVIANDO AO COMANDO...' : 'ENVIAR AO COMANDO DA FORJA'}</span>
+              </button>
+            </div>
+          </Card>
+
+          {/* COLUNA LATERAL: NOTAS DE ATUALIZAÇÃO & HISTÓRICO */}
+          <div className="space-y-3">
+            {/* CARD DECRETOS DA FORJA (CHANGELOG) */}
+            <Card className="border-amber-600/40 bg-gradient-to-br from-surface to-amber-950/20">
+              <div className="flex items-center justify-between mb-2">
+                <K><Scroll size={13} className="mr-1 inline text-amber-400" /> DECRETOS DA FORJA</K>
+                <span className="text-[10px] font-mono text-amber-400 font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/40">
+                  {CURRENT_APP_VERSION}
+                </span>
+              </div>
+              <p className="text-xs text-muted mb-3 leading-relaxed">
+                Confira todas as melhorias e correções recém-forjadas no aplicativo. Suas assinaturas e dias permanecem 100% seguros a cada versão.
+              </p>
+              <button
+                type="button"
+                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-amber-600/50 bg-amber-950/40 text-amber-300 text-xs font-bold hover:bg-amber-900/60 transition-colors cursor-pointer"
+              >
+                <Scroll size={14} className="text-amber-400" />
+                <span>VER NOTAS DA ATUALIZAÇÃO</span>
+              </button>
+            </Card>
+
+            {/* CARD HISTÓRICO DE FEEDBACKS ENVIADOS */}
+            <Card>
+              <div className="flex items-center justify-between mb-2">
+                <K><CheckCircle2 size={13} className="mr-1 inline text-emerald-400" /> SEUS ENVIOS</K>
+                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} registro(s)</span>
+              </div>
+              {feedbackHistory.length === 0 ? (
+                <Empty className="py-4 text-[11px]">
+                  Nenhum feedback enviado ainda neste dispositivo.
+                </Empty>
+              ) : (
+                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                  {feedbackHistory.map((item, idx) => (
+                    <div key={idx} className="p-2 rounded border border-line/60 bg-surface2/60 text-xs">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="font-bold text-ink uppercase text-[10px] font-mono">
+                          {item.category === 'bug' ? '🐛 Bug' : item.category === 'suggestion' ? '💡 Sugestão' : item.category === 'praise' ? '⭐ Elogio' : '⚔️ Usabilidade'}
+                        </span>
+                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                          {item.status || 'Registrado'}
+                        </span>
+                      </div>
+                      <p className="text-muted text-[11px] line-clamp-2 italic">
+                        "{item.message}"
+                      </p>
+                      <div className="text-[9.5px] font-mono text-muted/70 mt-1 text-right">
+                        {item.date}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* 3. SEÇÃO SEGURANÇA & ACESSO */}
       {showSecurity && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch">
           {/* BLOQUEIO POR PIN */}
