@@ -520,3 +520,91 @@ html[data-theme='stealth'] .chip {
   animation: anvilSparkRise 2.4s ease-out infinite;
 }
 
+/* ===== 4. GUERREIRO VIVO DA FORJA (AVATAR 3D ANIMADO) ===== */
+@keyframes warriorIdleBreathe {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.22));
+  }
+  50% {
+    transform: translateY(-3px) scale(1.018);
+    filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.98)) drop-shadow(0 0 28px rgba(245, 158, 11, 0.38));
+  }
+}
+
+@keyframes torchFlickerGlow {
+  0%, 100% {
+    opacity: 0.38;
+    transform: scale(0.96) translate(-50%, -50%);
+  }
+  25% {
+    opacity: 0.52;
+    transform: scale(1.04) translate(-49%, -51%);
+  }
+  50% {
+    opacity: 0.42;
+    transform: scale(0.98) translate(-51%, -49%);
+  }
+  75% {
+    opacity: 0.6;
+    transform: scale(1.06) translate(-50%, -50%);
+  }
+}
+
+@keyframes forgeSparkDrift {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.7;
+    transform: translateY(-50px) translateX(12px) scale(1);
+  }
+  100% {
+    transform: translateY(-110px) translateX(-8px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes forgeSparkDriftLeft {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.7);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.6;
+    transform: translateY(-65px) translateX(-14px) scale(1.1);
+  }
+  100% {
+    transform: translateY(-120px) translateX(10px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.anim-warrior-breathe {
+  animation: warriorIdleBreathe 4.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.anim-torch-glow {
+  animation: torchFlickerGlow 3s ease-in-out infinite;
+}
+
+.anim-spark-drift-1 {
+  animation: forgeSparkDrift 3.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+
+.anim-spark-drift-2 {
+  animation: forgeSparkDriftLeft 4.1s cubic-bezier(0.2, 0.8, 0.4, 1) infinite 1.2s;
+}
+
+.anim-spark-drift-3 {
+  animation: forgeSparkDrift 3.7s cubic-bezier(0.2, 0.8, 0.4, 1) infinite 2s;
+}
+
