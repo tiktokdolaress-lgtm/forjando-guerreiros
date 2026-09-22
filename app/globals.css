@@ -155,8 +155,21 @@ html[data-theme='stealth'] .chip {
 
 @layer components {
   .card {
-    @apply relative rounded-r2 border border-line bg-surface p-4 sm:p-5 transition-all duration-200 shadow-[0_6px_24px_rgba(0,0,0,0.7)];
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%);
+    @apply relative rounded-xl border border-[#3d3224] bg-surface p-4 sm:p-5 transition-all duration-200;
+    background-image: 
+      linear-gradient(180deg, rgba(245, 190, 60, 0.035) 0%, rgba(13, 13, 16, 0.98) 100%),
+      radial-gradient(ellipse at top left, rgba(245, 180, 50, 0.06), transparent 70%);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.85),
+      inset 0 1px 0 rgba(255, 235, 160, 0.15),
+      inset 0 0 16px rgba(0, 0, 0, 0.6);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 8%; right: 8%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(245, 200, 70, 0.45), transparent);
+    pointer-events: none;
   }
   .k {
     @apply block mb-2.5 text-[10.5px] font-black uppercase tracking-[.22em] text-gold;
@@ -186,7 +199,15 @@ html[data-theme='stealth'] .chip {
     @apply btn bg-gold/10 text-gold border border-gold/30 hover:bg-gold/20 hover:border-gold/50;
   }
   .btn-red {
-    @apply btn bg-gradient-to-br from-danger to-danger2 text-white hover:brightness-110 shadow-[0_4px_16px_rgba(255,77,77,0.3)];
+    @apply btn text-white font-black tracking-wider transition-all active:scale-[.98];
+    background: linear-gradient(135deg, #A82424 0%, #7A1212 50%, #450A0A 100%);
+    box-shadow: 0 4px 18px rgba(180, 25, 25, 0.45), inset 0 1px 0 rgba(255, 140, 140, 0.35);
+    border: 1px solid rgba(230, 60, 60, 0.6);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  }
+  .btn-red:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 6px 26px rgba(230, 40, 40, 0.6), inset 0 1px 0 rgba(255, 160, 160, 0.5);
   }
   .btn-big {
     @apply w-full py-3.5 text-[15px];
@@ -434,82 +455,68 @@ html[data-theme='stealth'] .chip {
   animation: emberRise3 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite 1.3s;
 }
 
-/* ===== 2. CRISTAL DE DIAMANTE & ONDA PURIFICADORA (SEM PORNÔ) ===== */
-@keyframes crystalPrismPulse {
+/* ===== 2. LÂMINA DE AÇO TEMPERADO & TÊMPERA DA FORJA (SEM PORNÔ) ===== */
+@keyframes steelBladePulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 16px rgba(6, 182, 212, 0.35), inset 0 0 14px rgba(6, 182, 212, 0.25);
-    border-color: rgba(6, 182, 212, 0.5);
+    box-shadow: 0 0 16px rgba(148, 163, 184, 0.35), inset 0 0 14px rgba(226, 232, 240, 0.2);
+    border-color: rgba(148, 163, 184, 0.55);
   }
   50% {
-    transform: scale(1.03);
-    box-shadow: 0 0 28px rgba(56, 189, 248, 0.7), inset 0 0 24px rgba(165, 243, 252, 0.45);
-    border-color: rgba(125, 211, 252, 0.9);
+    transform: scale(1.02);
+    box-shadow: 0 0 24px rgba(226, 232, 240, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.35);
+    border-color: rgba(203, 213, 225, 0.85);
   }
 }
 
-@keyframes lightSweep {
+@keyframes bladeGleam {
   0% { transform: translateX(-150%) rotate(25deg); opacity: 0; }
-  35% { opacity: 0.7; }
-  65% { opacity: 0.85; }
+  30% { opacity: 0.6; }
+  60% { opacity: 0.8; }
   100% { transform: translateX(170%) rotate(25deg); opacity: 0; }
 }
 
-@keyframes sonarWave {
-  0% { transform: scale(0.75); opacity: 0.9; }
-  60% { opacity: 0.4; }
-  100% { transform: scale(1.45); opacity: 0; }
+@keyframes steelShieldWave {
+  0% { transform: scale(0.75); opacity: 0.7; }
+  60% { opacity: 0.3; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
-.anim-crystal-core {
-  animation: crystalPrismPulse 4s ease-in-out infinite;
+.anim-steel-core {
+  animation: steelBladePulse 4s ease-in-out infinite;
 }
-.anim-light-sweep {
-  animation: lightSweep 4.5s ease-in-out infinite;
+.anim-blade-gleam {
+  animation: bladeGleam 4.5s ease-in-out infinite;
 }
-.anim-sonar-wave {
-  animation: sonarWave 3.2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+.anim-shield-wave {
+  animation: steelShieldWave 3.2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
-/* ===== 3. ARCO ELÉTRICO & DESCARGA VOLTAICA (SEM MASTURBAÇÃO) ===== */
-@keyframes lightningStrike {
+/* ===== 3. BRONZE MARTELADO & BIGORNA DE COBRE (SEM MASTURBAÇÃO) ===== */
+@keyframes bronzeHammerPulse {
   0%, 100% {
-    opacity: 0.2;
-    filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.3));
-  }
-  8% {
-    opacity: 1;
-    filter: drop-shadow(0 0 16px rgba(243, 232, 255, 1)) drop-shadow(0 0 24px rgba(192, 132, 252, 0.9));
-  }
-  12% { opacity: 0.3; }
-  16% {
-    opacity: 0.95;
-    filter: drop-shadow(0 0 14px rgba(216, 180, 254, 0.95));
-  }
-  22% { opacity: 0.15; }
-  52% { opacity: 0.25; }
-  56% {
-    opacity: 0.9;
-    filter: drop-shadow(0 0 12px rgba(192, 132, 252, 0.9));
-  }
-  60% { opacity: 0.2; }
-}
-
-@keyframes capacitorGlow {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.2);
-    border-color: rgba(168, 85, 247, 0.45);
+    transform: scale(1);
+    box-shadow: 0 0 14px rgba(217, 119, 6, 0.35), inset 0 0 12px rgba(180, 83, 9, 0.25);
+    border-color: rgba(217, 119, 6, 0.55);
   }
   50% {
-    box-shadow: 0 0 26px rgba(192, 132, 252, 0.75), inset 0 0 18px rgba(216, 180, 254, 0.4);
-    border-color: rgba(216, 180, 254, 0.8);
+    transform: scale(1.02);
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.6), inset 0 0 18px rgba(251, 191, 36, 0.35);
+    border-color: rgba(251, 191, 36, 0.8);
   }
 }
 
-.anim-lightning-arc {
-  animation: lightningStrike 2.8s ease-in-out infinite;
+@keyframes anvilSparkRise {
+  0% { transform: translateY(8px) scale(0.6); opacity: 0; }
+  25% { opacity: 0.9; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(-38px) scale(0.2); opacity: 0; }
 }
-.anim-capacitor-glow {
-  animation: capacitorGlow 3s ease-in-out infinite;
+
+.anim-bronze-core {
+  animation: bronzeHammerPulse 3.8s ease-in-out infinite;
+}
+.anim-anvil-spark {
+  animation: anvilSparkRise 2.4s ease-out infinite;
 }
 

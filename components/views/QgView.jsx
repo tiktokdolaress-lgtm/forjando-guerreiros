@@ -508,59 +508,59 @@ export default function QgView() {
           </div>
         </div>
 
-        {/* AS 3 ENERGIAS PRIMORDIAIS / PILARES VIVOS DO GUERREIRO */}
+        {/* AS 3 ENERGIAS PRIMORDIAIS / PILARES VIVOS DO GUERREIRO (FORJA MEDIEVAL) */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-3 my-2.5 sm:my-3.5 items-end relative z-10 w-full min-w-0">
-          {/* ENERGIA 1: SEM PORNÔ — PRISMA DE DIAMANTE (Visão Clara, Sonar & Feixe de Luz Purificador) */}
+          {/* ENERGIA 1: SEM PORNÔ — AÇO TEMPERADO & LÂMINA DE PRATA (Visão Pura da Mente do Guerreiro) */}
           <div className="flex flex-col items-center min-w-0 w-full">
-            {/* Insígnia Cúbica / Diamante de Topo */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rotate-45 rounded-md bg-[#051824] border border-cyan-400 text-xs shadow-[0_0_12px_rgba(6,182,212,0.6)] flex-none">
-              <span className="-rotate-45 block text-[11px] sm:text-xs">💎</span>
+            {/* Insígnia de Aço Forjado / Escudo Heraldico */}
+            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rotate-45 rounded-md bg-[#10141d] border border-slate-400 text-xs shadow-[0_0_12px_rgba(203,213,225,0.45)] flex-none">
+              <span className="-rotate-45 block text-[11px] sm:text-xs">🛡️</span>
             </div>
-            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-cyan-300 truncate max-w-full mb-1 drop-shadow-sm text-center">
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-slate-200 truncate max-w-full mb-1 drop-shadow-sm text-center">
               {t('pil_porn')}
             </span>
 
-            {/* Câmara Prasmática de Safira (Bordas chanfradas, luz de corte) */}
-            <div className="w-full h-[158px] sm:h-[188px] rounded-2xl border-2 border-cyan-500/50 bg-gradient-to-b from-[#061c2e] via-[#04111d] to-[#01060a] shadow-[0_8px_24px_rgba(0,0,0,0.8),0_0_18px_rgba(6,182,212,0.22)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
-              {/* Brilho radial de fundo do cristal */}
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.25)_0%,transparent_70%)]" />
+            {/* Câmara de Aço Temperado (Bordas biseladas de ferro, reflexo prateado de lâmina afiada) */}
+            <div className="w-full h-[158px] sm:h-[188px] rounded-2xl border-2 border-slate-500/70 bg-gradient-to-b from-[#1b222e] via-[#0f141d] to-[#07090d] shadow-[0_8px_24px_rgba(0,0,0,0.85),0_0_18px_rgba(148,163,184,0.2)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
+              {/* Brilho radial de fundo do aço frio */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(203,213,225,0.15)_0%,transparent_70%)]" />
 
-              {/* Varredura diagonal de feixe de luz pura (Refração do Diamante) */}
+              {/* Varredura de reflexo prateado na lâmina de combate */}
               <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <div className="h-[250%] w-10 bg-gradient-to-r from-transparent via-cyan-300/25 to-transparent anim-light-sweep" />
+                <div className="h-[250%] w-10 bg-gradient-to-r from-transparent via-white/30 to-transparent anim-blade-gleam" />
               </div>
 
-              {/* NÚCLEO EM FORMATO DE DIAMANTE (Não-circular!) */}
+              {/* NÚCLEO EM FORMATO DE PLACA DE ARMADURA DE AÇO */}
               <div className="relative mx-auto my-auto flex flex-col items-center justify-center w-full py-1">
-                {/* Onda Sonar / Radar de Purificação Mental em Expansão */}
-                <div className="absolute h-16 w-16 sm:h-20 sm:w-20 rotate-45 rounded-lg border border-cyan-400/40 anim-sonar-wave pointer-events-none" />
+                {/* Onda de Escudo / Campo de Proteção de Ferro */}
+                <div className="absolute h-16 w-16 sm:h-20 sm:w-20 rotate-45 rounded-lg border border-slate-400/40 anim-shield-wave pointer-events-none" />
 
-                {/* Diamante Geométrico Facetado */}
-                <div className="h-16 w-16 sm:h-20 sm:w-20 rotate-45 rounded-xl bg-gradient-to-br from-cyan-400/20 via-sky-950/70 to-black border-2 border-cyan-400 anim-crystal-core flex items-center justify-center shadow-[0_0_22px_rgba(6,182,212,0.5)]">
+                {/* Losango de Aço Balístico Polido */}
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rotate-45 rounded-xl bg-gradient-to-br from-slate-400/25 via-slate-900/90 to-black border-2 border-slate-300 anim-steel-core flex items-center justify-center shadow-[0_0_20px_rgba(203,213,225,0.35)]">
                   {/* Conteúdo interno desrotacionado para leitura perfeita */}
                   <div className="-rotate-45 flex flex-col items-center justify-center">
-                    <span className="font-display text-2xl sm:text-3xl font-black text-cyan-100 drop-shadow-[0_2px_10px_rgba(6,182,212,0.9)] block leading-none">
-                      {pornFree}<small className="text-xs font-mono text-cyan-300 font-bold ml-0.5">d</small>
+                    <span className="font-display text-2xl sm:text-3xl font-black text-slate-100 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] block leading-none">
+                      {pornFree}<small className="text-xs font-mono text-slate-300 font-bold ml-0.5">d</small>
                     </span>
-                    <span className="text-[7px] sm:text-[8px] font-mono text-cyan-200 uppercase font-bold tracking-wider block mt-0.5 whitespace-nowrap">
+                    <span className="text-[7px] sm:text-[8px] font-mono text-slate-300 uppercase font-bold tracking-wider block mt-0.5 whitespace-nowrap">
                       {t('pil_mind')}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Barra de Feixe de Laser Ciano */}
+              {/* Barra de Têmpera de Aço */}
               <div className="relative z-10 w-full mb-1">
-                <div className="w-full h-1.5 rounded-sm bg-[#040e17] border border-cyan-500/40 overflow-hidden">
+                <div className="w-full h-1.5 rounded-sm bg-[#080b10] border border-slate-500/50 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-sky-600 via-cyan-400 to-white transition-all duration-700 shadow-[0_0_10px_rgba(6,182,212,0.9)]"
+                    className="h-full bg-gradient-to-r from-slate-600 via-slate-300 to-white transition-all duration-700 shadow-[0_0_10px_rgba(226,232,240,0.7)]"
                     style={{ width: `${Math.min(100, Math.max(16, (pornFree / 90) * 100))}%` }}
                   />
                 </div>
               </div>
 
-              {/* Tag Tática Angular */}
-              <div className="relative z-10 w-full py-0.5 rounded-sm bg-[#051726] border border-cyan-400/50 text-[7px] sm:text-[8px] font-black uppercase text-cyan-200 tracking-widest truncate text-center shadow-sm">
+              {/* Tag Tática de Lâmina Intacta */}
+              <div className="relative z-10 w-full py-0.5 rounded-sm bg-[#111722] border border-slate-400/60 text-[7px] sm:text-[8px] font-black uppercase text-slate-200 tracking-widest truncate text-center shadow-sm">
                 {t('pil_intact')}
               </div>
             </div>
@@ -629,47 +629,48 @@ export default function QgView() {
             </div>
           </div>
 
-          {/* ENERGIA 3: SEM MASTURBAÇÃO — CAPACITOR ELÉTRICO & RELÂMPAGOS (Autodomínio & Descargas Voltaicas) */}
+          {/* ENERGIA 3: SEM MASTURBAÇÃO — BRONZE ANTIGO & COBRE BATIDO (Autodomínio Forjado na Bigorna) */}
           <div className="flex flex-col items-center min-w-0 w-full">
-            {/* Insígnia de Alta Voltagem com Terminal de Descarga */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-md bg-[#1d082e] border border-purple-400 text-xs shadow-[0_0_12px_rgba(168,85,247,0.7)] flex-none">
-              <span className="block text-[11px] sm:text-xs anim-lightning-arc">⚡</span>
+            {/* Insígnia da Bigorna / Martelo de Ferreiro */}
+            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-md bg-[#241306] border border-amber-500 text-xs shadow-[0_0_12px_rgba(217,119,6,0.6)] flex-none">
+              <span className="block text-[11px] sm:text-xs">⚒️</span>
             </div>
-            <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[10px] font-black uppercase tracking-wider text-purple-300 truncate max-w-full mb-1 drop-shadow-sm text-center">
+            <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[10px] font-black uppercase tracking-wider text-amber-300 truncate max-w-full mb-1 drop-shadow-sm text-center">
               {t('pil_mast')}
             </span>
 
-            {/* Câmara Industrial de Capacitor Eletrostático (Linhas angulares, terminais) */}
-            <div className="w-full h-[158px] sm:h-[188px] rounded-xl border-2 border-purple-500/50 bg-gradient-to-b from-[#200b33] via-[#12051e] to-[#06010a] shadow-[0_8px_24px_rgba(0,0,0,0.8),0_0_18px_rgba(168,85,247,0.22)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
-              {/* Brilho radial de fundo do plasma violeta */}
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(168,85,247,0.25)_0%,transparent_70%)]" />
+            {/* Câmara de Bronze & Cobre Forjado (Acabamento de ferro e metal quente batido) */}
+            <div className="w-full h-[158px] sm:h-[188px] rounded-xl border-2 border-amber-600/70 bg-gradient-to-b from-[#2a1708] via-[#160b03] to-[#080401] shadow-[0_8px_24px_rgba(0,0,0,0.85),0_0_18px_rgba(217,119,6,0.25)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
+              {/* Brilho radial de fundo do cobre incandescente */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(217,119,6,0.22)_0%,transparent_70%)]" />
 
-              {/* Centelhas de Raios Elétricos SVG (Descarregando no fundo da câmara) */}
-              <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-60 anim-lightning-arc" viewBox="0 0 100 150" fill="none">
-                <path d="M50 10 L45 50 L60 55 L38 100 L44 75 L32 70 Z" fill="rgba(233,213,255,0.7)" stroke="rgba(192,132,252,0.9)" strokeWidth="1" />
-                <path d="M75 30 L65 65 L78 68 L60 110" stroke="rgba(216,180,254,0.6)" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
+              {/* Faíscas de Bigorna e Metal Quente (Centelhas de martelagem) */}
+              <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                <span className="absolute bottom-8 left-[30%] h-1 w-1 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b] anim-anvil-spark" />
+                <span className="absolute bottom-6 right-[26%] h-1.5 w-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_#fbbf24] anim-anvil-spark" style={{ animationDelay: '0.8s' }} />
+                <span className="absolute bottom-10 left-[60%] h-1 w-1 rounded-full bg-orange-400 shadow-[0_0_5px_#f97316] anim-anvil-spark" style={{ animationDelay: '1.4s' }} />
+              </div>
 
-              {/* NÚCLEO EM FORMATO DE BOBINA / CAPACITOR OCTOGONAL (Não-circular!) */}
+              {/* NÚCLEO EM FORMATO DE PLACA DE BRONZE COM REBITES DE LATÃO */}
               <div className="relative mx-auto my-auto flex flex-col items-center justify-center w-full py-1">
-                {/* Célula de Armazenamento Voltaico com Cantoneiras Industriais */}
-                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-lg bg-gradient-to-b from-purple-600/25 via-purple-950/60 to-black/90 border-2 border-purple-400 anim-capacitor-glow flex flex-col items-center justify-center shadow-[0_0_22px_rgba(168,85,247,0.5)] relative px-2 py-1">
-                  {/* Cantoneiras metálicas decorativas do capacitor */}
-                  <span className="absolute top-1 left-1 h-1.5 w-1.5 border-t-2 border-l-2 border-purple-300" />
-                  <span className="absolute top-1 right-1 h-1.5 w-1.5 border-t-2 border-r-2 border-purple-300" />
-                  <span className="absolute bottom-1 left-1 h-1.5 w-1.5 border-b-2 border-l-2 border-purple-300" />
-                  <span className="absolute bottom-1 right-1 h-1.5 w-1.5 border-b-2 border-r-2 border-purple-300" />
+                {/* Placa de Armadura de Bronze com Rebites de Metal nos Cantos */}
+                <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-lg bg-gradient-to-b from-amber-600/30 via-amber-950/80 to-black/95 border-2 border-amber-500 anim-bronze-core flex flex-col items-center justify-center shadow-[0_0_20px_rgba(217,119,6,0.45)] relative px-2 py-1">
+                  {/* Rebites metálicos nos 4 cantos da armadura */}
+                  <span className="absolute top-1 left-1 h-1.5 w-1.5 border-t-2 border-l-2 border-amber-400/90" />
+                  <span className="absolute top-1 right-1 h-1.5 w-1.5 border-t-2 border-r-2 border-amber-400/90" />
+                  <span className="absolute bottom-1 left-1 h-1.5 w-1.5 border-b-2 border-l-2 border-amber-400/90" />
+                  <span className="absolute bottom-1 right-1 h-1.5 w-1.5 border-b-2 border-r-2 border-amber-400/90" />
 
-                  <span className="font-display text-2xl sm:text-3xl font-black text-purple-100 drop-shadow-[0_2px_12px_rgba(192,132,252,0.95)] block leading-none">
-                    {mastFree}<small className="text-xs font-mono text-purple-300 font-bold ml-0.5">d</small>
+                  <span className="font-display text-2xl sm:text-3xl font-black text-amber-100 drop-shadow-[0_2px_12px_rgba(217,119,6,0.85)] block leading-none">
+                    {mastFree}<small className="text-xs font-mono text-amber-300 font-bold ml-0.5">d</small>
                   </span>
-                  <span className="text-[7px] sm:text-[8px] font-mono text-purple-200 uppercase font-bold tracking-wider block mt-0.5 whitespace-nowrap">
+                  <span className="text-[7px] sm:text-[8px] font-mono text-amber-200 uppercase font-bold tracking-wider block mt-0.5 whitespace-nowrap">
                     {t('pil_mastery')}
                   </span>
                 </div>
               </div>
 
-              {/* Medidor Segmentado de Células de Capacitor (5 blocos táteis) */}
+              {/* Medidor de Lingotes de Bronze da Forja (5 lingotes táteis) */}
               <div className="relative z-10 w-full mb-1">
                 <div className="flex items-center gap-1 justify-between w-full h-2">
                   {[1, 2, 3, 4, 5].map((idx) => {
@@ -680,8 +681,8 @@ export default function QgView() {
                         key={idx}
                         className={`h-full flex-1 rounded-sm border ${
                           active
-                            ? 'bg-gradient-to-t from-purple-600 to-fuchsia-300 border-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.8)]'
-                            : 'bg-[#100419] border-purple-950/70 opacity-40'
+                            ? 'bg-gradient-to-t from-amber-700 via-amber-500 to-yellow-300 border-amber-400/90 shadow-[0_0_8px_rgba(245,158,11,0.8)]'
+                            : 'bg-[#140b03] border-amber-950/70 opacity-40'
                         }`}
                       />
                     );
@@ -689,8 +690,8 @@ export default function QgView() {
                 </div>
               </div>
 
-              {/* Tag Tática de Blindagem */}
-              <div className="relative z-10 w-full py-0.5 rounded-sm bg-[#160726] border border-purple-400/50 text-[7px] sm:text-[8px] font-black uppercase text-purple-200 tracking-widest truncate text-center shadow-sm">
+              {/* Tag Tática de Autodomínio & Soberania */}
+              <div className="relative z-10 w-full py-0.5 rounded-sm bg-[#1f0f04] border border-amber-500/60 text-[7px] sm:text-[8px] font-black uppercase text-amber-200 tracking-widest truncate text-center shadow-sm">
                 {t('pil_sovereignty')}
               </div>
             </div>
