@@ -506,131 +506,156 @@ export default function QgView() {
           </div>
         </div>
 
-        {/* AS 3 TORRES 3D / PILARES LADO A LADO */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2.5 sm:my-3.5 items-end relative z-10 w-full min-w-0">
-          {/* TORRE 1: ZERO PORNÔ (Visão Limpa & Blindagem Mental) */}
+        {/* AS 3 ENERGIAS PRIMORDIAIS / PILARES VIVOS DO GUERREIRO */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-3 my-2.5 sm:my-3.5 items-end relative z-10 w-full min-w-0">
+          {/* ENERGIA 1: SEM PORNÔ (Chama Azul / Visão Pura & Mente Blindada) */}
           <div className="flex flex-col items-center min-w-0 w-full">
-            {/* Ícone flutuante com anel sutil */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner flex-none">
+            {/* Ícone flutuante com orbe de éter */}
+            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-[#0a1829] border border-cyan-500/50 text-xs shadow-[0_0_10px_rgba(6,182,212,0.5)] flex-none anim-ether-core">
               👁️
             </div>
-            <span className="text-[9px] sm:text-[10.5px] font-extrabold uppercase tracking-wider text-[#C9C2B0] truncate max-w-full mb-1">
+            <span className="text-[8.5px] min-[380px]:text-[9.5px] sm:text-[11px] font-black uppercase tracking-wider text-cyan-300 truncate max-w-full mb-1 drop-shadow-sm">
               {curLang === 'en' ? 'Porn-Free' : curLang === 'es' ? 'Sin Porno' : 'Sem Pornô'}
             </span>
 
-            {/* Estrutura 3D do Monólito */}
-            <div className="w-full h-[142px] sm:h-[162px] rounded-xl border border-[#3A3848] bg-gradient-to-b from-[#211F2D] via-[#14131C] to-[#0A0A0E] shadow-[0_8px_20px_rgba(0,0,0,0.6)] p-1.5 sm:p-2 flex flex-col justify-between relative overflow-hidden group">
-              {/* Reactor Core Fluido Vertical */}
-              <div className="absolute inset-y-1.5 left-1/2 -translate-x-1/2 w-2 rounded-full bg-[#0B0A0F] border border-[#2B2838] overflow-hidden">
-                <div
-                  className="w-full rounded-full bg-gradient-to-t from-sky-600 via-amber-500 to-gold animate-pulse transition-all duration-700"
-                  style={{ height: `${Math.min(100, Math.max(16, (pornFree / 90) * 100))}%` }}
-                />
+            {/* Câmara da Energia de Éter / Chama Azul */}
+            <div className="w-full h-[155px] sm:h-[185px] rounded-2xl border border-cyan-500/40 bg-gradient-to-b from-[#0a1a2c] via-[#07121f] to-[#03080e] shadow-[0_8px_24px_rgba(0,0,0,0.7),0_0_16px_rgba(6,182,212,0.18)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
+              {/* Brilho radial de fundo da chama azul */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(6,182,212,0.22)_0%,transparent_70%)]" />
+
+              {/* Orbe de Energia Animada */}
+              <div className="relative mx-auto my-auto flex flex-col items-center justify-center w-full">
+                {/* Anel Orbital Giratório Suave */}
+                <div className="absolute h-20 w-20 sm:h-24 sm:w-24 rounded-full border border-dashed border-cyan-400/30 anim-orbit-slow pointer-events-none" />
+
+                {/* Núcleo Pulsante de Plasma Azul */}
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-b from-cyan-500/20 via-sky-900/40 to-cyan-950/60 border border-cyan-400/50 flex flex-col items-center justify-center anim-ether-core shadow-[0_0_20px_rgba(6,182,212,0.4)] backdrop-blur-sm">
+                  <span className="font-display text-2xl sm:text-3xl font-black text-cyan-100 drop-shadow-[0_2px_12px_rgba(6,182,212,0.8)] block leading-none">
+                    {pornFree}<small className="text-xs font-mono text-cyan-300 font-bold ml-0.5">d</small>
+                  </span>
+                  <span className="text-[7.5px] sm:text-[8.5px] font-mono text-cyan-300/80 uppercase font-bold tracking-wider block mt-0.5">
+                    Visão Pura
+                  </span>
+                </div>
               </div>
 
-              {/* Topo chanfrado reflexivo */}
-              <div className="h-1.5 w-full rounded bg-gradient-to-r from-transparent via-[#4B475D] to-transparent opacity-60" />
-
-              {/* Número e Métrica Central */}
-              <div className="relative z-10 my-auto py-1">
-                <span className="font-display text-2xl sm:text-3xl font-black text-[#EDE5D5] drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] block leading-none">
-                  {pornFree}<small className="text-xs font-mono text-gold font-bold ml-0.5">d</small>
-                </span>
-                <span className="text-[8px] sm:text-[9px] font-mono text-muted uppercase font-bold tracking-wider block mt-1">
-                  Mente Pura
-                </span>
+              {/* Barra de Energia de Pureza */}
+              <div className="relative z-10 w-full mb-1">
+                <div className="w-full h-1.5 rounded-full bg-[#050e18] border border-cyan-500/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-sky-600 via-cyan-400 to-sky-200 transition-all duration-700 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                    style={{ width: `${Math.min(100, Math.max(16, (pornFree / 90) * 100))}%` }}
+                  />
+                </div>
               </div>
 
-              {/* Base militar chanfrada */}
-              <div className="relative z-10 w-full py-0.5 rounded bg-[#15141D] border border-line/60 text-[8px] sm:text-[9px] font-black uppercase text-gold/80 tracking-widest truncate">
+              {/* Tag Tática de Status */}
+              <div className="relative z-10 w-full py-0.5 rounded-md bg-[#071829] border border-cyan-500/40 text-[7.5px] sm:text-[8.5px] font-black uppercase text-cyan-300 tracking-widest truncate text-center shadow-sm">
                 INTACTO
               </div>
             </div>
           </div>
 
-          {/* TORRE 2: RETENÇÃO VITAL (Torre Master Central - Mais Alta e Incandescente) */}
-          <div className="flex flex-col items-center transform -translate-y-1 min-w-0 w-full">
-            {/* Brasas e Ícone Flutuante com aura de fogo */}
-            <div className="mb-1 flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-b from-[#3D2C10] to-[#1F1708] border border-gold text-sm shadow-[0_0_12px_rgba(255,180,50,0.5)] animate-pulse flex-none">
-              ⚔️
+          {/* ENERGIA 2: RETENÇÃO (Fogo Solar Vital - O Coração Central da Forja) */}
+          <div className="flex flex-col items-center transform -translate-y-1 sm:-translate-y-1.5 min-w-0 w-full">
+            {/* Ícone com Coroa de Fogo Solar Incandescente */}
+            <div className="mb-1 flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-b from-[#47300c] to-[#1f1304] border-2 border-gold text-sm shadow-[0_0_16px_rgba(255,180,50,0.65)] anim-flame-core flex-none">
+              🔥
             </div>
-            <span className="text-[9.5px] sm:text-[11px] font-black uppercase tracking-wider text-gold truncate max-w-full mb-1">
+            <span className="text-[9.5px] sm:text-[12px] font-black uppercase tracking-wider text-gold truncate max-w-full mb-1 drop-shadow-md">
               {curLang === 'en' ? 'Retention' : curLang === 'es' ? 'Retención' : 'Retenção'}
             </span>
 
-            {/* Estrutura 3D do Monólito Central de Ouro e Fogo */}
-            <div className="w-full h-[162px] sm:h-[184px] rounded-xl border-2 border-gold/70 bg-gradient-to-b from-[#2E2210] via-[#1A140A] to-[#0A0804] shadow-[0_10px_28px_rgba(255,180,50,0.25)] p-1.5 sm:p-2 flex flex-col justify-between relative overflow-hidden">
-              {/* Reactor Core Central de Fogo Vivo */}
-              <div className="absolute inset-y-2 left-1/2 -translate-x-1/2 w-2.5 rounded-full bg-[#0D0A05] border border-[#4D3915] overflow-hidden">
-                <div
-                  className="w-full rounded-full bg-gradient-to-t from-[#B87A18] via-[#FF9500] to-[#FFE79A] animate-pulse transition-all duration-700 shadow-[0_0_10px_rgba(255,180,50,0.6)]"
-                  style={{ height: `${Math.min(100, Math.max(20, (d / 90) * 100))}%` }}
-                />
-              </div>
+            {/* Câmara Central da Energia Solar / Fogo Vital */}
+            <div className="w-full h-[172px] sm:h-[205px] rounded-2xl border-2 border-gold/80 bg-gradient-to-b from-[#2e1d07] via-[#1a0f02] to-[#0a0601] shadow-[0_10px_32px_rgba(0,0,0,0.85),0_0_24px_rgba(255,180,50,0.3)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden">
+              {/* Brilho radial de fundo do fogo solar */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,180,50,0.3)_0%,transparent_75%)]" />
 
-              {/* Topo de Ouro Chanfrado */}
-              <div className="h-2 w-full rounded bg-gradient-to-r from-[#5A4315] via-[#A88028] to-[#5A4315] shadow-sm" />
+              {/* Orbe Central de Fogo Solar Vivo */}
+              <div className="relative mx-auto my-auto flex flex-col items-center justify-center w-full">
+                {/* Anéis Duplos Contrarrotativos de Fogo Cósmico */}
+                <div className="absolute h-24 w-24 sm:h-28 sm:w-28 rounded-full border border-dashed border-gold/40 anim-orbit-slow pointer-events-none" />
+                <div className="absolute h-20 w-20 sm:h-24 sm:w-24 rounded-full border border-dotted border-amber-400/50 anim-orbit-reverse pointer-events-none" />
 
-              {/* Número Gigante da Retenção */}
-              <div className="relative z-10 my-auto py-1">
-                <span className="font-display text-4xl sm:text-5xl font-black bg-gradient-to-b from-[#FFF7DE] via-[#FFCA40] to-[#B87A18] bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(255,180,50,0.4)] block leading-none tracking-tight">
-                  {d}
-                </span>
-                <span className="text-[8.5px] sm:text-[9.5px] font-extrabold uppercase tracking-widest text-[#E8D9BA] block mt-1">
-                  Dias Limpos
-                </span>
-
-                {/* Cronômetro Live Compacto */}
-                <div className="mt-1 sm:mt-1.5 flex items-center justify-center gap-1 rounded-full bg-black/75 border border-gold/40 px-1 sm:px-1.5 py-0.5 shadow-inner max-w-full">
-                  <Clock size={9} className="text-gold animate-pulse flex-none" />
-                  <span className="font-mono text-[7.5px] sm:text-[9px] font-bold text-gold tracking-tighter truncate">
-                    {pad(liveTime.hours)}h:{pad(liveTime.minutes)}m:{pad(liveTime.seconds)}s
+                {/* Núcleo Incandescente Solar */}
+                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-b from-amber-500/30 via-orange-950/50 to-black/80 border-2 border-gold flex flex-col items-center justify-center anim-flame-core shadow-[0_0_28px_rgba(255,180,50,0.65)] backdrop-blur-sm">
+                  <span className="font-display text-3xl sm:text-4xl font-black bg-gradient-to-b from-[#FFFDF0] via-[#FFD050] to-[#E68A00] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(255,180,50,0.9)] block leading-none">
+                    {d}
                   </span>
+                  <span className="text-[7.5px] sm:text-[8.5px] font-extrabold uppercase tracking-widest text-[#FFF0C8] block mt-0.5">
+                    Dias Limpos
+                  </span>
+
+                  {/* Cronômetro Live Compacto Tático */}
+                  <div className="mt-1 flex items-center justify-center gap-0.5 rounded-full bg-black/80 border border-gold/50 px-1.5 py-0.2 shadow-inner max-w-full">
+                    <Clock size={8} className="text-gold animate-pulse flex-none" />
+                    <span className="font-mono text-[7px] sm:text-[8px] font-bold text-gold tracking-tight truncate">
+                      {pad(liveTime.hours)}h:{pad(liveTime.minutes)}m:{pad(liveTime.seconds)}s
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Base Master de Ouro */}
-              <div className="relative z-10 w-full py-0.5 rounded bg-gradient-to-r from-[#2B1F0B] via-[#483410] to-[#2B1F0B] border border-gold/60 text-[8.5px] sm:text-[9.5px] font-black uppercase text-gold tracking-widest truncate shadow-sm">
+              {/* Barra de Fogo Vital */}
+              <div className="relative z-10 w-full mb-1">
+                <div className="w-full h-2 rounded-full bg-[#120a02] border border-gold/40 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-amber-600 via-yellow-400 to-[#FFF7D6] transition-all duration-700 shadow-[0_0_12px_rgba(255,200,60,0.9)]"
+                    style={{ width: `${Math.min(100, Math.max(20, (d / 90) * 100))}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Base Master de Fogo Vital */}
+              <div className="relative z-10 w-full py-0.5 rounded-md bg-gradient-to-r from-[#3d2708] via-[#5c3c0c] to-[#3d2708] border border-gold text-[8px] sm:text-[9.5px] font-black uppercase text-gold tracking-widest truncate text-center shadow-[0_0_10px_rgba(255,180,50,0.3)]">
                 FOGO VITAL
               </div>
             </div>
           </div>
 
-          {/* TORRE 3: AUTODOMÍNIO (Soberania & Vontade de Ferro) */}
+          {/* ENERGIA 3: SEM MASTURBAÇÃO (Relâmpago & Plasma Violeta / Autodomínio) */}
           <div className="flex flex-col items-center min-w-0 w-full">
-            {/* Ícone flutuante */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner flex-none">
+            {/* Ícone flutuante com faíscas elétricas */}
+            <div className="mb-1 flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-[#1b0a29] border border-purple-500/50 text-xs shadow-[0_0_10px_rgba(168,85,247,0.5)] flex-none anim-electric-core">
               ⚡
             </div>
-            <span className="text-[9px] sm:text-[10.5px] font-extrabold uppercase tracking-wider text-[#C9C2B0] truncate max-w-full mb-1">
-              {curLang === 'en' ? 'Self-Mastery' : curLang === 'es' ? 'Autodominio' : 'Autodomínio'}
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[10.5px] font-black uppercase tracking-wider text-purple-300 truncate max-w-full mb-1 drop-shadow-sm text-center">
+              {curLang === 'en' ? 'No Masturbation' : curLang === 'es' ? 'Sin Masturbación' : 'Sem Masturbação'}
             </span>
 
-            {/* Estrutura 3D do Monólito */}
-            <div className="w-full h-[142px] sm:h-[162px] rounded-xl border border-[#3A3848] bg-gradient-to-b from-[#211F2D] via-[#14131C] to-[#0A0A0E] shadow-[0_8px_20px_rgba(0,0,0,0.6)] p-1.5 sm:p-2 flex flex-col justify-between relative overflow-hidden group">
-              {/* Reactor Core Fluido Vertical */}
-              <div className="absolute inset-y-1.5 left-1/2 -translate-x-1/2 w-2 rounded-full bg-[#0B0A0F] border border-[#2B2838] overflow-hidden">
-                <div
-                  className="w-full rounded-full bg-gradient-to-t from-amber-700 via-amber-500 to-gold animate-pulse transition-all duration-700"
-                  style={{ height: `${Math.min(100, Math.max(16, (mastFree / 90) * 100))}%` }}
-                />
+            {/* Câmara da Energia de Relâmpago / Plasma Violeta */}
+            <div className="w-full h-[155px] sm:h-[185px] rounded-2xl border border-purple-500/40 bg-gradient-to-b from-[#1c0c2b] via-[#11061b] to-[#06020a] shadow-[0_8px_24px_rgba(0,0,0,0.7),0_0_16px_rgba(168,85,247,0.18)] p-1.5 sm:p-2.5 flex flex-col justify-between relative overflow-hidden group">
+              {/* Brilho radial de fundo do plasma violeta */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(168,85,247,0.22)_0%,transparent_70%)]" />
+
+              {/* Orbe de Energia Animada */}
+              <div className="relative mx-auto my-auto flex flex-col items-center justify-center w-full">
+                {/* Anel Orbital Giratório Inverso */}
+                <div className="absolute h-20 w-20 sm:h-24 sm:w-24 rounded-full border border-dashed border-purple-400/30 anim-orbit-reverse pointer-events-none" />
+
+                {/* Núcleo Pulsante de Plasma Violeta */}
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-b from-purple-500/20 via-purple-950/40 to-black/70 border border-purple-400/50 flex flex-col items-center justify-center anim-electric-core shadow-[0_0_20px_rgba(168,85,247,0.4)] backdrop-blur-sm">
+                  <span className="font-display text-2xl sm:text-3xl font-black text-purple-100 drop-shadow-[0_2px_12px_rgba(168,85,247,0.8)] block leading-none">
+                    {mastFree}<small className="text-xs font-mono text-purple-300 font-bold ml-0.5">d</small>
+                  </span>
+                  <span className="text-[7.5px] sm:text-[8.5px] font-mono text-purple-300/80 uppercase font-bold tracking-wider block mt-0.5">
+                    Autodomínio
+                  </span>
+                </div>
               </div>
 
-              {/* Topo chanfrado reflexivo */}
-              <div className="h-1.5 w-full rounded bg-gradient-to-r from-transparent via-[#4B475D] to-transparent opacity-60" />
-
-              {/* Número e Métrica Central */}
-              <div className="relative z-10 my-auto py-1">
-                <span className="font-display text-2xl sm:text-3xl font-black text-[#EDE5D5] drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] block leading-none">
-                  {mastFree}<small className="text-xs font-mono text-gold font-bold ml-0.5">d</small>
-                </span>
-                <span className="text-[8px] sm:text-[9px] font-mono text-muted uppercase font-bold tracking-wider block mt-1">
-                  Soberano
-                </span>
+              {/* Barra de Energia de Vontade */}
+              <div className="relative z-10 w-full mb-1">
+                <div className="w-full h-1.5 rounded-full bg-[#0d0414] border border-purple-500/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-purple-700 via-fuchsia-500 to-purple-200 transition-all duration-700 shadow-[0_0_8px_rgba(168,85,247,0.8)]"
+                    style={{ width: `${Math.min(100, Math.max(16, (mastFree / 90) * 100))}%` }}
+                  />
+                </div>
               </div>
 
-              {/* Base militar chanfrada */}
-              <div className="relative z-10 w-full py-0.5 rounded bg-[#15141D] border border-line/60 text-[8px] sm:text-[9px] font-black uppercase text-gold/80 tracking-widest truncate">
+              {/* Tag Tática de Status */}
+              <div className="relative z-10 w-full py-0.5 rounded-md bg-[#190a26] border border-purple-500/40 text-[7.5px] sm:text-[8.5px] font-black uppercase text-purple-300 tracking-widest truncate text-center shadow-sm">
                 SOBERANIA
               </div>
             </div>
