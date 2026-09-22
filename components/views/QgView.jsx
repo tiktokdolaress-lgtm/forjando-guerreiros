@@ -8,6 +8,7 @@ import { cx, cxHabits, cxTiers, cxQuotes } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF, metaSfx } from '@/lib/audio';
 import { today, dstr, fdmy, fmtD, pad, yesterday } from '@/lib/utils';
+import WarriorLogo from '@/components/WarriorLogo';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -479,11 +480,12 @@ export default function QgView() {
 
         {/* Topo: Patente de Guerra, Pureza e Sequência */}
         <div className="flex items-center justify-between gap-1.5 pb-2.5 border-b border-line/60 relative z-10 min-w-0 w-full">
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-            <span className={`${isDesktop ? 'text-xl' : 'text-base'} drop-shadow-sm flex-none`}>{tier.icon}</span>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <WarriorLogo size={isDesktop ? 36 : 28} glow={false} />
             <div className="flex flex-col min-w-0 text-left">
-              <span className={`font-display ${isDesktop ? 'text-sm sm:text-base' : 'text-xs'} uppercase tracking-wider text-gold font-black truncate`}>
-                {tier.name}
+              <span className={`font-display ${isDesktop ? 'text-sm sm:text-base' : 'text-xs'} uppercase tracking-wider text-gold font-black truncate flex items-center gap-1.5`}>
+                <span>{tier.icon}</span>
+                <span>{tier.name}</span>
               </span>
               <span className="text-[9.5px] sm:text-[10px] text-muted font-mono truncate">
                 {tier.min >= 90 ? t('prog_aura') : `${d}d ${t('of_w')} 90d`}

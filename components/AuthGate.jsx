@@ -5,6 +5,7 @@ import { useApp } from '@/lib/store';
 import * as cloud from '@/lib/supabase';
 import { AF } from '@/lib/audio';
 import { cx } from '@/lib/content-i18n';
+import WarriorLogo from './WarriorLogo';
 
 /* Ícone oficial do Google em SVG */
 const GoogleIcon = () => (
@@ -129,7 +130,7 @@ export default function AuthGate() {
   return (
     <div className="fixed inset-0 z-[95] grid place-items-center overflow-y-auto p-5">
       <div className="w-full max-w-sm rounded-r2 border border-gold/25 bg-surface p-6 text-center shadow-glow rise">
-        <ShieldCheck size={56} className="mx-auto mb-3 text-gold" strokeWidth={1.6} />
+        <WarriorLogo size={68} glow={true} className="mx-auto mb-3" />
         <h2 className="font-display text-2xl tracking-wide">{S && S.settings.discreet ? T('title_disc', 'FG DIÁRIO — ACESSO') : T('title', 'FORJANDO GUERREIROS — ACESSO AO RECURSO')}</h2>
         <p className="mb-4 mt-1 text-[12px] text-muted">{mode === 'signup' ? T('sub_signup', 'Criar conta de guerreiro') : T('sub_login', 'Entrar com sua conta')}</p>
         

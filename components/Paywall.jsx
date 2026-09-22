@@ -5,6 +5,7 @@ import { useApp } from '@/lib/store';
 import * as cloud from '@/lib/supabase';
 import { AF } from '@/lib/audio';
 import { cx } from '@/lib/content-i18n';
+import WarriorLogo from './WarriorLogo';
 
 /* i18n ETAPA 3a: portão de assinatura traduzido.
    Moeda continua decidida pelo país (regra anti-burla) — só a língua muda. */
@@ -56,7 +57,7 @@ export default function Paywall() {
   return (
     <div className="grid min-h-dvh place-items-center p-5">
       <div className="w-full max-w-md rounded-r2 border border-gold/40 bg-surface p-7 text-center shadow-glow rise">
-        <Crown size={46} className="mx-auto mb-3 text-gold" />
+        <WarriorLogo size={68} glow={true} className="mx-auto mb-3" />
         <h1 className="font-display text-3xl tracking-wide">{T('h1', 'ENTRE PARA A FORJA')}</h1>
         <p className="mt-2 text-[13px] leading-relaxed text-muted">
           {T('start', 'Seu acesso começa com')} <b className="text-gold">{T('free', '7 dias grátis')}</b>.{' '}

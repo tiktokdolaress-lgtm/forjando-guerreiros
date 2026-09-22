@@ -7,6 +7,7 @@ import { cx } from '@/lib/content-i18n';
 import { lifeMode, progressDays, allH } from '@/lib/logic';
 import { ensureSw, scheduleLocalTimers } from '@/lib/notify';
 import { AF } from '@/lib/audio';
+import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
 import QgView from './views/QgView';
 import ForgeView from './views/ForgeView';
@@ -39,10 +40,36 @@ export default function Shell() {
     <div className="relative z-[2] min-h-dvh w-full max-w-full overflow-x-hidden lg:grid lg:grid-cols-[242px_minmax(0,1fr)]">
       {/* sidebar desktop */}
       <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 overflow-y-auto border-r border-gold/20 bg-deep p-4 lg:flex">
-        <div className="mb-5 flex items-center gap-2.5 px-2">
-          <ShieldCheck size={40} className="flex-none text-gold" strokeWidth={1.6} />
-          <div className="font-display text-[21px] leading-[.95] tracking-[.08em] text-gold">
-            {S.settings.discreet ? <>FG<br />{t('brandMain')}<small className="block font-body text-[9px] font-extrabold tracking-[.3em] text-muted">{t('brand1')}</small></> : <>FORJANDO<br />GUERREIROS<small className="block font-body text-[9px] font-extrabold tracking-[.3em] text-muted">{t('brand2')}</small></>}
+        <div className="mb-5 flex items-center gap-3 px-2">
+          {S.settings.discreet ? (
+            <ShieldCheck size={38} className="flex-none text-gold" strokeWidth={1.6} />
+          ) : (
+            <WarriorLogo size={46} glow={true} />
+          )}
+          <div className="font-display text-[20px] leading-[.95] tracking-[.08em] text-gold">
+            {S.settings.discreet ? (
+              <>
+                FG
+                <br />
+                {t('brandMain')}
+                <small className="block font-body text-[9px] font-extrabold tracking-[.3em] text-muted">
+                  {t('brand1')}
+                </small>
+              </>
+            ) : (
+              <>
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFF2B2] via-[#F5C242] to-[#B38018] font-black">
+                  FORJANDO
+                </span>
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFFDF0] via-[#E5A93C] to-[#8C5D07] font-black">
+                  GUERREIROS
+                </span>
+                <small className="block font-body text-[8.5px] font-extrabold tracking-[.22em] text-gold/60 mt-0.5">
+                  {t('brand2')}
+                </small>
+              </>
+            )}
           </div>
         </div>
         <nav className="flex flex-col gap-1">
@@ -69,7 +96,10 @@ export default function Shell() {
           <div className="w-full flex items-center justify-between gap-2">
             {/* Título da aba ativa (sem seletor suspenso no mobile) */}
             <div className="flex items-center gap-2 min-w-0">
-              <TabIcon size={20} className="text-gold flex-none" />
+              {!S.settings.discreet && (
+                <WarriorLogo size={26} glow={false} className="lg:hidden shrink-0" />
+              )}
+              <TabIcon size={19} className="text-gold flex-none hidden lg:block" />
               <h1 className="truncate font-display text-xl sm:text-2xl tracking-[.06em] text-ink leading-tight">
                 {t(tab)}
               </h1>

@@ -7,6 +7,7 @@ import { cx } from '@/lib/content-i18n';
 import { setLangCookie } from '@/lib/i18n';
 import { AF, SFX } from '@/lib/audio';
 import { today, dstr, uid } from '@/lib/utils';
+import WarriorLogo from './WarriorLogo';
 
 const LBL_FALLBACK = {
   pt: { 1: 'IDENTIFICAÇÃO', 2: 'IDENTIFICAÇÃO', 3: 'STATUS DE COMBATE', 4: 'LINHA DE BASE', 5: 'LINHA DE BASE', 6: 'MARCO ZERO', 7: 'META POR PATENTE', 8: 'INTELIGÊNCIA', 9: 'INTELIGÊNCIA', 10: 'O PORQUÊ', 11: 'O JURAMENTO' },
@@ -144,7 +145,7 @@ export default function Onboarding() {
   if (sid === 11) body = (
     <div className="relative overflow-hidden rounded-r2 border border-gold2 bg-gradient-to-b from-surface to-surface2 p-7 text-center shadow-glow">
       <div className={`stamp ${stamped ? 'hit' : ''}`}>{T('stamped', '⚔ JURAMENTADO')}</div>
-      <ShieldCheck size={52} className="mx-auto mb-3 text-gold2" strokeWidth={1.6} />
+      <WarriorLogo size={68} glow={true} className="mx-auto mb-3" />
       <p className="text-[13.5px] leading-relaxed">
         "{T('oath1', 'Eu, ')}<b className="text-gold">{OB.name || T('warrior', 'GUERREIRO')}</b>{T('oath2', ', declaro guerra hoje contra a fraqueza, a ilusão da pornografia e o desperdício da minha energia vital. Reconheço minhas feridas, mas recuso-me a continuar escravo do prazer barato. A partir deste segundo, assumo o controle da minha mente, do meu corpo e do meu destino.')}"
       </p>
@@ -156,6 +157,7 @@ export default function Onboarding() {
   return (
     <div className="fixed inset-0 z-[55] flex flex-col overflow-y-auto bg-bg">
       <div className="flex items-center gap-3 p-4">
+        <WarriorLogo size={28} glow={false} />
         <span className="font-display text-lg tracking-widest text-gold">FORJANDO GUERREIROS</span>
         <button className="ml-auto text-muted" onClick={() => update((d) => { d.settings.sound = !d.settings.sound; })} aria-label={T('sound', 'Som')}>
           {S.settings.sound ? <Volume2 size={18} /> : <VolumeX size={18} />}

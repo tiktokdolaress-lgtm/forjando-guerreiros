@@ -24,7 +24,7 @@ const SUB_LBL_FALLBACK = {
 };
 
 const THEMES = [
-  { id: 'dark', nameKey: 'theme_dark', fallbackName: 'Forja Dourada', icon: '👑', descKey: 'theme_dark_desc', fallbackDesc: 'Preto ônix com ouro real' },
+  { id: 'dark', nameKey: 'theme_dark', fallbackName: 'Forja do Guerreiro', icon: '🛡️', descKey: 'theme_dark_desc', fallbackDesc: 'Armadura dourada & brasa da forja' },
   { id: 'stealth', nameKey: 'theme_stealth', fallbackName: 'Black Ops', icon: '⚔️', descKey: 'theme_stealth_desc', fallbackDesc: 'Titânio fosco & cinza tático' },
   { id: 'military', nameKey: 'theme_military', fallbackName: 'Exército', icon: '🪖', descKey: 'theme_military_desc', fallbackDesc: 'Verde oliva camuflado' },
 ];
