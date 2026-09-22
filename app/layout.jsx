@@ -20,6 +20,9 @@ export function generateMetadata() {
           ? 'QG de retención, disciplina y forja de hábitos.'
           : 'QG de retenção, disciplina e forja de hábitos.',
     manifest: '/manifest.webmanifest',
+    other: {
+      google: 'notranslate',
+    },
   };
 }
 
@@ -38,10 +41,11 @@ export default function RootLayout({ children }) {
     <html
       lang={HTML_LANG[lang] || 'pt-BR'}
       data-theme="dark"
-      className={`${bebas.variable} ${manrope.variable} ${mono.variable}`}
+      translate="no"
+      className={`${bebas.variable} ${manrope.variable} ${mono.variable} notranslate`}
       suppressHydrationWarning
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body className="notranslate" translate="no" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

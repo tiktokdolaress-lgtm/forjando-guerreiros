@@ -7,6 +7,7 @@ import PinLock from '@/components/PinLock';
 import Onboarding from '@/components/Onboarding';
 import Paywall from '@/components/Paywall';
 import Shell from '@/components/Shell';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 function Gates() {
   const { phase, S, sub } = useApp();
@@ -21,10 +22,12 @@ function Gates() {
 
 export default function AppPage() {
   return (
-    <AppProvider>
-      <Gates />
-      <ModalHost />
-      <ToastHost />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <Gates />
+        <ModalHost />
+        <ToastHost />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

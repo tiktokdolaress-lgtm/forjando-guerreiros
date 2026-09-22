@@ -12,6 +12,7 @@ import WarriorLogo from '@/components/WarriorLogo';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 import Warrior3DCard from '@/components/Warrior3DCard';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -220,17 +221,18 @@ export default function QgView() {
   const nt = tiers.find((x) => x.min > d) || null;
 
   /* Detecção automática de subida de nível */
+  const currentTierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const stored = localStorage.getItem('fg_last_celebrated_tier');
       const lastTierMin = stored !== null ? Number(stored) : -1;
-      if (lastTierMin >= 0 && tier.min > lastTierMin) {
+      if (lastTierMin >= 0 && currentTierMin > lastTierMin) {
         setLevelUpModalTier(tier);
       }
-      localStorage.setItem('fg_last_celebrated_tier', String(tier.min));
+      localStorage.setItem('fg_last_celebrated_tier', String(currentTierMin));
     } catch (e) {}
-  }, [tier.min]);
+  }, [currentTierMin, tier]);
   const quotes = cxQuotes(lang, QUOTES);
   const ALLH = cxHabits(lang, L.allH(S));
   const MT = (m) => (m ? Object.assign({}, m, cx(lang, 'metas', m.d) || {}) : m);
@@ -559,17 +561,19 @@ export default function QgView() {
         </div>
 
         {/* O GUERREIRO VIVO DA FORJA (CARD 3D REAL WEBGL - GIRA 360° COM MOUSE E TOQUE) */}
-        <Warrior3DCard
-          tier={tier}
-          d={d}
-          nt={nt}
-          curLang={curLang}
-          onOpenGallery={() => setShowEvolutionGallery(true)}
-          onLevelUpClick={() => {
-            AF.seal();
-            setLevelUpModalTier(tier);
-          }}
-        />
+        <ErrorBoundary>
+          <Warrior3DCard
+            tier={tier}
+            d={d}
+            nt={nt}
+            curLang={curLang}
+            onOpenGallery={() => setShowEvolutionGallery(true)}
+            onLevelUpClick={() => {
+              AF.seal();
+              setLevelUpModalTier(tier);
+            }}
+          />
+        </ErrorBoundary>
 
         {/* TRÍPTICO TÁTICO DA FORJA (HUD DE COMBATE DAS 3 FORÇAS VITÁIS) */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2 relative z-10 w-full min-w-0">

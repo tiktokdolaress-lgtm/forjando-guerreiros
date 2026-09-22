@@ -289,6 +289,7 @@ export default function Warrior3DCanvas({
   const sceneRef = useRef(null);
   const rotationRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [webGLError, setWebGLError] = useState(false);
 
   const tierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
 
@@ -298,30 +299,43 @@ export default function Warrior3DCanvas({
 
     const cfg = getTier3DConfig(tierMin);
 
-    // --- SETUP SCENE, CAMERA, RENDERER ---
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+    // --- SETUP SCENE, CAMERA, RENDERER COM TRY/CATCH SEGURO ---
+    let scene;
+    let camera;
+    let renderer;
 
-    const width = container.clientWidth || 340;
-    const h = height || 360;
+    try {
+      scene = new THREE.Scene();
+      sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(38, width / h, 0.1, 100);
-    camera.position.set(0, 1.45, 4.4);
-    camera.lookAt(0, 1.1, 0);
+      const width = container.clientWidth || 340;
+      const h = height || 360;
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setSize(width, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    rendererRef.current = renderer;
+      camera = new THREE.PerspectiveCamera(38, width / h, 0.1, 100);
+      camera.position.set(0, 1.45, 4.4);
+      camera.lookAt(0, 1.1, 0);
 
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+      });
+      renderer.setSize(width, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      rendererRef.current = renderer;
+
+      // Limpeza segura de nós filhos existentes
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
+      container.appendChild(renderer.domElement);
+    } catch (err) {
+      console.warn('WebGL não suportado ou falhou na inicialização:', err);
+      setWebGLError(true);
+      return;
+    }
 
     // --- ILUMINAÇÃO DINÂMICA DA FORJA ---
     const ambientLight = new THREE.AmbientLight(0x24180f, 1.3);
@@ -999,13 +1013,35 @@ export default function Warrior3DCanvas({
       window.removeEventListener('resize', handleResize);
 
       if (rendererRef.current) {
-        rendererRef.current.dispose();
+        try {
+          rendererRef.current.dispose();
+        } catch (e) {}
       }
-      if (container) {
-        container.innerHTML = '';
+      if (container && renderer && renderer.domElement && container.contains(renderer.domElement)) {
+        try {
+          container.removeChild(renderer.domElement);
+        } catch (e) {}
       }
     };
   }, [tierMin, height, autoRotate]);
+
+  if (webGLError) {
+    const cfg = getTier3DConfig(tierMin);
+    return (
+      <div
+        className="relative w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1c130c] to-[#0c0805] border border-amber-600/30"
+        style={{ height: `${height}px` }}
+      >
+        <div className="text-6xl mb-3 animate-pulse">🛡️</div>
+        <div className="font-display text-lg font-black text-amber-300 tracking-wider">
+          {cfg.name}
+        </div>
+        <div className="text-xs font-mono text-amber-200/70 mt-1 max-w-xs">
+          {curLang === 'en' ? 'Live WebGL canvas fallback' : curLang === 'es' ? 'Modo compatible activado' : 'Modo compatibilidade gráfica ativado'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full flex flex-col items-center select-none">
