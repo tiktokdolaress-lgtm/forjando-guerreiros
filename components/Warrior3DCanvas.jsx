@@ -632,12 +632,7 @@ export default function Warrior3DCanvas({
   useEffect(() => {
     if (targetPillarIndex === null || targetPillarIndex === undefined) return;
     if (setTargetRotationRef.current) {
-      // 0: Retenção (Frente = 0)
-      // 1: Sem Pornô (+120° = 2.0944 rad para girar a placa até a frente)
-      // 2: Sem Masturbação (-120° = -2.0944 rad para girar a placa até a frente)
-      const angles = [0, (2 * Math.PI) / 3, -(2 * Math.PI) / 3];
-      const targetAngle = angles[targetPillarIndex] ?? 0;
-      setTargetRotationRef.current(targetAngle);
+      setTargetRotationRef.current(targetPillarIndex);
     }
   }, [targetPillarIndex]);
 
@@ -818,9 +813,9 @@ export default function Warrior3DCanvas({
 
     // Geometria dos 3 estandartes medievais hasteados nos cantos do pedestal
     const bannerDef = [
-      { key: 'ret', angle: 0 },
-      { key: 'porn', angle: -(2 * Math.PI) / 3 }, // -120°
-      { key: 'mast', angle: (2 * Math.PI) / 3 }, // +120°
+      { key: 'ret', angle: 0, index: 0 },
+      { key: 'porn', angle: -(2 * Math.PI) / 3, index: 1 }, // -120°
+      { key: 'mast', angle: (2 * Math.PI) / 3, index: 2 }, // +120°
     ];
 
     const bannerRadius = 1.28;
@@ -842,7 +837,7 @@ export default function Warrior3DCanvas({
       roughness: 0.8,
     });
 
-    bannerDef.forEach(({ key, angle }) => {
+    bannerDef.forEach(({ key, angle, index }) => {
       const bannerGroup = new THREE.Group();
       bannerGroup.position.set(Math.sin(angle) * bannerRadius, 0.28, Math.cos(angle) * bannerRadius);
       bannerGroup.rotation.y = angle;
@@ -886,9 +881,10 @@ export default function Warrior3DCanvas({
       });
       const fabricMesh = new THREE.Mesh(fabricGeo, fabricMat);
       fabricMesh.position.set(0, 0.90, 0.01);
+      fabricMesh.userData = { pillarIndex: index, key };
       bannerGroup.add(fabricMesh);
 
-      bannerClothMeshes.push({ mesh: fabricMesh, angle });
+      bannerClothMeshes.push({ mesh: fabricMesh, angle, index });
       pedestalGroup.add(bannerGroup);
     });
 
@@ -1365,22 +1361,44 @@ export default function Warrior3DCanvas({
     scene.add(emberParticles);
 
     // --- CONTROLES DE ROTAÇÃO 360° COM POINTER EVENTS ---
+    const PI2 = Math.PI * 2;
+    // Ângulos de rotação do rootGroup para trazer cada um dos 3 estandartes diretamente à frente (em direção à câmera):
+    // Pilar 0 (Retenção): 0 rad (Frente)
+    // Pilar 1 (Sem Pornô): +2*PI/3 rad (+120°)
+    // Pilar 2 (Sem Masturbação): -2*PI/3 rad (-120°, ou +4*PI/3 rad)
+    const TARGET_PILLAR_ANGLES = [0, (2 * Math.PI) / 3, -(2 * Math.PI) / 3];
+
     let targetRotationY = rotationRef.current || 0;
     let currentRotationY = rotationRef.current || 0;
     let previousMouseX = 0;
+    let totalDragDelta = 0;
     let angularVelocity = 0;
     let dragging = false;
+    let isProgrammatic = false;
+    let pauseAutoRotateUntil = 0;
 
-    setTargetRotationRef.current = (angle) => {
-      targetRotationY = angle;
+    // Rotação no caminho angular mais curto até o pilar solicitado
+    setTargetRotationRef.current = (pillarIdx) => {
+      if (pillarIdx === null || pillarIdx === undefined) return;
+      const baseAngle = TARGET_PILLAR_ANGLES[pillarIdx] ?? 0;
+
+      // Calcular o caminho angular mais curto (-PI até +PI) a partir de currentRotationY
+      const diff = (((baseAngle - currentRotationY) % PI2) + PI2 * 1.5) % PI2 - Math.PI;
+      targetRotationY = currentRotationY + diff;
       angularVelocity = 0;
+      isProgrammatic = true;
+      // Pausar rotação automática para permitir visualização estática e imersiva do pilar
+      pauseAutoRotateUntil = Date.now() + 15000;
     };
 
     onPointerDown = (e) => {
       dragging = true;
       setIsDragging(true);
       previousMouseX = e.clientX;
+      totalDragDelta = 0;
       angularVelocity = 0;
+      isProgrammatic = false;
+      pauseAutoRotateUntil = Date.now() + 15000;
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
       } catch (err) {}
@@ -1390,10 +1408,14 @@ export default function Warrior3DCanvas({
       if (!dragging) return;
       const deltaX = e.clientX - previousMouseX;
       previousMouseX = e.clientX;
+      totalDragDelta += Math.abs(deltaX);
 
       angularVelocity = deltaX * 0.012;
       targetRotationY += angularVelocity;
     };
+
+    const raycaster = new THREE.Raycaster();
+    const pointerVec = new THREE.Vector2();
 
     onPointerUp = (e) => {
       if (!dragging) return;
@@ -1402,6 +1424,38 @@ export default function Warrior3DCanvas({
       try {
         e.currentTarget.releasePointerCapture(e.pointerId);
       } catch (err) {}
+
+      // Se foi apenas um toque/clique sem arrastar: raycast nos estandartes 3D
+      if (totalDragDelta < 6) {
+        const rect = domElement.getBoundingClientRect();
+        pointerVec.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointerVec.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointerVec, camera);
+
+        const bannerMeshes = bannerClothMeshes.map((b) => b.mesh);
+        const intersects = raycaster.intersectObjects(bannerMeshes, true);
+        if (intersects.length > 0) {
+          const hitIdx = intersects[0].object?.userData?.pillarIndex;
+          if (typeof hitIdx === 'number' && typeof onPillarChangeRef.current === 'function') {
+            onPillarChangeRef.current(hitIdx);
+            return;
+          }
+        }
+      }
+
+      // Se o usuário arrastou o pedestal (atualizar o pilar que ficou voltado para a frente):
+      if (totalDragDelta >= 6) {
+        const norm = ((currentRotationY % PI2) + PI2) % PI2;
+        let closestP = 0;
+        if (norm >= Math.PI / 3 && norm < Math.PI) {
+          closestP = 1;
+        } else if (norm >= Math.PI && norm < (5 * Math.PI) / 3) {
+          closestP = 2;
+        }
+        if (typeof onPillarChangeRef.current === 'function') {
+          onPillarChangeRef.current(closestP);
+        }
+      }
     };
 
     domElement = renderer.domElement;
@@ -1430,26 +1484,21 @@ export default function Warrior3DCanvas({
           angularVelocity = 0;
         }
 
-        // Rotação contínua automática suave e majestosa (nunca trava)
-        if (autoRotate) {
-          targetRotationY += 0.006;
+        // Se estiver em transição suave para um pilar clicado
+        if (isProgrammatic) {
+          if (Math.abs(targetRotationY - currentRotationY) < 0.006) {
+            currentRotationY = targetRotationY;
+            isProgrammatic = false;
+          }
+        } else if (autoRotate && Date.now() > pauseAutoRotateUntil) {
+          // Rotação suave contínua em modo de repouso (sem forçar troca de pilar)
+          targetRotationY += 0.003;
         }
       }
 
       currentRotationY += (targetRotationY - currentRotationY) * 0.12;
       rotationRef.current = currentRotationY;
       rootGroup.rotation.y = currentRotationY;
-
-      if (typeof onPillarChangeRef.current === 'function' && !dragging) {
-        const norm = ((currentRotationY % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        let curP = 0;
-        if (norm >= Math.PI / 3 && norm < Math.PI) {
-          curP = 1;
-        } else if (norm >= Math.PI && norm < (5 * Math.PI) / 3) {
-          curP = 2;
-        }
-        onPillarChangeRef.current(curP);
-      }
 
       // Respiração viva
       const breatheOffset = Math.sin(elapsedTime * 2.2) * 0.018;
