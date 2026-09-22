@@ -8,20 +8,35 @@ import { AF } from '@/lib/audio';
 import * as L from '@/lib/logic';
 
 const OPS_CATEGORIES = [
-  { id: 'tasks', label: 'Tarefas & Operações', icon: Target },
-  { id: 'projects', label: 'Projetos Estratégicos', icon: Layers },
-  { id: 'archive', label: 'Arquivo & Concluídos', icon: Archive },
+  {
+    id: 'tasks',
+    labelShort: { pt: 'Tarefas', en: 'Tasks', es: 'Tareas' },
+    labelFull: { pt: 'Tarefas & Operações', en: 'Tasks & Operations', es: 'Tareas y Operaciones' },
+    icon: Target,
+  },
+  {
+    id: 'projects',
+    labelShort: { pt: 'Projetos', en: 'Projects', es: 'Proyectos' },
+    labelFull: { pt: 'Projetos Estratégicos', en: 'Strategic Projects', es: 'Proyectos Estratégicos' },
+    icon: Layers,
+  },
+  {
+    id: 'archive',
+    labelShort: { pt: 'Arquivo', en: 'Archive', es: 'Archivo' },
+    labelFull: { pt: 'Arquivo & Concluídos', en: 'Archive & Completed', es: 'Archivo y Concluídos' },
+    icon: Archive,
+  },
 ];
 
 const I18N = {
   tabTasks: { pt: '🎯 TAREFAS & OPERAÇÕES', en: '🎯 TASKS & OPERATIONS', es: '🎯 TAREAS Y OPERACIONES' },
   tabProjects: { pt: '🏛️ PROJETOS ESTRATÉGICOS', en: '🏛️ STRATEGIC PROJECTS', es: '🏛️ PROYECTOS ESTRATÉGICOS' },
-  newTask: { pt: '+ NOVA OPERAÇÃO', en: '+ NEW OPERATION', es: '+ NUEVA OPERACIÓN' },
-  newProject: { pt: '+ NOVO PROJETO', en: '+ NEW PROJECT', es: '+ NUEVO PROYECTO' },
-  filterAll: { pt: 'Todas', en: 'All', es: 'Todas' },
-  filterToday: { pt: 'Para Hoje', en: 'For Today', es: 'Para Hoy' },
-  filterPostponed: { pt: 'Adiadas', en: 'Postponed', es: 'Pospuestas' },
-  filterDone: { pt: 'Concluídas', en: 'Completed', es: 'Completadas' },
+  newTask: { pt: 'NOVA OPERAÇÃO', en: 'NEW OPERATION', es: 'NUEVA OPERACIÓN' },
+  newProject: { pt: 'NOVO PROJETO', en: 'NEW PROJECT', es: 'NUEVO PROYECTO' },
+  filterAll: { pt: 'Todas', short: { pt: 'Todas', en: 'All', es: 'Todas' }, en: 'All', es: 'Todas' },
+  filterToday: { pt: 'Para Hoje', short: { pt: 'Hoje', en: 'Today', es: 'Hoy' }, en: 'For Today', es: 'Para Hoy' },
+  filterPostponed: { pt: 'Adiadas', short: { pt: 'Adiadas', en: 'Postponed', es: 'Pospuestas' }, en: 'Postponed', es: 'Pospuestas' },
+  filterDone: { pt: 'Concluídas', short: { pt: 'Concluídas', en: 'Done', es: 'Hechas' }, en: 'Completed', es: 'Completadas' },
   filterActive: { pt: 'Ativos', en: 'Active', es: 'Activos' },
   filterArchived: { pt: 'Arquivados', en: 'Archived', es: 'Archivados' },
   progress: { pt: 'Progresso do Dia', en: 'Today\'s Progress', es: 'Progreso del Día' },
@@ -1038,15 +1053,20 @@ export default function OpsView() {
                 AF.click();
                 setActiveMainTab(cat.id);
               }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1 sm:px-3 rounded-lg text-xs font-bold transition-all select-none cursor-pointer ${
                 isSelected
                   ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
                   : 'text-muted hover:text-ink hover:bg-surface/50'
               }`}
             >
               <Icon size={14} className="flex-none" />
-              <span className="truncate">{cat.label}</span>
-              <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-mono font-bold flex-none ${
+              <span className="sm:hidden whitespace-nowrap text-[11px]">
+                {cat.labelShort[curLang] || cat.labelShort.pt}
+              </span>
+              <span className="hidden sm:inline whitespace-nowrap">
+                {cat.labelFull[curLang] || cat.labelFull.pt}
+              </span>
+              <span className={`text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded font-mono font-bold flex-none ${
                 isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold'
               }`}>
                 {count}
@@ -1057,21 +1077,21 @@ export default function OpsView() {
       </div>
 
       {/* Barra de Ação de Operações */}
-      <div className="flex items-center justify-between gap-2 w-full">
+      <div className="flex items-center justify-between gap-2 w-full min-w-0">
         {activeMainTab === 'tasks' && (
-          <div className="flex items-center justify-between w-full gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full border-2 border-gold/30 flex items-center justify-center bg-gold/5 font-mono text-[10px] font-bold text-gold">
+          <div className="flex items-center justify-between w-full min-w-0 gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-gold/30 flex items-center justify-center bg-gold/5 font-mono text-[9.5px] sm:text-[10px] font-bold text-gold shrink-0">
                 {pct}%
               </div>
-              <span className="text-xs font-mono text-muted">
-                {completedToday}/{todayTasks.length} {tx.progress[curLang]}
+              <span className="text-[11px] sm:text-xs font-mono text-muted truncate">
+                {completedToday}/{todayTasks.length} <span className="hidden sm:inline">{tx.progress[curLang]}</span>
               </span>
             </div>
             <button
               type="button"
               onClick={() => openTaskModal()}
-              className="btn-gold py-1.5 px-3 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap"
             >
               <Plus size={13} strokeWidth={2.5} />
               <span>{tx.newTask[curLang]}</span>
@@ -1080,11 +1100,11 @@ export default function OpsView() {
         )}
 
         {activeMainTab === 'projects' && (
-          <div className="flex items-center justify-end w-full">
+          <div className="flex items-center justify-end w-full min-w-0">
             <button
               type="button"
               onClick={() => openProjectModal()}
-              className="btn-gold py-1.5 px-3 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap"
             >
               <Plus size={13} strokeWidth={2.5} />
               <span>{tx.newProject[curLang]}</span>
@@ -1096,26 +1116,27 @@ export default function OpsView() {
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
         <Card className="p-3.5 sm:p-4">
-          <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-line/60">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 max-w-full -mx-0.5 px-0.5">
+          <div className="mb-3 pb-2.5 border-b border-line/60">
+            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
               {[
-                { id: 'today', label: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
-                { id: 'all', label: tx.filterAll[curLang], count: tasks.filter((t) => !t.archived).length },
-                { id: 'postponed', label: tx.filterPostponed[curLang], count: tasks.filter((t) => !t.archived && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
-                { id: 'done', label: tx.filterDone[curLang], count: tasks.filter((x) => !x.archived && L.isDone(x, today())).length },
+                { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
+                { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => !t.archived).length },
+                { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => !t.archived && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
+                { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => !x.archived && L.isDone(x, today())).length },
               ].map((f) => (
                 <button
                   key={f.id}
                   type="button"
                   onClick={() => setFilter(f.id)}
-                  className={`shrink-0 text-xs font-mono px-3 py-1.5 rounded transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`flex-1 sm:flex-none shrink-0 text-[11px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer whitespace-nowrap ${
                     filter === f.id
                       ? 'bg-gold text-[#141414] font-bold shadow-sm'
                       : 'bg-surface2 text-muted hover:text-ink border border-line'
                   }`}
                 >
-                  <span>{f.label}</span>
-                  <span className={`text-[9.5px] px-1.5 py-0.2 rounded ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
+                  <span className="sm:hidden">{f.labelShort}</span>
+                  <span className="hidden sm:inline">{f.labelFull}</span>
+                  <span className={`text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
                     {f.count}
                   </span>
                 </button>
