@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { RefreshCw, Trophy, CalendarDays, Flame, ShieldCheck, Droplets, Hand, HeartPulse, Check, X, Zap, Sparkles, ShieldAlert, Target, Compass, MoreVertical, LayoutDashboard, ChevronDown, ChevronUp, Clock, Link as LinkIcon, Eye, Play } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Bar, Chk, Empty } from '@/components/ui';

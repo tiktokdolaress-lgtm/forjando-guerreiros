@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Crown, Flame, Siren, BookOpen, ChartNoAxesColumn, Sparkles, Loader2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import * as cloud from '@/lib/supabase';
