@@ -269,6 +269,23 @@ export default function QgView() {
   const bioData = getBioPerksI18n(d, lang);
   const tac = TACTICAL_BLOCK_I18N;
   const liveTime = useLiveTimer(S.retStart || S.created || today(), d);
+  const pornTime = useLiveTimer(S.lastPorn || S.retStart || S.created || today(), pornFree);
+  const mastTime = useLiveTimer(S.lastMast || S.retStart || S.created || today(), mastFree);
+
+  const pillarsData = useMemo(() => ({
+    ret: {
+      days: d,
+      timer: `${String(liveTime.hours).padStart(2, '0')}h:${String(liveTime.minutes).padStart(2, '0')}m:${String(liveTime.seconds).padStart(2, '0')}s`,
+    },
+    porn: {
+      days: pornFree,
+      timer: `${String(pornTime.hours).padStart(2, '0')}h:${String(pornTime.minutes).padStart(2, '0')}m:${String(pornTime.seconds).padStart(2, '0')}s`,
+    },
+    mast: {
+      days: mastFree,
+      timer: `${String(mastTime.hours).padStart(2, '0')}h:${String(mastTime.minutes).padStart(2, '0')}m:${String(mastTime.seconds).padStart(2, '0')}s`,
+    },
+  }), [d, pornFree, mastFree, liveTime.hours, liveTime.minutes, liveTime.seconds, pornTime.hours, pornTime.minutes, pornTime.seconds, mastTime.hours, mastTime.minutes, mastTime.seconds]);
 
   /* ações */
   const setCI = (k, v, dateStr) => {
@@ -534,143 +551,24 @@ export default function QgView() {
     </Card>
   );
 
-  /* 2. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro Lado a Lado) */
+  /* 2. O GUERREIRO VIVO DA FORJA (CARD 3D COM OS 3 PILARES GIRATÓRIOS DO PEDESTAL) */
   const renderPillars3DTowers = (isDesktop = false) => {
     return (
-      <div className={`rounded-2xl border border-[#4A3B22] bg-gradient-to-b from-[#1C1A24] via-[#121217] to-[#0A0A0D] ${isDesktop ? 'p-4 sm:p-5' : 'p-3 sm:p-3.5'} shadow-[0_8px_32px_rgba(0,0,0,0.85)] relative overflow-hidden text-center w-full max-w-full`}>
-        {/* Brilho radial de brasa incandescente no fundo */}
-        <div className={`pointer-events-none absolute left-1/2 top-[5%] ${isDesktop ? 'h-[320px] w-[320px]' : 'h-[220px] w-[220px]'} -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,100,20,0.14)_0%,rgba(200,60,10,0.03)_55%,transparent_75%)]`} />
-
-        {/* Topo: Patente de Guerra, Pureza e Sequência */}
-        <div className="flex items-center justify-between gap-1.5 pb-2.5 border-b border-line/60 relative z-10 min-w-0 w-full">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <WarriorLogo size={isDesktop ? 36 : 28} glow={false} />
-            <div className="flex flex-col min-w-0 text-left">
-              <span className={`font-display ${isDesktop ? 'text-sm sm:text-base' : 'text-xs'} uppercase tracking-wider text-gold font-black truncate flex items-center gap-1.5`}>
-                <span>{tier.icon}</span>
-                <span>{tier.name}</span>
-              </span>
-              <span className="text-[9.5px] sm:text-[10px] text-muted font-mono truncate">
-                {nt ? `${d}d ${t('of_w')} ${nt.min}d` : t('lvl_max')}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 sm:gap-2 flex-none">
-            <span className="rounded-md border border-gold/30 bg-gold/10 px-1.5 sm:px-2.5 py-0.5 text-[9.5px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
-              💎 {S.purity}%
-            </span>
-            <span className="rounded-md border border-gold/30 bg-gold/10 px-1.5 sm:px-2.5 py-0.5 text-[9.5px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
-              🔥 {streak} {streak === 1 ? (curLang === 'en' ? 'DAY' : curLang === 'es' ? 'DÍA' : 'DIA') : t('daysuf').trim()}
-            </span>
-            {isDesktop && (
-              <span className="rounded-md border border-ok/30 bg-ok/10 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-mono text-ok font-bold whitespace-nowrap">
-                🛡️ {L.sosWins(S)} SOS
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* O GUERREIRO VIVO DA FORJA (CARD 3D REAL WEBGL - GIRA 360° COM MOUSE E TOQUE) */}
-        <ErrorBoundary>
-          <Warrior3DCard
-            tier={tier}
-            d={d}
-            nt={nt}
-            curLang={curLang}
-            onOpenGallery={() => setShowEvolutionGallery(true)}
-            onLevelUpClick={() => {
-              AF.seal();
-              setLevelUpModalTier(tier);
-            }}
-          />
-        </ErrorBoundary>
-
-        {/* TRÍPTICO TÁTICO DA FORJA (HUD DE COMBATE DAS 3 FORÇAS VITÁIS) */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2 relative z-10 w-full min-w-0">
-          {/* PILAR 1: SEM PORNÔ (AÇO TEMPERADO) */}
-          <div className="rounded-xl border border-slate-500/60 bg-gradient-to-b from-[#1b222e] via-[#0f141d] to-[#07090d] p-2 sm:p-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.7)] flex flex-col justify-between relative overflow-hidden group">
-            <div className="flex items-center justify-between gap-1 mb-1">
-              <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-wider text-slate-300 truncate">
-                {t('pil_porn')}
-              </span>
-              <span className="text-[10px] sm:text-xs">🛡️</span>
-            </div>
-            <div className="my-1 text-center">
-              <span className="font-display text-xl sm:text-2xl font-black text-slate-100 block leading-none">
-                {pornFree}<small className="text-[10px] font-mono text-slate-300 font-bold ml-0.5">d</small>
-              </span>
-              <span className="text-[6.5px] sm:text-[7.5px] font-mono text-slate-300 uppercase font-bold tracking-wider block mt-0.5">
-                {t('pil_mind')}
-              </span>
-            </div>
-            <div className="py-0.5 rounded-sm bg-[#111722] border border-slate-500/40 text-[6.5px] sm:text-[7.5px] font-black uppercase text-slate-200 tracking-wider truncate text-center">
-              {t('pil_intact')}
-            </div>
-          </div>
-
-          {/* PILAR 2: RETENÇÃO (FOGO VITAL SOLAR - EM DESTAQUE NO CENTRO) */}
-          <div className="rounded-xl border-2 border-gold bg-gradient-to-b from-[#3a2004] via-[#1c0e01] to-[#080400] p-2 sm:p-2.5 shadow-[0_8px_24px_rgba(255,180,50,0.35)] flex flex-col justify-between relative overflow-hidden transform -translate-y-1">
-            <div className="flex items-center justify-between gap-1 mb-0.5">
-              <span className="text-[8px] min-[380px]:text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-gold truncate">
-                {t('pil_ret')}
-              </span>
-              <span className="text-[11px] sm:text-sm anim-flame-tongue">🔥</span>
-            </div>
-            <div className="my-0.5 text-center">
-              <span className="font-display text-2xl sm:text-3xl font-black bg-gradient-to-b from-[#FFFDF0] via-[#FFD050] to-[#E68A00] bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(255,180,50,0.8)] block leading-none">
-                {d}
-              </span>
-              <span className="text-[7px] sm:text-[8px] font-extrabold uppercase tracking-widest text-[#FFF0C8] block mt-0.5">
-                {t('pil_cleandays')}
-              </span>
-              <div className="mt-1 flex items-center justify-center gap-0.5 rounded-full bg-black/90 border border-gold/60 px-1 py-0.2 shadow-inner">
-                <Clock size={8} className="text-gold animate-pulse flex-none" />
-                <span className="font-mono text-[6.5px] sm:text-[7.5px] font-bold text-gold tracking-tight truncate">
-                  {pad(liveTime.hours)}h:{pad(liveTime.minutes)}m:{pad(liveTime.seconds)}s
-                </span>
-              </div>
-            </div>
-            <div className="py-0.5 rounded-sm bg-gradient-to-r from-[#3d2708] via-[#63410c] to-[#3d2708] border border-gold/70 text-[7px] sm:text-[8px] font-black uppercase text-gold tracking-wider truncate text-center">
-              {t('pil_vitalfire')}
-            </div>
-          </div>
-
-          {/* PILAR 3: SEM MASTURBAÇÃO (BRONZE & BIGORNA) */}
-          <div className="rounded-xl border border-amber-600/70 bg-gradient-to-b from-[#2a1708] via-[#160b03] to-[#080401] p-2 sm:p-2.5 shadow-[0_6px_18px_rgba(0,0,0,0.7)] flex flex-col justify-between relative overflow-hidden group">
-            <div className="flex items-center justify-between gap-1 mb-1">
-              <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-wider text-amber-300 truncate">
-                {t('pil_mast')}
-              </span>
-              <span className="text-[10px] sm:text-xs">⚒️</span>
-            </div>
-            <div className="my-1 text-center">
-              <span className="font-display text-xl sm:text-2xl font-black text-amber-100 block leading-none">
-                {mastFree}<small className="text-[10px] font-mono text-amber-300 font-bold ml-0.5">d</small>
-              </span>
-              <span className="text-[6.5px] sm:text-[7.5px] font-mono text-amber-200 uppercase font-bold tracking-wider block mt-0.5">
-                {t('pil_mastery')}
-              </span>
-            </div>
-            <div className="py-0.5 rounded-sm bg-[#1f0f04] border border-amber-500/50 text-[6.5px] sm:text-[7.5px] font-black uppercase text-amber-200 tracking-wider truncate text-center">
-              {t('pil_sovereignty')}
-            </div>
-          </div>
-        </div>
-
-        {/* Rodapé: Próximo Patamar & Barra de Brasas */}
-        <div className="pt-2.5 border-t border-line/40 relative z-10">
-          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted font-medium mb-1.5 min-w-0">
-            <span className="truncate flex-1 text-left font-semibold text-[#EDE5D5]">{lvlTxt}</span>
-            {tier.reward && (
-              <span className="text-gold2 truncate ml-2 flex-none font-bold">
-                🎁 {tier.reward}
-              </span>
-            )}
-          </div>
-          <Bar pct={lvlPct} />
-        </div>
-      </div>
+      <ErrorBoundary>
+        <Warrior3DCard
+          tier={tier}
+          d={d}
+          nt={nt}
+          curLang={curLang}
+          purity={S.purity}
+          streak={streak}
+          sosWins={L.sosWins(S)}
+          pillarsData={pillarsData}
+          lvlPct={lvlPct}
+          lvlTxt={lvlTxt}
+          onGoToArmors={() => setTab && setTab('forge')}
+        />
+      </ErrorBoundary>
     );
   };
 

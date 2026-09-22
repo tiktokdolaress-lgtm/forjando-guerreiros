@@ -136,16 +136,34 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
               </span>
             </div>
 
-            {/* Guerreiro 3D */}
-            <div className="relative z-10 my-2 w-full flex flex-col items-center justify-center">
-              <Warrior3DCanvas
-                tier={selectedTier}
-                days={selectedTier.min}
-                height={210}
-                curLang={curLang}
-                interactive={true}
-                autoRotate={true}
-              />
+            {/* Guerreiro 3D ou Forja Trancada */}
+            <div className="relative z-10 my-2 w-full flex flex-col items-center justify-center min-h-[210px]">
+              {isUnlocked ? (
+                <Warrior3DCanvas
+                  tier={selectedTier}
+                  days={selectedTier.min}
+                  height={210}
+                  curLang={curLang}
+                  interactive={true}
+                  autoRotate={true}
+                />
+              ) : (
+                <div className="h-[210px] w-full rounded-xl bg-gradient-to-b from-[#18110a] to-[#0a0704] border-2 border-dashed border-amber-900/60 flex flex-col items-center justify-center p-4 text-center">
+                  <div className="w-14 h-14 rounded-full bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-2xl text-amber-400 mb-2 shadow-inner">
+                    🔒
+                  </div>
+                  <span className="font-display font-black text-sm text-amber-400 tracking-wider">
+                    {curLang === 'en' ? 'SACRED FORGE LOCKED' : curLang === 'es' ? 'FORJA SAGRADA BLOQUEADA' : 'FORJA SAGRADA TRANCADA'}
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-200/70 mt-1 max-w-xs">
+                    {curLang === 'en'
+                      ? `${selectedTier.min - currentDays} days of clean retention remaining to temper this armor.`
+                      : curLang === 'es'
+                      ? `Faltan ${selectedTier.min - currentDays} días de retención limpia para templar esta armadura.`
+                      : `Faltam ${selectedTier.min - currentDays} dias de retenção limpa para temperar esta armadura.`}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Informações da Patente */}
@@ -169,17 +187,33 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
                 </div>
               )}
 
-              {/* Botão de Testar a Celebração de Subida de Nível */}
-              <button
-                onClick={() => {
-                  AF.seal();
-                  onTestLevelUp(selectedTier);
-                }}
-                className="w-full py-2.5 rounded-lg font-display font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-gold via-gold2 to-gold hover:brightness-110 border border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.4)] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
-              >
-                <Play size={13} fill="currentColor" />
-                <span>{TXT.testBtn[curLang]}</span>
-              </button>
+              {/* Botão de Testar a Celebração de Subida de Nível (Desbloqueado vs Bloqueado) */}
+              {isUnlocked ? (
+                <button
+                  onClick={() => {
+                    AF.seal();
+                    onTestLevelUp(selectedTier);
+                  }}
+                  className="w-full py-2.5 rounded-lg font-display font-black text-xs uppercase tracking-wider text-black bg-gradient-to-r from-gold via-gold2 to-gold hover:brightness-110 border border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.4)] flex items-center justify-center gap-1.5 transition-all active:scale-[0.98]"
+                >
+                  <Play size={13} fill="currentColor" />
+                  <span>{TXT.testBtn[curLang]}</span>
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-2.5 rounded-lg font-display font-bold text-xs uppercase tracking-wider text-amber-400/50 bg-amber-950/30 border border-amber-900/40 flex items-center justify-center gap-1.5 cursor-not-allowed opacity-60"
+                >
+                  <Lock size={13} />
+                  <span>
+                    {curLang === 'en'
+                      ? `LOCKED · REACH ${selectedTier.min} DAYS`
+                      : curLang === 'es'
+                      ? `BLOQUEADO · ALCANZA ${selectedTier.min} DÍAS`
+                      : `BLOQUEADO · ALCANCE ${selectedTier.min} DIAS`}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Shield, Sparkles, Award, Play, Eye, Swords } from 'lucide-react';
+import { Shield, Swords, Sparkles, Flame, ChevronRight, BarChart2 } from 'lucide-react';
 import { AF } from '@/lib/audio';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -21,9 +21,16 @@ export default function Warrior3DCard({
   d = 0,
   nt = null,
   curLang = 'pt',
-  onOpenGallery,
-  onLevelUpClick,
+  purity = 100,
+  streak = 0,
+  sosWins = 0,
+  pillarsData = null,
+  lvlPct = 0,
+  lvlTxt = '',
+  onGoToArmors = null,
 }) {
+  const [selectedPillar, setSelectedPillar] = useState(0);
+
   const safeTier = tier && typeof tier.min === 'number' ? tier : {
     min: 0,
     slots: 3,
@@ -136,50 +143,84 @@ export default function Warrior3DCard({
       en: 'FORGED ARMOR',
       es: 'ARMADURA FORJADA',
     },
-    dragHint: {
-      pt: 'ARRASTE PARA GIRAR 360°',
-      en: 'DRAG TO ROTATE 360°',
-      es: 'ARRASTRA PARA GIRAR 360°',
-    },
     quote: {
       pt: '"Navega as tempestades sem temer qualquer tentação."',
       en: '"Navigates the storms without fearing any temptation."',
       es: '"Navega las tormentas sin temer ninguna tentación."',
     },
-    btnGallery: {
-      pt: '11 ARMADURAS MEDIEVAIS',
-      en: '11 MEDIEVAL ARMORS',
-      es: '11 ARMADURAS MEDIEVALES',
+    rotateHint: {
+      pt: 'GIRAR PEDESTAL 360°',
+      en: 'ROTATE PEDESTAL 360°',
+      es: 'GIRAR PEDESTAL 360°',
     },
-    btnLevel: {
-      pt: 'ANIMAR NÍVEL ⚡',
-      en: 'LEVEL UP FX ⚡',
-      es: 'ANIMAR NIVEL ⚡',
+    ret: {
+      pt: 'Retenção',
+      en: 'Retention',
+      es: 'Retención',
+    },
+    porn: {
+      pt: 'Sem Pornô',
+      en: 'No Porn',
+      es: 'Sin Porno',
+    },
+    mast: {
+      pt: 'Sem Masturbação',
+      en: 'No Masturbation',
+      es: 'Sin Masturbación',
+    },
+    viewArmorsForge: {
+      pt: 'Ver Armaduras na Forja',
+      en: 'View Armors in Forge',
+      es: 'Ver Armaduras en la Forja',
+    },
+    days: {
+      pt: 'DIAS',
+      en: 'DAYS',
+      es: 'DÍAS',
     },
   };
 
-  return (
-    <div className="relative my-3 sm:my-4 w-full rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#080504] border-2 border-amber-600/50 p-2 sm:p-4 shadow-[0_16px_40px_rgba(0,0,0,0.85)] overflow-hidden">
-      {/* Luz Superior da Forja */}
-      <div className="pointer-events-none absolute left-1/2 -top-16 -translate-x-1/2 h-36 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.25)_0%,transparent_75%)]" />
+  const handleSelectPillar = (idx) => {
+    try { AF.click(); } catch (e) {}
+    setSelectedPillar(idx);
+  };
 
-      {/* Topo do Card: Estágio da Patente (Como no vídeo do usuário) */}
-      <div className="relative z-10 flex items-center justify-between pb-2 mb-1 border-b border-amber-900/40">
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
+  return (
+    <div className="relative my-2 sm:my-3 w-full rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#080504] border-2 border-amber-600/50 p-2 sm:p-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.85)] overflow-hidden text-center">
+      {/* Brilho Superior da Forja */}
+      <div className="pointer-events-none absolute left-1/2 -top-16 -translate-x-1/2 h-36 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.22)_0%,transparent_75%)]" />
+
+      {/* TOPO DO CARD: Patente + Badges Integrados (💎 PUREZA, 🔥 DIAS, 🛡️ SOS, DIAS/META) */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-1 border-b border-amber-900/40">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-950/70 border border-amber-500/50 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
           <span>⚔️</span>
-          <span>{curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}: {safeTier.name}</span>
+          <span className="truncate">
+            {curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}: {safeTier.name}
+          </span>
         </div>
 
-        <div className="text-[10px] sm:text-xs font-mono font-bold text-amber-200/80">
-          {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX RANK' : curLang === 'es' ? 'RANGO MÁXIMO' : 'PATENTE MÁXIMA')}
+        {/* Badges de Guerra Integrados dentro do Card */}
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <span className="rounded-md border border-gold/40 bg-gold/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-gold font-bold whitespace-nowrap shadow-sm">
+            💎 {purity}%
+          </span>
+          <span className="rounded-md border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-300 font-bold whitespace-nowrap shadow-sm">
+            🔥 {streak} {TXT.days[curLang] || TXT.days.pt}
+          </span>
+          <span className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-emerald-300 font-bold whitespace-nowrap shadow-sm">
+            🛡️ {sosWins} SOS
+          </span>
+          <span className="rounded-md border border-amber-800/40 bg-black/40 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-200/80 font-bold whitespace-nowrap">
+            {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX' : 'MÁX')}
+          </span>
         </div>
       </div>
 
-      {/* CANVAS 3D INTERATIVO (GIRA 360 COM MOUSE E CELULAR) */}
-      <div className="relative z-10 w-full min-h-[340px] flex flex-col items-center justify-center">
+      {/* CANVAS 3D INTERATIVO (O GUERREIRO E AS 3 PLACAS DE FERRO GIRAM JUNTOS) */}
+      <div className="relative z-10 w-full min-h-[350px] flex flex-col items-center justify-center">
         <ErrorBoundary
           fallback={
-            <div className="h-[340px] w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1b120a] to-[#0a0704] border border-amber-600/30">
+            <div className="h-[350px] w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1b120a] to-[#0a0704] border border-amber-600/30">
               <div className="text-7xl mb-2 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse">
                 {safeTier.icon || '🛡️'}
               </div>
@@ -187,12 +228,7 @@ export default function Warrior3DCard({
                 {safeTier.name}
               </div>
               <div className="text-xs font-mono text-amber-200/80 mt-1 max-w-xs">
-                {curLang === 'en'
-                  ? 'Stage ' + arm.stageNum + ' · ' + (safeTier.reward || 'Forged Armor')
-                  : 'Estágio ' + arm.stageNum + ' · ' + (safeTier.reward || 'Armadura Forjada')}
-              </div>
-              <div className="mt-3 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-600/40 text-[10px] font-mono text-amber-300">
-                {curLang === 'en' ? '⚔️ FORGE AVATAR ACTIVE' : '⚔️ AVATAR DA FORJA ATIVO'}
+                {safeTier.reward || 'Armadura Forjada'}
               </div>
             </div>
           }
@@ -200,16 +236,63 @@ export default function Warrior3DCard({
           <Warrior3DCanvas
             tier={safeTier}
             days={d}
-            height={340}
+            height={350}
             curLang={curLang}
             interactive={true}
             autoRotate={true}
+            pillarsData={pillarsData}
+            targetPillarIndex={selectedPillar}
+            onPillarChange={(idx) => {
+              if (idx !== selectedPillar) setSelectedPillar(idx);
+            }}
           />
         </ErrorBoundary>
+
+        {/* SELETOR INTERATIVO RÁPIDO DOS 3 PILARES GIRATÓRIOS DO PEDESTAL */}
+        <div className="mt-1 mb-2 flex items-center justify-center gap-1.5 flex-wrap z-20">
+          <button
+            type="button"
+            onClick={() => handleSelectPillar(0)}
+            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
+              selectedPillar === 0
+                ? 'bg-amber-500 text-black border-amber-300 ring-2 ring-amber-400/50 font-black'
+                : 'bg-amber-950/50 text-amber-300 border-amber-700/50 hover:bg-amber-900/50'
+            }`}
+          >
+            <span>🔥</span>
+            <span>{TXT.ret[curLang] || TXT.ret.pt}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectPillar(1)}
+            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
+              selectedPillar === 1
+                ? 'bg-sky-500 text-black border-sky-300 ring-2 ring-sky-400/50 font-black'
+                : 'bg-sky-950/50 text-sky-300 border-sky-700/50 hover:bg-sky-900/50'
+            }`}
+          >
+            <span>🛡️</span>
+            <span>{TXT.porn[curLang] || TXT.porn.pt}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectPillar(2)}
+            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
+              selectedPillar === 2
+                ? 'bg-orange-500 text-black border-orange-300 ring-2 ring-orange-400/50 font-black'
+                : 'bg-orange-950/50 text-orange-300 border-orange-700/50 hover:bg-orange-900/50'
+            }`}
+          >
+            <span>⚒️</span>
+            <span>{TXT.mast[curLang] || TXT.mast.pt}</span>
+          </button>
+        </div>
       </div>
 
-      {/* DETALHES DE CLASSE E PROGRESSÃO (COMO NO VÍDEO DO USUÁRIO) */}
-      <div className="relative z-10 w-full flex flex-col items-center text-center mt-2">
+      {/* DETALHES DE CLASSE E PROGRESSÃO */}
+      <div className="relative z-10 w-full flex flex-col items-center text-center mt-1">
         <h3 className="text-xl sm:text-2xl font-display font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#FFFEEA] via-[#FFD152] to-[#F59E0B]">
           {safeTier.name}
         </h3>
@@ -218,15 +301,15 @@ export default function Warrior3DCard({
           {TXT.quote[curLang]}
         </p>
 
-        {/* Blocos de Armamento & Armadura da Classe (Estilo RPG Medieval do Vídeo) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full my-3">
+        {/* Blocos de Armamento & Armadura da Classe */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full my-2.5">
           {/* Armamento da Classe */}
-          <div className="rounded-xl border border-amber-900/60 bg-[#120c08] p-2.5 text-left flex items-start gap-2 shadow">
-            <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-700/40 text-amber-400 mt-0.5">
-              <Swords size={16} />
+          <div className="rounded-xl border border-amber-900/60 bg-[#120c08] p-2 sm:p-2.5 text-left flex items-start gap-2 shadow">
+            <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-700/40 text-amber-400 mt-0.5 flex-none">
+              <Swords size={15} />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-400/90 block">
+              <span className="text-[8.5px] font-mono font-black uppercase tracking-wider text-amber-400/90 block">
                 {TXT.classArm[curLang]}
               </span>
               <span className="text-xs font-bold text-amber-100 block truncate">
@@ -236,12 +319,12 @@ export default function Warrior3DCard({
           </div>
 
           {/* Armadura Forjada */}
-          <div className="rounded-xl border border-amber-900/60 bg-[#120c08] p-2.5 text-left flex items-start gap-2 shadow">
-            <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-700/40 text-amber-400 mt-0.5">
-              <Shield size={16} />
+          <div className="rounded-xl border border-amber-900/60 bg-[#120c08] p-2 sm:p-2.5 text-left flex items-start gap-2 shadow">
+            <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-700/40 text-amber-400 mt-0.5 flex-none">
+              <Shield size={15} />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[9px] font-mono font-black uppercase tracking-wider text-amber-400/90 block">
+              <span className="text-[8.5px] font-mono font-black uppercase tracking-wider text-amber-400/90 block">
                 {TXT.forgedArmor[curLang]}
               </span>
               <span className="text-xs font-bold text-amber-100 block truncate">
@@ -251,30 +334,41 @@ export default function Warrior3DCard({
           </div>
         </div>
 
-        {/* Botões de Ação: Galeria de Armaduras & Celebração de Nível */}
-        <div className="flex items-center justify-center gap-2 w-full">
+        {/* BARRA DE PROGRESSO DO PATAMAR (COM BRASAS INCANDESCENTES) */}
+        {lvlTxt && (
+          <div className="w-full pt-2 mt-1 border-t border-amber-900/40 text-left">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-muted font-medium mb-1.5 min-w-0">
+              <span className="truncate flex-1 font-semibold text-[#EDE5D5]">{lvlTxt}</span>
+              {tier && tier.reward && (
+                <span className="text-gold2 truncate ml-2 flex-none font-bold">
+                  🎁 {tier.reward}
+                </span>
+              )}
+            </div>
+            <div className="w-full h-2 rounded-full bg-black/60 border border-amber-900/40 overflow-hidden relative">
+              <div
+                className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]"
+                style={{ width: `${Math.min(100, Math.max(0, lvlPct))}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ATALHO DISCRETO PARA AS ARMADURAS MEDIEVAIS NA FORJA */}
+        {onGoToArmors && (
           <button
+            type="button"
             onClick={() => {
               try { AF.click(); } catch (e) {}
-              if (onOpenGallery) onOpenGallery();
+              onGoToArmors();
             }}
-            className="flex-1 py-2 px-3 rounded-xl bg-amber-950/40 hover:bg-amber-900/50 border border-amber-600/50 hover:border-amber-400 text-amber-200 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow"
+            className="mt-3 inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11px] font-mono font-bold text-amber-400/90 hover:text-amber-300 transition-colors py-1 px-3 rounded-lg bg-amber-950/30 hover:bg-amber-950/60 border border-amber-700/30"
           >
-            <Eye size={14} className="text-amber-400 flex-none" />
-            <span className="truncate">{TXT.btnGallery[curLang] || TXT.btnGallery.pt}</span>
+            <span>🛡️</span>
+            <span>{TXT.viewArmorsForge[curLang] || TXT.viewArmorsForge.pt}</span>
+            <ChevronRight size={13} />
           </button>
-
-          <button
-            onClick={() => {
-              try { AF.seal(); } catch (e) {}
-              if (onLevelUpClick) onLevelUpClick();
-            }}
-            className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600/30 to-amber-500/30 hover:from-amber-600/50 hover:to-amber-500/50 border border-amber-400/70 hover:border-amber-400 text-amber-200 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.3)]"
-          >
-            <Play size={12} className="text-amber-300 flex-none fill-amber-300" />
-            <span className="truncate">{TXT.btnLevel[curLang] || TXT.btnLevel.pt}</span>
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

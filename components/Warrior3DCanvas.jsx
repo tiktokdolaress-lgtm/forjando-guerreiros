@@ -276,6 +276,147 @@ function getTier3DConfig(minDays = 0) {
   };
 }
 
+/* --- CONFIGURAÇÃO E DESENHO DAS PLACAS DE FERRO FORJADO DOS 3 PILARES --- */
+const PLAQUE_CONFIGS = {
+  ret: {
+    title: { pt: 'RETENÇÃO', en: 'RETENTION', es: 'RETENCIÓN' },
+    sub: { pt: 'FOGO VITAL SOLAR', en: 'SOLAR VITAL FIRE', es: 'FUEGO VITAL SOLAR' },
+    icon: '🔥',
+    theme: '#f59e0b',
+    border: '#d97706',
+  },
+  porn: {
+    title: { pt: 'SEM PORNÔ', en: 'NO PORN', es: 'SIN PORNO' },
+    sub: { pt: 'VISÃO PURA & FOCO', en: 'PURE MIND & FOCUS', es: 'MENTE PURA & FOCO' },
+    icon: '🛡️',
+    theme: '#38bdf8',
+    border: '#0284c7',
+  },
+  mast: {
+    title: { pt: 'SEM MASTURBAÇÃO', en: 'NO MASTURBATION', es: 'SIN MASTURBACIÓN' },
+    sub: { pt: 'AUTODOMÍNIO DE FERRO', en: 'IRON SELF-MASTERY', es: 'AUTODOMINIO DE HIERRO' },
+    icon: '⚒️',
+    theme: '#fb923c',
+    border: '#ea580c',
+  },
+};
+
+function drawIronPlaque(canvas, data, curLang, type) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width;
+  const h = canvas.height;
+  const cfg = PLAQUE_CONFIGS[type] || PLAQUE_CONFIGS.ret;
+  const langKey = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
+  const title = (cfg.title && cfg.title[langKey]) || cfg.title.pt;
+  const sub = (cfg.sub && cfg.sub[langKey]) || cfg.sub.pt;
+  const daysNum = data && typeof data.days === 'number' ? data.days : 0;
+  const dayUnit = daysNum === 1
+    ? (langKey === 'en' ? 'DAY' : langKey === 'es' ? 'DÍA' : 'DIA')
+    : (langKey === 'en' ? 'DAYS' : langKey === 'es' ? 'DÍAS' : 'DIAS');
+  const timerStr = (data && data.timer) || '00h:00m:00s';
+
+  // Fundo metálico de aço forjado escuro
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+  bgGrad.addColorStop(0, '#261b14');
+  bgGrad.addColorStop(0.3, '#16100c');
+  bgGrad.addColorStop(0.7, '#0f0a07');
+  bgGrad.addColorStop(1, '#070503');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Escovado metálico sutil
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+  for (let y = 3; y < h; y += 4) {
+    ctx.fillRect(0, y, w, 1);
+  }
+
+  // Borda externa de ferro forjado
+  ctx.strokeStyle = cfg.border;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(5, 5, w - 10, h - 10);
+
+  // Borda interna decorativa chanfrada
+  ctx.strokeStyle = cfg.theme;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(14, 14, w - 28, h - 28);
+
+  // 4 Rebites de fixação de aço forjado nos 4 cantos
+  const rivets = [
+    [24, 24],
+    [w - 24, 24],
+    [24, h - 24],
+    [w - 24, h - 24],
+  ];
+  for (const [rx, ry] of rivets) {
+    ctx.beginPath();
+    ctx.arc(rx, ry, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#382618';
+    ctx.fill();
+    ctx.strokeStyle = cfg.theme;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Brilho do rebite
+    ctx.beginPath();
+    ctx.arc(rx - 1.5, ry - 1.5, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+  }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Faixa do Cabeçalho com Ícone e Título
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(30, 22, w - 60, 42);
+  ctx.strokeStyle = cfg.theme;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(30, 22, w - 60, 42);
+
+  ctx.font = '900 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = cfg.theme;
+  ctx.shadowColor = cfg.theme;
+  ctx.shadowBlur = 8;
+  ctx.fillText(`${cfg.icon}  ${title}`, w / 2, 43);
+  ctx.shadowBlur = 0;
+
+  // Contador de Dias Central (Em grande destaque)
+  ctx.font = '900 76px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const numGrad = ctx.createLinearGradient(0, 80, 0, 160);
+  numGrad.addColorStop(0, '#ffffff');
+  numGrad.addColorStop(0.4, '#fff2d6');
+  numGrad.addColorStop(1, cfg.theme);
+  ctx.fillStyle = numGrad;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowBlur = 10;
+  ctx.fillText(`${daysNum}`, w / 2 - 38, 122);
+  ctx.shadowBlur = 0;
+
+  ctx.font = '900 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = '#ede5d5';
+  ctx.fillText(dayUnit, w / 2 + 52, 124);
+
+  // Subtítulo do Pilar
+  ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = cfg.theme;
+  ctx.fillText(sub, w / 2, 168);
+
+  // Painel de Horas / Minutos / Segundos
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
+  ctx.fillRect(40, 192, w - 80, 52);
+  ctx.strokeStyle = cfg.theme;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(40, 192, w - 80, 52);
+
+  ctx.font = 'bold 24px "Courier New", monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = cfg.theme;
+  ctx.shadowBlur = 7;
+  ctx.fillText(`⏱️ ${timerStr}`, w / 2, 218);
+  ctx.shadowBlur = 0;
+}
+
 export default function Warrior3DCanvas({
   tier,
   days = 0,
@@ -283,15 +424,49 @@ export default function Warrior3DCanvas({
   interactive = true,
   autoRotate = true,
   curLang = 'pt',
+  pillarsData = null,
+  targetPillarIndex = null,
+  onPillarChange = null,
 }) {
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
   const sceneRef = useRef(null);
   const rotationRef = useRef(0);
+  const setTargetRotationRef = useRef(null);
+  const updatePlaquesRef = useRef(null);
+  const pillarsDataRef = useRef(pillarsData);
+  pillarsDataRef.current = pillarsData;
+  const curLangRef = useRef(curLang);
+  curLangRef.current = curLang;
+  const onPillarChangeRef = useRef(onPillarChange);
+  useEffect(() => {
+    onPillarChangeRef.current = onPillarChange;
+  }, [onPillarChange]);
+
   const [isDragging, setIsDragging] = useState(false);
   const [webGLError, setWebGLError] = useState(false);
 
   const tierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
+
+  // Atualização instantânea suave das placas de ferro quando os dados/temporizador mudam
+  useEffect(() => {
+    if (updatePlaquesRef.current) {
+      updatePlaquesRef.current(pillarsData, curLang);
+    }
+  }, [pillarsData, curLang]);
+
+  // Rotação programada quando o usuário clica num pilar
+  useEffect(() => {
+    if (targetPillarIndex === null || targetPillarIndex === undefined) return;
+    if (setTargetRotationRef.current) {
+      // 0: Retenção (Frente = 0)
+      // 1: Sem Pornô (+120° = 2.0944 rad para girar a placa até a frente)
+      // 2: Sem Masturbação (-120° = -2.0944 rad para girar a placa até a frente)
+      const angles = [0, (2 * Math.PI) / 3, -(2 * Math.PI) / 3];
+      const targetAngle = angles[targetPillarIndex] ?? 0;
+      setTargetRotationRef.current(targetAngle);
+    }
+  }, [targetPillarIndex]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -403,22 +578,99 @@ export default function Warrior3DCanvas({
     emberPlane.position.y = 0.285;
     pedestalGroup.add(emberPlane);
 
-    // Tochas em volta do pedestal (Quantidade varia por nível: 2 a 6 tochas)
-    const torchCount = cfg.tierIndex === 0 ? 2 : cfg.tierIndex === 1 ? 4 : 6;
-    for (let i = 0; i < torchCount; i++) {
-      const angle = (i / torchCount) * Math.PI * 2;
+    // Tochas em volta do pedestal (Alternadas com precisão entre as 3 placas de ferro)
+    const torchAngles = [Math.PI / 3, Math.PI, (5 * Math.PI) / 3]; // 60°, 180°, 300°
+    torchAngles.forEach((angle) => {
       const torchHolderGeo = new THREE.CylinderGeometry(0.04, 0.06, 0.22, 8);
       const torchHolderMat = new THREE.MeshStandardMaterial({ color: 0x29180c, metalness: 0.7 });
       const torchHolder = new THREE.Mesh(torchHolderGeo, torchHolderMat);
-      torchHolder.position.set(Math.cos(angle) * 1.12, 0.38, Math.sin(angle) * 1.12);
+      torchHolder.position.set(Math.cos(angle) * 1.22, 0.38, Math.sin(angle) * 1.22);
       pedestalGroup.add(torchHolder);
 
       const flameGeo = new THREE.ConeGeometry(0.055, 0.15, 8);
       const flameMat = new THREE.MeshBasicMaterial({ color: cfg.torchColor });
       const flameMesh = new THREE.Mesh(flameGeo, flameMat);
-      flameMesh.position.set(Math.cos(angle) * 1.12, 0.54, Math.sin(angle) * 1.12);
+      flameMesh.position.set(Math.cos(angle) * 1.22, 0.54, Math.sin(angle) * 1.22);
       pedestalGroup.add(flameMesh);
-    }
+    });
+
+    // --- 3 PLACAS DE FERRO FORJADO DOS 3 PILARES GIRANDO COM O PEDESTAL ---
+    const plaqueWidth = 512;
+    const plaqueHeight = 280;
+
+    const plaqueCanvases = {
+      ret: document.createElement('canvas'),
+      porn: document.createElement('canvas'),
+      mast: document.createElement('canvas'),
+    };
+    plaqueCanvases.ret.width = plaqueWidth;
+    plaqueCanvases.ret.height = plaqueHeight;
+    plaqueCanvases.porn.width = plaqueWidth;
+    plaqueCanvases.porn.height = plaqueHeight;
+    plaqueCanvases.mast.width = plaqueWidth;
+    plaqueCanvases.mast.height = plaqueHeight;
+
+    const plaqueTextures = {
+      ret: new THREE.CanvasTexture(plaqueCanvases.ret),
+      porn: new THREE.CanvasTexture(plaqueCanvases.porn),
+      mast: new THREE.CanvasTexture(plaqueCanvases.mast),
+    };
+
+    const updateAllPlaques = (pData, pLang) => {
+      const currentPData = pData || pillarsDataRef.current || {
+        ret: { days: days || 0, timer: '00h:00m:00s' },
+        porn: { days: days || 0, timer: '00h:00m:00s' },
+        mast: { days: days || 0, timer: '00h:00m:00s' },
+      };
+      const currentLang = pLang || curLangRef.current || 'pt';
+
+      drawIronPlaque(plaqueCanvases.ret, currentPData.ret, currentLang, 'ret');
+      plaqueTextures.ret.needsUpdate = true;
+
+      drawIronPlaque(plaqueCanvases.porn, currentPData.porn, currentLang, 'porn');
+      plaqueTextures.porn.needsUpdate = true;
+
+      drawIronPlaque(plaqueCanvases.mast, currentPData.mast, currentLang, 'mast');
+      plaqueTextures.mast.needsUpdate = true;
+    };
+
+    updatePlaquesRef.current = updateAllPlaques;
+    updateAllPlaques(pillarsDataRef.current, curLangRef.current);
+
+    // Geometria das 3 placas de ferro soldadas ao pedestal (Retenção na frente, Sem Pornô na esquerda, Sem Masturbação na direita)
+    const plaqueDef = [
+      { key: 'ret', angle: 0 },
+      { key: 'porn', angle: -(2 * Math.PI) / 3 }, // -120°
+      { key: 'mast', angle: (2 * Math.PI) / 3 }, // +120°
+    ];
+
+    const plaqueRadius = 1.34;
+    const plaqueGeo = new THREE.PlaneGeometry(0.96, 0.52);
+    const ironBackGeo = new THREE.BoxGeometry(0.98, 0.54, 0.04);
+    const ironBackMat = new THREE.MeshStandardMaterial({
+      color: 0x18120c,
+      roughness: 0.7,
+      metalness: 0.8,
+    });
+
+    plaqueDef.forEach(({ key, angle }) => {
+      const plaqueGroup = new THREE.Group();
+      plaqueGroup.position.set(Math.sin(angle) * plaqueRadius, 0.22, Math.cos(angle) * plaqueRadius);
+      plaqueGroup.rotation.y = angle;
+      plaqueGroup.rotation.x = -0.09; // Leve inclinação para ótima legibilidade frontal
+
+      const ironBack = new THREE.Mesh(ironBackGeo, ironBackMat);
+      ironBack.position.z = -0.02;
+      plaqueGroup.add(ironBack);
+
+      const plaqueMat = new THREE.MeshBasicMaterial({
+        map: plaqueTextures[key],
+      });
+      const plaqueMesh = new THREE.Mesh(plaqueGeo, plaqueMat);
+      plaqueGroup.add(plaqueMesh);
+
+      pedestalGroup.add(plaqueGroup);
+    });
 
     // --- ANEL RÚNICO GIRATÓRIO NO CHÃO (Níveis 8, 9, 10) ---
     let runicCircle = null;
@@ -899,6 +1151,11 @@ export default function Warrior3DCanvas({
     let angularVelocity = 0;
     let dragging = false;
 
+    setTargetRotationRef.current = (angle) => {
+      targetRotationY = angle;
+      angularVelocity = 0;
+    };
+
     onPointerDown = (e) => {
       dragging = true;
       setIsDragging(true);
@@ -962,6 +1219,17 @@ export default function Warrior3DCanvas({
       currentRotationY += (targetRotationY - currentRotationY) * 0.12;
       rotationRef.current = currentRotationY;
       rootGroup.rotation.y = currentRotationY;
+
+      if (typeof onPillarChangeRef.current === 'function' && !dragging) {
+        const norm = ((currentRotationY % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        let curP = 0;
+        if (norm >= Math.PI / 3 && norm < Math.PI) {
+          curP = 1;
+        } else if (norm >= Math.PI && norm < (5 * Math.PI) / 3) {
+          curP = 2;
+        }
+        onPillarChangeRef.current(curP);
+      }
 
       // Respiração viva
       const breatheOffset = Math.sin(elapsedTime * 2.2) * 0.018;

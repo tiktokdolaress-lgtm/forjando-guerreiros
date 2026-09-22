@@ -1,17 +1,31 @@
 'use client';
 import React, { useState } from 'react';
-import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
-import { FORGE_RULES, DEFAULT_HABITS } from '@/lib/data';
+import { FORGE_RULES, DEFAULT_HABITS, TIERS } from '@/lib/data';
 import { cxHabits } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
 import { today, fdmy, dstr, fmtD } from '@/lib/utils';
+import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[240px] w-full flex flex-col items-center justify-center gap-2 text-amber-400 font-mono text-xs">
+      <div className="h-8 w-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+      <span>FORJANDO 3D...</span>
+    </div>
+  ),
+});
 
 const FORGE_CATEGORIES = [
   { id: 'active', label: 'Protocolo Ativo', icon: Flame },
   { id: 'reserve', label: 'Reserva da Forja', icon: Sparkles },
+  { id: 'armors', label: 'Armaduras Medievais', icon: Shield },
   { id: 'rules', label: 'Regras & Slots', icon: ShieldCheck },
 ];
 
@@ -131,6 +145,8 @@ export default function ForgeView() {
   const [openHistoryId, setOpenHistoryId] = useState(null);
   const [activeCategory, setActiveCategory] = useState('active');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedArmorIdx, setSelectedArmorIdx] = useState(0);
+  const [levelUpModalTier, setLevelUpModalTier] = useState(null);
 
   /* Carrega todos os hábitos do usuário */
   const ALLH = cxHabits(lang, L.allH(S));
@@ -504,6 +520,7 @@ export default function ForgeView() {
               <span className="truncate">
                 {cat.id === 'active' ? (curLang === 'en' ? 'Protocol' : curLang === 'es' ? 'Protocolo' : 'Protocolo') :
                  cat.id === 'reserve' ? (curLang === 'en' ? 'Reserve' : curLang === 'es' ? 'Reserva' : 'Reserva') :
+                 cat.id === 'armors' ? (curLang === 'en' ? 'Armors' : curLang === 'es' ? 'Armaduras' : 'Armaduras') :
                  (curLang === 'en' ? 'Slots' : curLang === 'es' ? 'Reglas' : 'Regras')}
               </span>
               {cat.id === 'active' && (
@@ -1004,6 +1021,184 @@ export default function ForgeView() {
         </div>
       )}
 
+      {/* 2.5 ARMADURAS MEDIEVAIS & ANIMAÇÃO DE NÍVEL (TRANSFERIDAS DO QG COM TRAVAMENTO DE ARMADURAS FUTURAS) */}
+      {activeCategory === 'armors' && (
+        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
+          {/* Header da Forja de Armaduras */}
+          <Card className="p-3.5 sm:p-4 border-amber-500/40 bg-gradient-to-b from-[#18110a] via-[#100b07] to-[#080504]">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🛡️</span>
+                <span className="font-display font-black text-sm sm:text-base text-gold uppercase tracking-wider">
+                  {curLang === 'en' ? '11 MEDIEVAL ARMORS & ADVANCEMENT' : curLang === 'es' ? '11 ARMADURAS MEDIEVALES Y AVANCE' : '11 ARMADURAS MEDIEVAIS & PROGRESSÃO'}
+                </span>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-amber-950/70 border border-amber-500/50 text-amber-300 font-mono text-[11px] font-bold">
+                🔥 {d} {curLang === 'en' ? 'DAYS CLEAN' : curLang === 'es' ? 'DÍAS LIMPIOS' : 'DIAS LIMPOS'}
+              </span>
+            </div>
+            <p className="text-xs text-amber-200/80 leading-relaxed">
+              {curLang === 'en'
+                ? 'Each retention threshold tempers new steel. Future armors remain locked in the sacred vault until your clean days prove worthy.'
+                : curLang === 'es'
+                ? 'Cada hito de retención templa nuevo acero. Las futuras armaduras permanecen bloqueadas en la forja sagrada hasta que alcances los días necesarios.'
+                : 'A cada marco de retenção conquistado, novas ligas e elmos são forjados. As armaduras futuras permanecem trancadas na forja sagrada até que você alcance os dias necessários.'}
+            </p>
+          </Card>
+
+          {/* Grid Interativo: Seletor de Patentes + Visualizador 3D com Trava */}
+          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 w-full min-w-0">
+            {/* Lista dos 11 Patamares */}
+            <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-y-auto max-h-[140px] lg:max-h-[520px] w-full lg:w-64 flex-none p-1 rounded-xl bg-surface2/60 border border-line/60">
+              {TIERS.map((t, idx) => {
+                const unlocked = d >= t.min;
+                const isSel = idx === selectedArmorIdx;
+                return (
+                  <button
+                    key={t.min}
+                    type="button"
+                    onClick={() => {
+                      AF.click();
+                      setSelectedArmorIdx(idx);
+                    }}
+                    className={`flex items-center justify-between gap-1.5 p-2 rounded-lg text-left text-xs transition-all flex-shrink-0 lg:flex-shrink cursor-pointer ${
+                      isSel
+                        ? 'bg-gradient-to-r from-amber-600/30 to-amber-500/20 border border-amber-400 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
+                        : unlocked
+                        ? 'bg-surface2/80 border border-line/60 text-[#EDE5D5] hover:border-amber-500/40'
+                        : 'bg-black/40 border border-line/30 text-muted/60 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-base flex-none">{t.icon}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-[11px] truncate leading-tight">{t.name}</span>
+                        <span className="text-[9.5px] font-mono text-amber-400/80 font-bold">{t.min}+ {curLang === 'en' ? 'days' : curLang === 'es' ? 'días' : 'dias'}</span>
+                      </div>
+                    </div>
+                    {unlocked ? (
+                      <CheckCircle2 size={13} className="text-ok flex-none ml-1" />
+                    ) : (
+                      <Lock size={13} className="text-muted/60 flex-none ml-1" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Visualizador da Armadura Selecionada */}
+            {(() => {
+              const selTier = TIERS[selectedArmorIdx] || TIERS[0];
+              const isUnlocked = d >= selTier.min;
+              return (
+                <div className="flex-1 rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#080504] border-2 border-amber-600/50 p-3 sm:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.85)] flex flex-col justify-between items-center text-center relative overflow-hidden min-h-[420px]">
+                  {/* Luz Superior */}
+                  <div className="pointer-events-none absolute left-1/2 -top-16 -translate-x-1/2 h-36 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.22)_0%,transparent_75%)]" />
+
+                  {/* Header de Status */}
+                  <div className="relative z-10 w-full flex items-center justify-between gap-1 pb-2 border-b border-amber-900/40">
+                    <span className={`text-[10px] sm:text-xs font-mono font-black uppercase px-2.5 py-1 rounded-full border ${
+                      isUnlocked
+                        ? 'border-ok/60 bg-ok/10 text-ok'
+                        : 'border-amber-600/40 bg-amber-950/40 text-amber-400'
+                    }`}>
+                      {isUnlocked
+                        ? (curLang === 'en' ? '✓ UNLOCKED' : curLang === 'es' ? '✓ DESBLOQUEADA' : '✓ DESBLOQUEADA')
+                        : (curLang === 'en' ? `🔒 LOCKED · REQUIRES ${selTier.min}+ DAYS` : curLang === 'es' ? `🔒 BLOQUEADA · REQUIERE ${selTier.min}+ DÍAS` : `🔒 BLOQUEADA · EXIGE ${selTier.min}+ DIAS`)}
+                    </span>
+
+                    <span className="text-[10px] font-mono text-amber-200/80">
+                      {curLang === 'en' ? `Armor ${selectedArmorIdx + 1} of ${TIERS.length}` : curLang === 'es' ? `Armadura ${selectedArmorIdx + 1} de ${TIERS.length}` : `Armadura ${selectedArmorIdx + 1} de ${TIERS.length}`}
+                    </span>
+                  </div>
+
+                  {/* 3D ou Forja Trancada */}
+                  <div className="relative z-10 my-3 w-full flex flex-col items-center justify-center min-h-[250px]">
+                    {isUnlocked ? (
+                      <ErrorBoundary>
+                        <Warrior3DCanvas
+                          tier={selTier}
+                          days={selTier.min}
+                          height={250}
+                          curLang={curLang}
+                          interactive={true}
+                          autoRotate={true}
+                        />
+                      </ErrorBoundary>
+                    ) : (
+                      <div className="h-[250px] w-full rounded-xl bg-gradient-to-b from-[#18110a] to-[#0a0704] border-2 border-dashed border-amber-900/60 flex flex-col items-center justify-center p-6 text-center select-none">
+                        <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-3xl text-amber-400 mb-3 shadow-inner">
+                          🔒
+                        </div>
+                        <span className="font-display font-black text-sm sm:text-base text-amber-400 tracking-wider">
+                          {curLang === 'en' ? 'SACRED FORGE LOCKED' : curLang === 'es' ? 'FORJA SAGRADA BLOQUEADA' : 'FORJA SAGRADA TRANCADA'}
+                        </span>
+                        <span className="text-xs font-mono text-amber-200/70 mt-2 max-w-sm">
+                          {curLang === 'en'
+                            ? `${selTier.min - d} days of clean retention remaining to temper this armor.`
+                            : curLang === 'es'
+                            ? `Faltan ${selTier.min - d} días de retención limpia para templar esta armadura.`
+                            : `Faltam ${selTier.min - d} dias de retenção limpa para temperar esta armadura.`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Descrição e Botão de Animar Guerreiro */}
+                  <div className="relative z-10 w-full mt-2">
+                    <h4 className="text-lg sm:text-xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
+                      {selTier.icon} {selTier.name}
+                    </h4>
+                    <p className="text-xs font-mono text-amber-200/80 mb-2">
+                      {selTier.subtitle || ''}
+                    </p>
+
+                    {selTier.reward && (
+                      <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2.5 text-left mb-3">
+                        <span className="text-[9px] font-mono text-amber-400 font-bold uppercase block">
+                          🎁 {curLang === 'en' ? 'WAR REWARD' : curLang === 'es' ? 'RECOMPENSA DE GUERRA' : 'RECOMPENSA DE GUERRA'}:
+                        </span>
+                        <span className="text-xs font-bold text-[#FFF2CC] block">
+                          {selTier.reward}
+                        </span>
+                      </div>
+                    )}
+
+                    {isUnlocked ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          AF.seal();
+                          setLevelUpModalTier(selTier);
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:brightness-110 border border-amber-300 text-black font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_16px_rgba(245,158,11,0.4)] cursor-pointer"
+                      >
+                        <Play size={14} className="fill-black" />
+                        <span>{curLang === 'en' ? 'ANIMATE WARRIOR ⚡' : curLang === 'es' ? 'ANIMAR GUERRERO ⚡' : 'ANIMAR GUERREIRO ⚡'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="w-full py-2.5 px-4 rounded-xl bg-amber-950/30 border border-amber-900/40 text-amber-400/50 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
+                      >
+                        <Lock size={13} />
+                        <span>
+                          {curLang === 'en'
+                            ? `LOCKED · REACH ${selTier.min} DAYS`
+                            : curLang === 'es'
+                            ? `BLOQUEADO · ALCANZA ${selTier.min} DÍAS`
+                            : `BLOQUEADO · ALCANCE ${selTier.min} DIAS`}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* 3. REGRAS & SLOTS */}
       {activeCategory === 'rules' && (
         <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
@@ -1093,6 +1288,16 @@ export default function ForgeView() {
             )}
           </Card>
         </div>
+      )}
+
+      {/* MODAL DE CELEBRAÇÃO / ANIMAÇÃO DE NÍVEL */}
+      {levelUpModalTier && (
+        <WarriorLevelUpModal
+          tier={levelUpModalTier}
+          currentDays={d}
+          lang={curLang}
+          onClose={() => setLevelUpModalTier(null)}
+        />
       )}
     </div>
   );
