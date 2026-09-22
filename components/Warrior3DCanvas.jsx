@@ -276,156 +276,318 @@ function getTier3DConfig(minDays = 0) {
   };
 }
 
-/* --- CONFIGURAÇÃO E DESENHO DOS ESTANDARTES MEDIEVAIS DOS 3 PILARES --- */
-const BANNER_CONFIGS = {
+/* --- CONFIGURAÇÃO E DESENHO DOS ESTANDARTES HERÁLDICOS DOS 3 PILARES (PURO BRASÃO MEDIEVAL) --- */
+const BANNER_THEMES = {
   ret: {
-    title: { pt: 'RETENÇÃO', en: 'RETENTION', es: 'RETENCIÓN' },
-    icon: '🔥',
-    bgTop: '#5c0f06',
-    bgMid: '#320803',
-    bgBot: '#150301',
-    trim: '#f59e0b',
-    trimSecondary: '#fef08a',
-    numColor: '#ffd566',
+    bgTop: '#680e05',
+    bgMid: '#380602',
+    bgBot: '#180201',
+    border: '#f59e0b',
+    borderInner: '#fef08a',
+    accent: '#ffd166',
   },
   porn: {
-    title: { pt: 'SEM PORNÔ', en: 'NO PORN', es: 'SIN PORNO' },
-    icon: '🛡️',
-    bgTop: '#0b2a52',
-    bgMid: '#061932',
-    bgBot: '#020a16',
-    trim: '#38bdf8',
-    trimSecondary: '#bae6fd',
-    numColor: '#7dd3fc',
+    bgTop: '#0d3266',
+    bgMid: '#061c3d',
+    bgBot: '#020d1c',
+    border: '#38bdf8',
+    borderInner: '#bae6fd',
+    accent: '#e0f2fe',
   },
   mast: {
-    title: { pt: 'SEM MASTURBAÇÃO', en: 'NO MASTURBATION', es: 'SIN MASTURBACIÓN' },
-    icon: '⚒️',
-    bgTop: '#421f06',
-    bgMid: '#241002',
-    bgBot: '#0f0601',
-    trim: '#fb923c',
-    trimSecondary: '#fed7aa',
-    numColor: '#fdba74',
+    bgTop: '#4d2408',
+    bgMid: '#291203',
+    bgBot: '#120701',
+    border: '#fb923c',
+    borderInner: '#fed7aa',
+    accent: '#ffedd5',
   },
 };
 
-function drawMedievalBanner(canvas, data, curLang, type) {
+function drawMedievalBanner(canvas, type) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const w = canvas.width;
   const h = canvas.height;
-  const cfg = BANNER_CONFIGS[type] || BANNER_CONFIGS.ret;
-  const langKey = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
-  const title = (cfg.title && cfg.title[langKey]) || cfg.title.pt;
-  const daysNum = data && typeof data.days === 'number' ? data.days : 0;
-  const dayUnit = daysNum === 1
-    ? (langKey === 'en' ? 'DAY' : langKey === 'es' ? 'DÍA' : 'DIA')
-    : (langKey === 'en' ? 'DAYS' : langKey === 'es' ? 'DÍAS' : 'DIAS');
+  const theme = BANNER_THEMES[type] || BANNER_THEMES.ret;
 
   ctx.clearRect(0, 0, w, h);
 
-  // Formato do Estandarte Medieval: Corte chanfrado swallowtail (duas pontas inferiores)
+  // 1. Corte do Estandarte Medieval: Swallowtail chanfrado heráldico
   ctx.beginPath();
-  ctx.moveTo(14, 14);
-  ctx.lineTo(w - 14, 14);
-  ctx.lineTo(w - 14, h - 75);
-  ctx.lineTo(w / 2, h - 25); // Chanfrado central
-  ctx.lineTo(14, h - 75);
+  ctx.moveTo(16, 16);
+  ctx.lineTo(w - 16, 16);
+  ctx.lineTo(w - 16, h - 90);
+  ctx.lineTo(w / 2, h - 32); // V chanfrado central
+  ctx.lineTo(16, h - 90);
   ctx.closePath();
 
-  // Fundo gradiente tapeçaria medieval
+  // 2. Fundo de Tapeçaria Imperial com Degradê Nobre
   const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-  bgGrad.addColorStop(0, cfg.bgTop);
-  bgGrad.addColorStop(0.5, cfg.bgMid);
-  bgGrad.addColorStop(1, cfg.bgBot);
+  bgGrad.addColorStop(0, theme.bgTop);
+  bgGrad.addColorStop(0.5, theme.bgMid);
+  bgGrad.addColorStop(1, theme.bgBot);
   ctx.fillStyle = bgGrad;
   ctx.fill();
 
-  // Textura sutil de tecido artesanal
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
-  for (let y = 16; y < h - 70; y += 4) {
-    ctx.fillRect(16, y, w - 32, 1.5);
+  // 3. Textura fina de tecido adamascado artesanal
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+  for (let y = 20; y < h - 85; y += 6) {
+    ctx.fillRect(20, y, w - 40, 2);
   }
 
-  // Borda grossa bordada (fio de ouro / prata / bronze)
-  ctx.strokeStyle = cfg.trim;
-  ctx.lineWidth = 5;
+  // 4. Borda externa bordada em fio metálico nobre
+  ctx.strokeStyle = theme.border;
+  ctx.lineWidth = 6;
   ctx.stroke();
 
-  // Borda interna ornamental refinada
+  // 5. Borda interna com filigrana
   ctx.beginPath();
-  ctx.moveTo(24, 24);
-  ctx.lineTo(w - 24, 24);
-  ctx.lineTo(w - 24, h - 85);
-  ctx.lineTo(w / 2, h - 35);
-  ctx.lineTo(24, h - 85);
+  ctx.moveTo(28, 28);
+  ctx.lineTo(w - 28, 28);
+  ctx.lineTo(w - 28, h - 100);
+  ctx.lineTo(w / 2, h - 44);
+  ctx.lineTo(28, h - 100);
   ctx.closePath();
-  ctx.strokeStyle = cfg.trimSecondary || 'rgba(255, 255, 255, 0.35)';
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = theme.borderInner;
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Detalhes decorativos de ilhós/costura superior
-  ctx.fillStyle = cfg.trim;
-  for (let x = 32; x < w - 32; x += 22) {
-    ctx.fillRect(x, 16, 10, 6);
+  // 6. Ilhós e laçadas superiores de fixação ao mastro
+  ctx.fillStyle = theme.border;
+  for (let x = 38; x < w - 38; x += 28) {
+    ctx.fillRect(x, 18, 12, 8);
   }
 
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  // 7. BRASÃO CENTRAL HERÁLDICO IMPONENTE (Simétrico, Puro Símbolo, Zero Texto)
+  const cx = w / 2;
+  const cy = h * 0.44;
 
-  // 1. Ícone Heráldico
-  ctx.font = '52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.shadowColor = cfg.trim;
-  ctx.shadowBlur = 12;
-  ctx.fillText(cfg.icon, w / 2, 75);
-  ctx.shadowBlur = 0;
+  if (type === 'ret') {
+    // --- BRASÃO DA RETENÇÃO: A GRANDE CHAMA SOLAR ETERNA ---
+    // Resplendor Solar Circular Externo
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+    ctx.lineWidth = 3;
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * 95, cy + Math.sin(a) * 95);
+      ctx.lineTo(cx + Math.cos(a) * 122, cy + Math.sin(a) * 122);
+      ctx.stroke();
+    }
 
-  // 2. Nome do Pilar em Caixa Alta Chivalric
-  ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-  ctx.shadowBlur = 8;
-  ctx.fillText(title, w / 2, 138);
-  ctx.shadowBlur = 0;
+    // Escudo/Medalhão Central de Ouro Forjado
+    ctx.beginPath();
+    ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+    const goldGrad = ctx.createLinearGradient(cx - 90, cy - 90, cx + 90, cy + 90);
+    goldGrad.addColorStop(0, '#591204');
+    goldGrad.addColorStop(0.5, '#290601');
+    goldGrad.addColorStop(1, '#120200');
+    ctx.fillStyle = goldGrad;
+    ctx.fill();
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 5;
+    ctx.stroke();
 
-  // Divisor ornamental sob o título
-  ctx.strokeStyle = cfg.trim;
-  ctx.lineWidth = 2;
+    // Aro dourado interno com rebites
+    ctx.beginPath();
+    ctx.arc(cx, cy, 80, 0, Math.PI * 2);
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // A Chama Solar Majestosa (Camada Externa de Fogo)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 65);
+    ctx.bezierCurveTo(cx + 45, cy - 35, cx + 55, cy + 25, cx, cy + 55);
+    ctx.bezierCurveTo(cx - 55, cy + 25, cx - 45, cy - 35, cx, cy - 65);
+    const flameGrad = ctx.createLinearGradient(cx, cy + 55, cx, cy - 65);
+    flameGrad.addColorStop(0, '#dc2626');
+    flameGrad.addColorStop(0.4, '#f59e0b');
+    flameGrad.addColorStop(0.8, '#fef08a');
+    flameGrad.addColorStop(1, '#ffffff');
+    ctx.fillStyle = flameGrad;
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur = 18;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Núcleo Solar Branco-Dourado Interno da Chama
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 40);
+    ctx.bezierCurveTo(cx + 25, cy - 15, cx + 28, cy + 25, cx, cy + 42);
+    ctx.bezierCurveTo(cx - 28, cy + 25, cx - 25, cy - 15, cx, cy - 40);
+    ctx.fillStyle = '#fffbeb';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Ramalhete de Louros Heráldicos Dourados na Base do Estandarte
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy + 85, 45, Math.PI * 0.8, Math.PI * 0.2, true);
+    ctx.stroke();
+    ctx.restore();
+
+  } else if (type === 'porn') {
+    // --- BRASÃO DO SEM PORNÔ: O ESCUDO SAGRADO & OLHO DA VIGILÂNCIA MENTAL ---
+    ctx.save();
+    // Halo Celestial de Safira
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.lineWidth = 3;
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * 98, cy + Math.sin(a) * 98);
+      ctx.lineTo(cx + Math.cos(a) * 124, cy + Math.sin(a) * 124);
+      ctx.stroke();
+    }
+
+    // Grande Escudo de Cavaleiro Templário
+    ctx.beginPath();
+    ctx.moveTo(cx - 68, cy - 75);
+    ctx.lineTo(cx + 68, cy - 75);
+    ctx.lineTo(cx + 68, cy + 15);
+    ctx.bezierCurveTo(cx + 65, cy + 65, cx + 25, cy + 95, cx, cy + 110);
+    ctx.bezierCurveTo(cx - 25, cy + 95, cx - 65, cy + 65, cx - 68, cy + 15);
+    ctx.closePath();
+
+    const shieldGrad = ctx.createLinearGradient(cx - 68, cy - 75, cx + 68, cy + 110);
+    shieldGrad.addColorStop(0, '#0f2744');
+    shieldGrad.addColorStop(0.5, '#071626');
+    shieldGrad.addColorStop(1, '#020912');
+    ctx.fillStyle = shieldGrad;
+    ctx.fill();
+
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Cruz de Platina & Olho Rúnico no Centro do Escudo
+    ctx.beginPath();
+    ctx.moveTo(cx - 52, cy - 7);
+    ctx.lineTo(cx + 52, cy - 7);
+    ctx.moveTo(cx, cy - 58);
+    ctx.lineTo(cx, cy + 68);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Olho Sagrado de Pureza e Foco Inabalável
+    ctx.beginPath();
+    ctx.moveTo(cx - 38, cy - 7);
+    ctx.quadraticCurveTo(cx, cy - 35, cx + 38, cy - 7);
+    ctx.quadraticCurveTo(cx, cy + 22, cx - 38, cy - 7);
+    ctx.closePath();
+    ctx.fillStyle = '#061729';
+    ctx.fill();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = '#38bdf8';
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Íris e Pupila Brilhante de Safira
+    ctx.beginPath();
+    ctx.arc(cx, cy - 7, 14, 0, Math.PI * 2);
+    ctx.fillStyle = '#38bdf8';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy - 7, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = '#ffffff';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+  } else {
+    // --- BRASÃO DO SEM MASTURBAÇÃO: MARTELOS DE GUERRA & BIGORNA DE FERRO ---
+    ctx.save();
+    // Halo de Brasas Forjadas
+    ctx.strokeStyle = 'rgba(251, 146, 60, 0.35)';
+    ctx.lineWidth = 3;
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * 95, cy + Math.sin(a) * 95);
+      ctx.lineTo(cx + Math.cos(a) * 122, cy + Math.sin(a) * 122);
+      ctx.stroke();
+    }
+
+    // Escudo/Medalhão de Bronze Forjado
+    ctx.beginPath();
+    ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+    const bronzeGrad = ctx.createLinearGradient(cx - 90, cy - 90, cx + 90, cy + 90);
+    bronzeGrad.addColorStop(0, '#421f08');
+    bronzeGrad.addColorStop(0.5, '#210e03');
+    bronzeGrad.addColorStop(1, '#0d0501');
+    ctx.fillStyle = bronzeGrad;
+    ctx.fill();
+    ctx.strokeStyle = '#fb923c';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Martelo 1 Cruzado (Diagonal Noroeste-Sudeste)
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(-5, -60, 10, 120); // Cabo de madeira
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(-18, -65, 36, 20); // Cabeça de aço
+    ctx.restore();
+
+    // Martelo 2 Cruzado (Diagonal Nordeste-Sudoeste)
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(-5, -60, 10, 120); // Cabo de madeira
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(-18, -65, 36, 20); // Cabeça de aço
+    ctx.restore();
+
+    // A Bigorna de Ferro Forjado no Centro
+    ctx.beginPath();
+    ctx.moveTo(cx - 42, cy + 5);
+    ctx.lineTo(cx + 42, cy + 5);
+    ctx.lineTo(cx + 34, cy + 22);
+    ctx.lineTo(cx + 18, cy + 22);
+    ctx.lineTo(cx + 28, cy + 46);
+    ctx.lineTo(cx - 28, cy + 46);
+    ctx.lineTo(cx - 18, cy + 22);
+    ctx.lineTo(cx - 34, cy + 22);
+    ctx.closePath();
+
+    const anvilGrad = ctx.createLinearGradient(cx, cy + 5, cx, cy + 46);
+    anvilGrad.addColorStop(0, '#fed7aa');
+    anvilGrad.addColorStop(0.4, '#ea580c');
+    anvilGrad.addColorStop(1, '#7c2d12');
+    ctx.fillStyle = anvilGrad;
+    ctx.shadowColor = '#ea580c';
+    ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#fed7aa';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Elos de Corrente de Autodomínio na Base
+    ctx.strokeStyle = '#fb923c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy + 85, 42, Math.PI * 0.8, Math.PI * 0.2, true);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 8. Flor-de-lis / Pomo Heráldico na Ponta Inferior do Estandarte
   ctx.beginPath();
-  ctx.moveTo(w / 2 - 90, 166);
-  ctx.lineTo(w / 2 + 90, 166);
-  ctx.stroke();
-
-  ctx.fillStyle = cfg.trim;
-  ctx.beginPath();
-  ctx.arc(w / 2, 166, 5, 0, Math.PI * 2);
+  ctx.arc(cx, h - 30, 8, 0, Math.PI * 2);
+  ctx.fillStyle = theme.border;
   ctx.fill();
-
-  // 3. Dias (Número Heroico)
-  ctx.font = '900 112px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  const numGrad = ctx.createLinearGradient(0, 190, 0, 310);
-  numGrad.addColorStop(0, '#ffffff');
-  numGrad.addColorStop(0.35, '#fff6e5');
-  numGrad.addColorStop(1, cfg.numColor || cfg.trim);
-  ctx.fillStyle = numGrad;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-  ctx.shadowBlur = 14;
-  ctx.fillText(`${daysNum}`, w / 2, 260);
-  ctx.shadowBlur = 0;
-
-  // 4. Unidade de Tempo (DIAS / DAYS / DÍAS)
-  ctx.font = '900 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = cfg.trim;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
-  ctx.shadowBlur = 8;
-  ctx.fillText(dayUnit, w / 2, 340);
-  ctx.shadowBlur = 0;
-
-  // Franja / lema de honra inferior
-  ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.fillText('⚔️ FORJA ⚔️', w / 2, 400);
 }
 
 export default function Warrior3DCanvas({
@@ -606,8 +768,8 @@ export default function Warrior3DCanvas({
     });
 
     // --- 3 ESTANDARTES MEDIEVAIS HASTEADOS NO PEDESTAL (GIRAM COM A PLATAFORMA) ---
-    const bannerWidth = 360;
-    const bannerHeight = 540;
+    const bannerWidth = 480;
+    const bannerHeight = 720;
 
     const bannerCanvases = {
       ret: document.createElement('canvas'),
@@ -621,32 +783,38 @@ export default function Warrior3DCanvas({
     bannerCanvases.mast.width = bannerWidth;
     bannerCanvases.mast.height = bannerHeight;
 
+    // Desenhar os 3 brasões heráldicos simétricos de alta nobreza
+    drawMedievalBanner(bannerCanvases.ret, 'ret');
+    drawMedievalBanner(bannerCanvases.porn, 'porn');
+    drawMedievalBanner(bannerCanvases.mast, 'mast');
+
     const bannerTextures = {
       ret: new THREE.CanvasTexture(bannerCanvases.ret),
       porn: new THREE.CanvasTexture(bannerCanvases.porn),
       mast: new THREE.CanvasTexture(bannerCanvases.mast),
     };
 
-    const updateAllBanners = (pData, pLang) => {
-      const currentPData = pData || pillarsDataRef.current || {
-        ret: { days: days || 0 },
-        porn: { days: days || 0 },
-        mast: { days: days || 0 },
-      };
-      const currentLang = pLang || curLangRef.current || 'pt';
+    // Nitidez máxima em qualquer ângulo e dispositivo
+    try {
+      const maxAniso = renderer.capabilities.getMaxAnisotropy();
+      bannerTextures.ret.anisotropy = maxAniso;
+      bannerTextures.porn.anisotropy = maxAniso;
+      bannerTextures.mast.anisotropy = maxAniso;
+    } catch (e) {}
 
-      drawMedievalBanner(bannerCanvases.ret, currentPData.ret, currentLang, 'ret');
+    const updateAllBanners = () => {
+      drawMedievalBanner(bannerCanvases.ret, 'ret');
       bannerTextures.ret.needsUpdate = true;
 
-      drawMedievalBanner(bannerCanvases.porn, currentPData.porn, currentLang, 'porn');
+      drawMedievalBanner(bannerCanvases.porn, 'porn');
       bannerTextures.porn.needsUpdate = true;
 
-      drawMedievalBanner(bannerCanvases.mast, currentPData.mast, currentLang, 'mast');
+      drawMedievalBanner(bannerCanvases.mast, 'mast');
       bannerTextures.mast.needsUpdate = true;
     };
 
     updateBannersRef.current = updateAllBanners;
-    updateAllBanners(pillarsDataRef.current, curLangRef.current);
+    updateAllBanners();
 
     // Geometria dos 3 estandartes medievais hasteados nos cantos do pedestal
     const bannerDef = [

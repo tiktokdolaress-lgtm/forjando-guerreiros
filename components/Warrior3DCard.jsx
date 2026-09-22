@@ -180,6 +180,77 @@ export default function Warrior3DCard({
     },
   };
 
+  const PILLAR_HUDS = [
+    {
+      id: 0,
+      key: 'ret',
+      icon: '🔥',
+      title: { pt: 'RETENÇÃO SOLAR', en: 'SOLAR RETENTION', es: 'RETENCIÓN SOLAR' },
+      shortName: { pt: 'Retenção', en: 'Retention', es: 'Retención' },
+      doctrine: {
+        pt: 'Fogo Vital Solar & Transmutação',
+        en: 'Solar Vital Fire & Transmutation',
+        es: 'Fuego Vital Solar y Transmutación',
+      },
+      accentBorder: 'border-amber-500/70',
+      accentBg: 'bg-amber-950/40',
+      accentGlow: 'shadow-[0_0_24px_rgba(245,158,11,0.22)]',
+      textColor: 'text-amber-300',
+      glowRing: 'ring-2 ring-amber-400/50',
+      badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+      numGradient: 'from-[#FFFEEA] via-[#FFD152] to-[#F59E0B]',
+      timerColor: 'text-amber-300',
+      timerBox: 'border-amber-800/40 bg-black/40',
+    },
+    {
+      id: 1,
+      key: 'porn',
+      icon: '🛡️',
+      title: { pt: 'SEM PORNOGRAFIA', en: 'NO PORNOGRAPHY', es: 'SIN PORNOGRAFÍA' },
+      shortName: { pt: 'Sem Pornô', en: 'No Porn', es: 'Sin Porno' },
+      doctrine: {
+        pt: 'Visão Pura, Dopamina & Foco',
+        en: 'Pure Vision, Dopamine & Focus',
+        es: 'Visión Pura, Dopamina y Foco',
+      },
+      accentBorder: 'border-sky-500/70',
+      accentBg: 'bg-sky-950/40',
+      accentGlow: 'shadow-[0_0_24px_rgba(56,189,248,0.22)]',
+      textColor: 'text-sky-300',
+      glowRing: 'ring-2 ring-sky-400/50',
+      badgeBg: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+      numGradient: 'from-[#E0F2FE] via-[#7DD3FC] to-[#0284C7]',
+      timerColor: 'text-sky-300',
+      timerBox: 'border-sky-800/40 bg-black/40',
+    },
+    {
+      id: 2,
+      key: 'mast',
+      icon: '⚒️',
+      title: { pt: 'SEM MASTURBAÇÃO', en: 'NO MASTURBATION', es: 'SIN MASTURBACIÓN' },
+      shortName: { pt: 'Sem Masturbação', en: 'No Masturbation', es: 'Sin Masturbación' },
+      doctrine: {
+        pt: 'Autodomínio de Ferro & Vontade',
+        en: 'Iron Self-Mastery & Willpower',
+        es: 'Autodominio de Hierro y Voluntad',
+      },
+      accentBorder: 'border-orange-500/70',
+      accentBg: 'bg-orange-950/40',
+      accentGlow: 'shadow-[0_0_24px_rgba(251,146,60,0.22)]',
+      textColor: 'text-orange-300',
+      glowRing: 'ring-2 ring-orange-400/50',
+      badgeBg: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
+      numGradient: 'from-[#FFEDD5] via-[#FB923C] to-[#C2410C]',
+      timerColor: 'text-orange-300',
+      timerBox: 'border-orange-800/40 bg-black/40',
+    },
+  ];
+
+  const curPillar = PILLAR_HUDS[selectedPillar] || PILLAR_HUDS[0];
+  const pData = pillarsData && pillarsData[curPillar.key] ? pillarsData[curPillar.key] : null;
+  const pillarDays = pData && typeof pData.days === 'number' ? pData.days : d;
+  const pillarTimer = (pData && pData.timer) || '00h:00m:00s';
+
   const handleSelectPillar = (idx) => {
     try { AF.click(); } catch (e) {}
     setSelectedPillar(idx);
@@ -257,62 +328,76 @@ export default function Warrior3DCard({
           />
         </ErrorBoundary>
 
-        {/* SELETOR INTERATIVO RÁPIDO DOS 3 PILARES GIRATÓRIOS DO PEDESTAL COM CONTADOR DE HORAS */}
-        <div className="mt-1 mb-2 flex items-center justify-center gap-2 sm:gap-3.5 flex-wrap z-20">
-          {/* Pilar 0: Retenção */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => handleSelectPillar(0)}
-              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
-                selectedPillar === 0
-                  ? 'bg-amber-500 text-black border-amber-300 ring-2 ring-amber-400/50 font-black'
-                  : 'bg-amber-950/50 text-amber-300 border-amber-700/50 hover:bg-amber-900/50'
-              }`}
-            >
-              <span>🔥</span>
-              <span>{TXT.ret[curLang] || TXT.ret.pt}</span>
-            </button>
-            <span className="text-[9px] sm:text-[9.5px] font-mono text-amber-400/90 font-bold tracking-tight">
-              {pillarsData?.ret?.timer || '00h:00m:00s'}
-            </span>
+        {/* SELETOR INTERATIVO MINIMALISTA DOS 3 ESTANDARTES HERÁLDICOS */}
+        <div className="mt-1 mb-2.5 flex items-center justify-center gap-2 sm:gap-3 flex-wrap z-20">
+          {PILLAR_HUDS.map((p) => {
+            const isSelected = selectedPillar === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => handleSelectPillar(p.id)}
+                className={`px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1.5 shadow-sm cursor-pointer ${
+                  isSelected
+                    ? `${p.textColor} ${p.accentBorder} ${p.glowRing} bg-black/80 font-black scale-105`
+                    : 'bg-black/40 text-stone-400 border-stone-800/80 hover:border-stone-700 hover:text-stone-200'
+                }`}
+              >
+                <span>{p.icon}</span>
+                <span>{p.shortName[curLang] || p.shortName.pt}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* HUD NÍTIDO DO PILAR EM FOCO (ALTA DEFINIÇÃO E CONTRASTE PERFEITO) */}
+        <div className={`w-full max-w-md mx-auto rounded-xl p-2.5 sm:p-3 border transition-all duration-300 ${curPillar.accentBorder} ${curPillar.accentBg} ${curPillar.accentGlow}`}>
+          <div className="flex items-center justify-between gap-2 border-b border-amber-900/30 pb-2 mb-2">
+            <div className="flex items-center gap-2.5 text-left min-w-0">
+              <span className="text-2xl sm:text-3xl drop-shadow flex-none">{curPillar.icon}</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h4 className={`text-xs sm:text-sm font-display font-black tracking-wider uppercase truncate ${curPillar.textColor}`}>
+                    {curPillar.title[curLang] || curPillar.title.pt}
+                  </h4>
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-black border uppercase tracking-wider ${curPillar.badgeBg}`}>
+                    {curLang === 'en' ? 'IN FOCUS' : curLang === 'es' ? 'EN FOCO' : 'ESTANDARTE EM FOCO'}
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[11px] font-mono text-stone-300/80 truncate">
+                  {curPillar.doctrine[curLang] || curPillar.doctrine.pt}
+                </p>
+              </div>
+            </div>
+
+            {/* Contador de Dias do Pilar em Alta Resolução */}
+            <div className="flex flex-col items-end text-right flex-none pl-1">
+              <div className="flex items-baseline gap-1">
+                <span className={`text-2xl sm:text-3xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b ${curPillar.numGradient} leading-none`}>
+                  {pillarDays}
+                </span>
+                <span className="text-[10px] sm:text-xs font-mono font-black text-stone-300 uppercase">
+                  {pillarDays === 1
+                    ? (curLang === 'en' ? 'DAY' : curLang === 'es' ? 'DÍA' : 'DIA')
+                    : (curLang === 'en' ? 'DAYS' : curLang === 'es' ? 'DÍAS' : 'DIAS')}
+                </span>
+              </div>
+              <span className="text-[8px] font-mono text-stone-400/90 tracking-tight uppercase">
+                {curLang === 'en' ? 'CURRENT STREAK' : curLang === 'es' ? 'RACHA ACTUAL' : 'TEMPO EM VIGÍLIA'}
+              </span>
+            </div>
           </div>
 
-          {/* Pilar 1: Sem Pornô */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => handleSelectPillar(1)}
-              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
-                selectedPillar === 1
-                  ? 'bg-sky-500 text-black border-sky-300 ring-2 ring-sky-400/50 font-black'
-                  : 'bg-sky-950/50 text-sky-300 border-sky-700/50 hover:bg-sky-900/50'
-              }`}
-            >
-              <span>🛡️</span>
-              <span>{TXT.porn[curLang] || TXT.porn.pt}</span>
-            </button>
-            <span className="text-[9px] sm:text-[9.5px] font-mono text-sky-300/90 font-bold tracking-tight">
-              {pillarsData?.porn?.timer || '00h:00m:00s'}
-            </span>
-          </div>
-
-          {/* Pilar 2: Sem Masturbação */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              type="button"
-              onClick={() => handleSelectPillar(2)}
-              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
-                selectedPillar === 2
-                  ? 'bg-orange-500 text-black border-orange-300 ring-2 ring-orange-400/50 font-black'
-                  : 'bg-orange-950/50 text-orange-300 border-orange-700/50 hover:bg-orange-900/50'
-              }`}
-            >
-              <span>⚒️</span>
-              <span>{TXT.mast[curLang] || TXT.mast.pt}</span>
-            </button>
-            <span className="text-[9px] sm:text-[9.5px] font-mono text-orange-300/90 font-bold tracking-tight">
-              {pillarsData?.mast?.timer || '00h:00m:00s'}
+          {/* Barra do Cronômetro ao Vivo com Relógio de Precisão */}
+          <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg border ${curPillar.timerBox}`}>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">⏱️</span>
+              <span className="text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wide text-stone-300">
+                {curLang === 'en' ? 'LIVE PRECISION CLOCK' : curLang === 'es' ? 'RELOJ DE PRECISIÓN EN VIVO' : 'CRONÔMETRO DE PRECISÃO'}
+              </span>
+            </div>
+            <span className={`text-xs sm:text-sm font-mono font-black tracking-wider ${curPillar.timerColor}`}>
+              {pillarTimer}
             </span>
           </div>
         </div>
