@@ -67,11 +67,43 @@ const BIO_EFFECTS_I18N = {
       }
     },
     {
-      min: 91, max: 9999,
+      min: 91, max: 120,
       perks: {
-        pt: ['Transmutação biológica completa', 'Padrão inquebrável de conduta', 'Mestre absoluto da própria mente'],
-        en: ['Complete biological transmutation', 'Unbreakable standard of conduct', 'Absolute master of your own mind'],
-        es: ['Transmutación biológica completa', 'Estándar inquebrantable de conducta', 'Amo absoluto de la propia mente'],
+        pt: ['Blindagem neural contra recaídas tardias', 'Foco cirúrgico em metas de vida e carreira', 'Paz mental profunda e presença inabalável'],
+        en: ['Neural shield against late-stage relapses', 'Surgical focus on life & career goals', 'Deep mental peace and unshakable presence'],
+        es: ['Blindaje neural contra recaídas tardías', 'Enfoque quirúrgico en metas de vida y carrera', 'Paz mental profunda y presencia inquebrantable'],
+      }
+    },
+    {
+      min: 121, max: 180,
+      perks: {
+        pt: ['Aço de Damasco mental: 6 meses limpo', 'Cérebro completamente reconfigurado', 'Fogo criativo alimentando novos impérios'],
+        en: ['Mental Damascus steel: 6 months clean', 'Brain fully rewired and reset', 'Creative fire fueling new empires'],
+        es: ['Acero de Damasco mental: 6 meses limpio', 'Cerebro completamente reconfigurado', 'Fuego creativo alimentando nuevos imperios'],
+      }
+    },
+    {
+      min: 181, max: 270,
+      perks: {
+        pt: ['Transmutação seminal em força física e patrimônio', 'Aura magnética e liderança natural', 'Zero necessidade de aprovação externa'],
+        en: ['Seminal transmutation into wealth & physical power', 'Magnetic aura and natural leadership', 'Zero need for external validation'],
+        es: ['Transmutación seminal en riqueza y fuerza física', 'Aura magnética y liderazgo natural', 'Cero necesidad de aprobación externa'],
+      }
+    },
+    {
+      min: 271, max: 365,
+      perks: {
+        pt: ['1 Ano Completo: soberania absoluta da mente', 'Poder transformador de legado e exemplo', 'O homem forjado que você prometeu se tornar'],
+        en: ['1 Full Year: absolute mind sovereignty', 'Transformative power of legacy and example', 'The forged man you swore to become'],
+        es: ['1 Año Completo: soberanía mental absoluta', 'Poder transformador de legado y ejemplo', 'El hombre forjado que prometiste ser'],
+      }
+    },
+    {
+      min: 366, max: 9999,
+      perks: {
+        pt: ['Mito vivo: 2+ anos de disciplina suprema', 'Panteão dos mestres inquebrantáveis', 'Caráter de aço eterno'],
+        en: ['Living myth: 2+ years of supreme discipline', 'Pantheon of unshakable masters', 'Eternal steel character'],
+        es: ['Mito vivo: 2+ años de disciplina suprema', 'Panteón de maestros inquebrantables', 'Carácter de acero eterno'],
       }
     },
   ]
@@ -488,7 +520,7 @@ export default function QgView() {
                 <span>{tier.name}</span>
               </span>
               <span className="text-[9.5px] sm:text-[10px] text-muted font-mono truncate">
-                {tier.min >= 90 ? t('prog_aura') : `${d}d ${t('of_w')} 90d`}
+                {nt ? `${d}d ${t('of_w')} ${nt.min}d` : t('lvl_max')}
               </span>
             </div>
           </div>
@@ -524,8 +556,8 @@ export default function QgView() {
           {/* Avatar Recortado do Guerreiro (Animado com respiração e elevação) */}
           <div className="relative z-10 flex flex-col items-center justify-end w-full">
             <img
-              src="/escudeiro.png"
-              alt="Guerreiro da Forja"
+              src={tier.image || "/escudeiro.png"}
+              alt={tier.name || "Guerreiro da Forja"}
               className="h-[220px] min-[390px]:h-[250px] sm:h-[300px] md:h-[330px] w-auto max-w-full object-contain filter drop-shadow-[0_16px_28px_rgba(0,0,0,0.98)] drop-shadow-[0_0_24px_rgba(245,158,11,0.25)] anim-warrior-breathe select-none pointer-events-none"
             />
 
@@ -534,7 +566,7 @@ export default function QgView() {
               <div className="h-6 sm:h-7 rounded-t-lg bg-gradient-to-r from-[#1f160e] via-[#3d2712] to-[#1f160e] border-t-2 border-x-2 border-amber-600/70 shadow-[0_6px_20px_rgba(0,0,0,0.95)] flex items-center justify-between px-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
                 <span className="text-[8.5px] sm:text-[10px] font-mono font-black uppercase tracking-wider text-amber-200 truncate">
-                  ⚔️ {tier.name} · {tier.subtitle || 'INICIADO DA FORJA'}
+                  ⚔️ {tier.name} {tier.subtitle ? `· ${tier.subtitle}` : ''}
                 </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
               </div>
@@ -1123,13 +1155,13 @@ export default function QgView() {
                   {curLang === 'en' ? 'Biological Evolution & Tactics' : curLang === 'es' ? 'Evolución Biológica y Táctica' : 'Evolução Biológica & Protocolo'}
                 </span>
                 <span className="text-[10px] text-gold/80 font-mono truncate">
-                  Fase {tier.name} · {Math.min(100, Math.max(7, Math.round((d / 90) * 100)))}% Restauração
+                  {curLang === 'en' ? 'Phase' : curLang === 'es' ? 'Fase' : 'Fase'} {tier.name} · {Math.min(100, Math.max(7, Math.round((d / 90) * 100)))}% {curLang === 'en' ? 'Reset' : curLang === 'es' ? 'Restauración' : 'Restauração'}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-1 text-muted flex-none pl-2">
               <span className="text-[10px] uppercase font-bold text-gold/70 hidden sm:inline">
-                {showTacticsAccordion ? 'Fechar' : 'Explorar'}
+                {showTacticsAccordion ? (curLang === 'en' ? 'Close' : curLang === 'es' ? 'Cerrar' : 'Fechar') : (curLang === 'en' ? 'Explore' : curLang === 'es' ? 'Explorar' : 'Explorar')}
               </span>
               {showTacticsAccordion ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} />}
             </div>
