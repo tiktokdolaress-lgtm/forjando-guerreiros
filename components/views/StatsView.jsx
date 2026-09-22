@@ -61,6 +61,53 @@ export default function StatsView() {
       .catch(() => setHall([]));
   }, []);
 
+  /* Auditoria de Quedas & Gatilhos */
+  const auditFalls = useMemo(() => {
+    if (!S || !Array.isArray(S.audit)) return [];
+    return [...S.audit].sort(
+      (a, b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0)
+    );
+  }, [S]);
+
+  const triggerRank = useMemo(() => {
+    const counts = {};
+    auditFalls.forEach((f) => {
+      if (Array.isArray(f.triggers)) {
+        f.triggers.forEach((trg) => {
+          counts[trg] = (counts[trg] || 0) + 1;
+        });
+      }
+    });
+
+    const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    return Object.entries(counts)
+      .map(([id, count]) => ({
+        id,
+        name: TRIGGER_LABELS[id] || id,
+        count,
+        pct: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [auditFalls]);
+
+  /* Linha do Tempo Analítica */
+  const timelineData = useMemo(() => {
+    let cells = [], wins = 0, falls = 0, part = 0;
+    if (!S) return { cells, wins, falls, part, rate: 0 };
+    for (let i = timelineRange - 1; i >= 0; i--) {
+      const ds = dstr(new Date(Date.now() - i * 86400000));
+      const cc = (S.checkins || {})[ds];
+      let cls = '', lab = 'Sem registro';
+      if (cc && cc.fail) { cls = 'f'; falls++; lab = 'Queda'; }
+      else if (cc && cc.ok) { cls = 'w'; wins++; lab = 'Vitória'; }
+      else if (cc && (cc.p || cc.m || cc.r)) { cls = 'p'; part++; lab = 'Parcial'; }
+      cells.push({ ds, cls, lab });
+    }
+    const rate = Math.round((wins / timelineRange) * 100);
+    return { cells, wins, falls, part, rate };
+  }, [S, timelineRange]);
+
   if (!S) return null;
 
   const d = L.progressDays(S);
@@ -110,52 +157,6 @@ export default function StatsView() {
   const sosHist = Array.isArray(S.sosLog) ? S.sosLog.slice(-12).reverse() : [];
   const wr = L.weekReport(S);
   const us = L.urgeStats(S);
-
-  /* Auditoria de Quedas & Gatilhos */
-  const auditFalls = useMemo(() => {
-    if (!Array.isArray(S.audit)) return [];
-    return [...S.audit].sort(
-      (a, b) => new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0)
-    );
-  }, [S.audit]);
-
-  const triggerRank = useMemo(() => {
-    const counts = {};
-    auditFalls.forEach((f) => {
-      if (Array.isArray(f.triggers)) {
-        f.triggers.forEach((trg) => {
-          counts[trg] = (counts[trg] || 0) + 1;
-        });
-      }
-    });
-
-    const totalCount = Object.values(counts).reduce((a, b) => a + b, 0);
-
-    return Object.entries(counts)
-      .map(([id, count]) => ({
-        id,
-        name: TRIGGER_LABELS[id] || id,
-        count,
-        pct: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
-      }))
-      .sort((a, b) => b.count - a.count);
-  }, [auditFalls]);
-
-  /* Linha do Tempo Analítica */
-  const timelineData = useMemo(() => {
-    let cells = [], wins = 0, falls = 0, part = 0;
-    for (let i = timelineRange - 1; i >= 0; i--) {
-      const ds = dstr(new Date(Date.now() - i * 86400000));
-      const cc = (S.checkins || {})[ds];
-      let cls = '', lab = 'Sem registro';
-      if (cc && cc.fail) { cls = 'f'; falls++; lab = 'Queda'; }
-      else if (cc && cc.ok) { cls = 'w'; wins++; lab = 'Vitória'; }
-      else if (cc && (cc.p || cc.m || cc.r)) { cls = 'p'; part++; lab = 'Parcial'; }
-      cells.push({ ds, cls, lab });
-    }
-    const rate = Math.round((wins / timelineRange) * 100);
-    return { cells, wins, falls, part, rate };
-  }, [S.checkins, timelineRange]);
 
   const dayEditor = (ds) => {
     const req = L.pillars(S);

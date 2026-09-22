@@ -35,8 +35,13 @@ const HTML_LANG = { pt: 'pt-BR', en: 'en', es: 'es' };
 export default function RootLayout({ children }) {
   const lang = serverLang();
   return (
-    <html lang={HTML_LANG[lang] || 'pt-BR'} data-theme="dark" className={`${bebas.variable} ${manrope.variable} ${mono.variable}`}>
-      <body>{children}</body>
+    <html
+      lang={HTML_LANG[lang] || 'pt-BR'}
+      data-theme="dark"
+      className={`${bebas.variable} ${manrope.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

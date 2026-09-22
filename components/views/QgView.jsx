@@ -460,7 +460,7 @@ export default function QgView() {
         <div className={`pointer-events-none absolute left-1/2 top-[5%] ${isDesktop ? 'h-[320px] w-[320px]' : 'h-[220px] w-[220px]'} -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,100,20,0.14)_0%,rgba(200,60,10,0.03)_55%,transparent_75%)]`} />
 
         {/* Topo: Patente de Guerra, Pureza e Sequência */}
-        <div className="flex items-center justify-between gap-1.5 pb-2.5 border-b border-line/60 relative z-10 min-w-0">
+        <div className="flex items-center justify-between gap-1.5 pb-2.5 border-b border-line/60 relative z-10 min-w-0 w-full">
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
             <span className={`${isDesktop ? 'text-xl' : 'text-base'} drop-shadow-sm flex-none`}>{tier.icon}</span>
             <div className="flex flex-col min-w-0 text-left">
@@ -474,10 +474,10 @@ export default function QgView() {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2 flex-none">
-            <span className="rounded-md border border-gold/30 bg-gold/10 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
+            <span className="rounded-md border border-gold/30 bg-gold/10 px-1.5 sm:px-2.5 py-0.5 text-[9.5px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
               💎 {S.purity}%
             </span>
-            <span className="rounded-md border border-gold/30 bg-gold/10 px-2 sm:px-2.5 py-0.5 text-[10px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
+            <span className="rounded-md border border-gold/30 bg-gold/10 px-1.5 sm:px-2.5 py-0.5 text-[9.5px] sm:text-[11px] font-mono text-gold font-bold whitespace-nowrap">
               🔥 {streak} {streak === 1 ? 'DIA' : 'DIAS'}
             </span>
             {isDesktop && (
@@ -489,11 +489,11 @@ export default function QgView() {
         </div>
 
         {/* AS 3 TORRES 3D / PILARES LADO A LADO */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2.5 sm:my-3.5 items-end relative z-10">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2.5 sm:my-3.5 items-end relative z-10 w-full min-w-0">
           {/* TORRE 1: ZERO PORNÔ (Visão Limpa & Blindagem Mental) */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center min-w-0 w-full">
             {/* Ícone flutuante com anel sutil */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner">
+            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner flex-none">
               👁️
             </div>
             <span className="text-[9px] sm:text-[10.5px] font-extrabold uppercase tracking-wider text-[#C9C2B0] truncate max-w-full mb-1">
@@ -531,9 +531,9 @@ export default function QgView() {
           </div>
 
           {/* TORRE 2: RETENÇÃO VITAL (Torre Master Central - Mais Alta e Incandescente) */}
-          <div className="flex flex-col items-center transform -translate-y-1">
+          <div className="flex flex-col items-center transform -translate-y-1 min-w-0 w-full">
             {/* Brasas e Ícone Flutuante com aura de fogo */}
-            <div className="mb-1 flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-b from-[#3D2C10] to-[#1F1708] border border-gold text-sm shadow-[0_0_12px_rgba(255,180,50,0.5)] animate-pulse">
+            <div className="mb-1 flex items-center justify-center h-7 w-7 rounded-full bg-gradient-to-b from-[#3D2C10] to-[#1F1708] border border-gold text-sm shadow-[0_0_12px_rgba(255,180,50,0.5)] animate-pulse flex-none">
               ⚔️
             </div>
             <span className="text-[9.5px] sm:text-[11px] font-black uppercase tracking-wider text-gold truncate max-w-full mb-1">
@@ -563,9 +563,9 @@ export default function QgView() {
                 </span>
 
                 {/* Cronômetro Live Compacto */}
-                <div className="mt-1.5 flex items-center justify-center gap-1 rounded-full bg-black/75 border border-gold/40 px-1.5 py-0.5 shadow-inner">
+                <div className="mt-1 sm:mt-1.5 flex items-center justify-center gap-1 rounded-full bg-black/75 border border-gold/40 px-1 sm:px-1.5 py-0.5 shadow-inner max-w-full">
                   <Clock size={9} className="text-gold animate-pulse flex-none" />
-                  <span className="font-mono text-[8px] sm:text-[9px] font-bold text-gold tracking-tighter">
+                  <span className="font-mono text-[7.5px] sm:text-[9px] font-bold text-gold tracking-tighter truncate">
                     {pad(liveTime.hours)}h:{pad(liveTime.minutes)}m:{pad(liveTime.seconds)}s
                   </span>
                 </div>
@@ -579,9 +579,9 @@ export default function QgView() {
           </div>
 
           {/* TORRE 3: AUTODOMÍNIO (Soberania & Vontade de Ferro) */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center min-w-0 w-full">
             {/* Ícone flutuante */}
-            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner">
+            <div className="mb-1 flex items-center justify-center h-6 w-6 rounded-full bg-[#181824] border border-[#3A3848] text-xs shadow-inner flex-none">
               ⚡
             </div>
             <span className="text-[9px] sm:text-[10.5px] font-extrabold uppercase tracking-wider text-[#C9C2B0] truncate max-w-full mb-1">
@@ -891,26 +891,26 @@ export default function QgView() {
   /* OPÇÃO A: Mobile Combat Dashboard "Forjando Guerreiros" (Aço, Forja, Honra & Alta Densidade) */
   const renderMobileOneScreen = () => {
     return (
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 w-full min-w-0 max-w-full">
         {/* 1. FRASE DE GUERRA & CÓDIGO DO GUERREIRO (Mantra clicável com som de bigorna) */}
         <div
           onClick={nextMantra}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') nextMantra(); }}
-          className="group flex items-start justify-between gap-2.5 rounded-xl border border-gold/35 bg-gradient-to-r from-[#17161E] to-[#121217] px-3.5 py-2.5 cursor-pointer select-none transition-all active:scale-[0.99] shadow-sm"
+          className="group flex items-start justify-between gap-2 rounded-xl border border-gold/35 bg-gradient-to-r from-[#17161E] to-[#121217] px-3 py-2.5 cursor-pointer select-none transition-all active:scale-[0.99] shadow-sm w-full min-w-0"
         >
-          <div className="min-w-0 flex-1 flex items-start gap-2">
+          <div className="min-w-0 flex-1 flex items-start gap-1.5">
             <span className="text-xs text-gold flex-none mt-0.5 animate-pulse">⚡</span>
             <p className="text-xs font-semibold italic text-[#f3ead2] group-hover:text-gold transition-colors leading-relaxed">
               "{mantra}"
             </p>
           </div>
-          <div className="flex items-center gap-1.5 flex-none pl-1 pt-0.5">
-            <span className="text-[10px] text-muted font-mono">
+          <div className="flex items-center gap-1 flex-none pl-1 pt-0.5">
+            <span className="text-[10px] text-muted font-mono whitespace-nowrap">
               {(S.phraseIdx % mantraPool.length) + 1}/{mantraPool.length}
             </span>
-            <RefreshCw size={11} className="text-muted/60 group-hover:text-gold transition-colors" />
+            <RefreshCw size={11} className="text-muted/60 group-hover:text-gold transition-colors flex-none" />
           </div>
         </div>
 
@@ -918,7 +918,7 @@ export default function QgView() {
         {renderPillars3DTowers(false)}
 
         {/* 3. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
-        <div className="rounded-xl border border-line/80 bg-[#15151C] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden">
+        <div className="rounded-xl border border-line/80 bg-[#15151C] p-2.5 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5 min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="text-sm flex-none">🛡️</span>
@@ -984,7 +984,7 @@ export default function QgView() {
                   key={k}
                   type="button"
                   onClick={() => setCI(k, !isChecked, ciDate)}
-                  className={`group flex items-center justify-between rounded-xl border p-2.5 sm:p-3 text-left transition-all active:scale-[0.98] cursor-pointer ${
+                  className={`group flex items-center justify-between rounded-xl border p-2 sm:p-3 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
                     isChecked
                       ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
                       : isFailed
@@ -992,7 +992,7 @@ export default function QgView() {
                       : 'border-line/70 bg-surface2/60 hover:border-gold/40'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
                     <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
                       isChecked
                         ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
@@ -1014,7 +1014,7 @@ export default function QgView() {
                     </div>
                   </div>
 
-                  <div className="flex items-center flex-none pl-2">
+                  <div className="flex items-center flex-none pl-1.5 sm:pl-2">
                     {isChecked ? (
                       <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
                         BLINDADO
@@ -1036,9 +1036,9 @@ export default function QgView() {
 
           {/* Selo de Vitória Se Hoje For 100% Blindado */}
           {cView.ok && (
-            <div className="mt-2.5 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 text-center text-gold text-xs font-extrabold shadow-sm animate-pulse">
-              <span>🏆</span>
-              <span className="tracking-wide">
+            <div className="mt-2.5 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
+              <span className="flex-none">🏆</span>
+              <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
                 {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
               </span>
             </div>
@@ -1205,9 +1205,9 @@ export default function QgView() {
   };
 
   return (
-    <div className="grid gap-3.5 w-full max-w-full overflow-x-hidden pb-20 lg:pb-6">
+    <div className="grid gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-12 lg:pb-6">
       {/* NO MOBILE: OPÇÃO A (Super Otimizada, 3 Torres 3D, Botão Tático para Hábitos da Forja) */}
-      <div className="lg:hidden">
+      <div className="lg:hidden w-full min-w-0 max-w-full">
         {renderMobileOneScreen()}
       </div>
 
