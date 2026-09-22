@@ -608,3 +608,55 @@ html[data-theme='stealth'] .chip {
   animation: forgeSparkDrift 3.7s cubic-bezier(0.2, 0.8, 0.4, 1) infinite 2s;
 }
 
+/* ⚡ CELEBRAÇÃO DE SUBIDA DE NÍVEL & EFEITOS DE ARMADURA DA FORJA */
+@keyframes levelUpRumble {
+  0% { transform: translate(0, 0) scale(1); }
+  15% { transform: translate(-3px, 2px) scale(1.02); }
+  30% { transform: translate(3px, -2px) scale(1.01); }
+  45% { transform: translate(-2px, -3px) scale(1.02); }
+  60% { transform: translate(2px, 3px) scale(1.01); }
+  75% { transform: translate(-1px, 1px) scale(1.005); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes armorShineSweep {
+  0% { transform: translateX(-150%) rotate(25deg); opacity: 0; }
+  20% { opacity: 0.85; }
+  60% { opacity: 0.6; }
+  100% { transform: translateX(200%) rotate(25deg); opacity: 0; }
+}
+
+@keyframes solarAuraRadiance {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.75;
+    filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.6));
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+    filter: drop-shadow(0 0 45px rgba(251, 191, 36, 0.95));
+  }
+}
+
+@keyframes runicPulseGlow {
+  0%, 100% { opacity: 0.35; filter: drop-shadow(0 0 4px #fbbf24); }
+  50% { opacity: 0.95; filter: drop-shadow(0 0 12px #f59e0b); }
+}
+
+.anim-level-up-rumble {
+  animation: levelUpRumble 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.anim-armor-shine {
+  animation: armorShineSweep 3.8s ease-in-out infinite;
+}
+
+.anim-solar-aura {
+  animation: solarAuraRadiance 3s ease-in-out infinite;
+}
+
+.anim-runic-pulse {
+  animation: runicPulseGlow 2.4s ease-in-out infinite;
+}
+
