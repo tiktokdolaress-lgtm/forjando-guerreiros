@@ -11,7 +11,7 @@ import { today, dstr, fdmy, fmtD, pad, yesterday } from '@/lib/utils';
 import WarriorLogo from '@/components/WarriorLogo';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
-import HolographicWarriorCard from '@/components/HolographicWarriorCard';
+import Warrior3DCard from '@/components/Warrior3DCard';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -558,8 +558,8 @@ export default function QgView() {
           </div>
         </div>
 
-        {/* O GUERREIRO VIVO DA FORJA (CARD HOLOGRÁFICO 2.5D PARALLAX INTERATIVO) */}
-        <HolographicWarriorCard
+        {/* O GUERREIRO VIVO DA FORJA (CARD 3D REAL WEBGL - GIRA 360° COM MOUSE E TOQUE) */}
+        <Warrior3DCard
           tier={tier}
           d={d}
           nt={nt}

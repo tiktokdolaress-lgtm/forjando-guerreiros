@@ -1,7 +1,13 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { ShieldCheck, Award, Flame, X, Sparkles, Zap, ChevronRight } from 'lucide-react';
 import { AF } from '@/lib/audio';
+
+const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
+  ssr: false,
+  loading: () => <div className="h-[240px] w-full flex items-center justify-center text-amber-400 font-mono text-xs">Carregando 3D...</div>,
+});
 
 export default function WarriorLevelUpModal({ tier, currentDays, lang = 'pt', onClose }) {
   const canvasRef = useRef(null);
@@ -152,34 +158,16 @@ export default function WarriorLevelUpModal({ tier, currentDays, lang = 'pt', on
           {tier.subtitle || TXT.subtitle[curLang]} · {TXT.days[curLang]}
         </p>
 
-        {/* O GUERREIRO TRANSFIGURADO (COM ILUMINAÇÃO DE EVOLUÇÃO) */}
-        <div className="relative my-4 flex flex-col items-center justify-center min-h-[220px] sm:min-h-[260px] overflow-hidden rounded-xl bg-gradient-to-b from-[#1a110a] via-[#0e0a07] to-[#070504] border border-amber-600/50 p-2 shadow-inner">
-          {/* Luz Solar Pulsante atrás */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.35)_0%,rgba(217,119,6,0.15)_50%,transparent_75%)] anim-solar-aura" />
-
-          {/* Faíscas Vivas */}
-          <div className="pointer-events-none absolute inset-0 z-0">
-            <span className="absolute bottom-6 left-[25%] h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] anim-spark-drift-1" />
-            <span className="absolute bottom-8 right-[25%] h-2 w-2 rounded-full bg-yellow-300 shadow-[0_0_10px_#fde047] anim-spark-drift-2" />
-          </div>
-
-          {/* Imagem do Guerreiro */}
-          <div className="relative z-10 flex flex-col items-center justify-end">
-            <img
-              src={tier.image || '/escudeiro.png'}
-              alt={tier.name}
-              className="h-[180px] sm:h-[220px] w-auto max-w-full object-contain filter drop-shadow-[0_16px_28px_rgba(0,0,0,0.98)] drop-shadow-[0_0_30px_rgba(245,158,11,0.6)] anim-warrior-breathe select-none pointer-events-none"
-            />
-
-            {/* Pedestal Dourado da Vitória */}
-            <div className="relative z-20 -mt-2 w-full max-w-[240px]">
-              <div className="h-6 rounded-t-lg bg-gradient-to-r from-[#291a0c] via-[#523314] to-[#291a0c] border-t-2 border-x-2 border-amber-400 shadow-[0_4px_16px_rgba(0,0,0,0.9)] flex items-center justify-center px-3">
-                <span className="text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider text-amber-200 truncate">
-                  ⚔️ {tier.name} · {tier.min}+ DIAS
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* O GUERREIRO 3D EM VITÓRIA (COM ILUMINAÇÃO DE EVOLUÇÃO E PEDESTAL) */}
+        <div className="relative my-3 flex flex-col items-center justify-center min-h-[260px] overflow-hidden rounded-xl bg-gradient-to-b from-[#1a110a] via-[#0e0a07] to-[#070504] border border-amber-500/60 p-2 shadow-inner">
+          <Warrior3DCanvas
+            tier={tier}
+            days={currentDays}
+            height={260}
+            curLang={curLang}
+            interactive={true}
+            autoRotate={true}
+          />
         </div>
 
         {/* Bloco de Recompensa Forjada */}

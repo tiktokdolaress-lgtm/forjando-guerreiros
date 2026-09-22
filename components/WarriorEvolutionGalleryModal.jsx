@@ -1,7 +1,13 @@
 'use client';
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { ShieldCheck, Award, Flame, X, Sparkles, ChevronRight, Lock, CheckCircle2, Play } from 'lucide-react';
 import { AF } from '@/lib/audio';
+
+const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
+  ssr: false,
+  loading: () => <div className="h-[210px] w-full flex items-center justify-center text-amber-400 font-mono text-xs">Carregando 3D...</div>,
+});
 
 export default function WarriorEvolutionGalleryModal({ tiers, currentTier, currentDays, lang = 'pt', onClose, onTestLevelUp }) {
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
@@ -130,20 +136,16 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
               </span>
             </div>
 
-            {/* Guerreiro */}
-            <div className="relative z-10 my-2 flex flex-col items-center justify-center">
-              <img
-                src={selectedTier.image || '/escudeiro.png'}
-                alt={selectedTier.name}
-                className="h-[170px] sm:h-[200px] w-auto max-w-full object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.95)] drop-shadow-[0_0_20px_rgba(245,158,11,0.3)] anim-warrior-breathe select-none pointer-events-none"
+            {/* Guerreiro 3D */}
+            <div className="relative z-10 my-2 w-full flex flex-col items-center justify-center">
+              <Warrior3DCanvas
+                tier={selectedTier}
+                days={selectedTier.min}
+                height={210}
+                curLang={curLang}
+                interactive={true}
+                autoRotate={true}
               />
-              <div className="relative z-20 -mt-2 w-full max-w-[220px]">
-                <div className="h-5 rounded-t bg-gradient-to-r from-[#2a1b0d] via-[#472d15] to-[#2a1b0d] border-t border-x border-amber-600/60 shadow flex items-center justify-center px-2">
-                  <span className="text-[9px] font-mono font-black uppercase text-amber-200 truncate">
-                    ⚔️ {selectedTier.name}
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* Informações da Patente */}
