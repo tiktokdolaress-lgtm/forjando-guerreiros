@@ -190,33 +190,42 @@ export default function Warrior3DCard({
       {/* Brilho Superior da Forja */}
       <div className="pointer-events-none absolute left-1/2 -top-16 -translate-x-1/2 h-36 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.22)_0%,transparent_75%)]" />
 
-      {/* TOPO DO CARD: Patente + Badges Integrados (💎 PUREZA, 🔥 DIAS, 🛡️ SOS, DIAS/META) */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 pb-2 mb-1 border-b border-amber-900/40">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-950/70 border border-amber-500/50 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
-          <span>⚔️</span>
-          <span className="truncate">
-            {curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}: {safeTier.name}
-          </span>
+      {/* TOPO DO CARD: Patente + Badges Integrados (💎 PUREZA, 🔥 DIAS, 🛡️ SOS, DIAS/META) + Frase do Guerreiro */}
+      <div className="relative z-10 flex flex-col gap-1.5 pb-2 mb-1 border-b border-amber-900/40">
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-950/70 border border-amber-500/50 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
+            <span>⚔️</span>
+            <span className="truncate">
+              {curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}: {safeTier.name}
+            </span>
+          </div>
+
+          {/* Badges de Guerra Integrados dentro do Card */}
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+            <span className="rounded-md border border-gold/40 bg-gold/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-gold font-bold whitespace-nowrap shadow-sm">
+              💎 {purity}%
+            </span>
+            <span className="rounded-md border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-300 font-bold whitespace-nowrap shadow-sm">
+              🔥 {streak} {TXT.days[curLang] || TXT.days.pt}
+            </span>
+            <span className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-emerald-300 font-bold whitespace-nowrap shadow-sm">
+              🛡️ {sosWins} SOS
+            </span>
+            <span className="rounded-md border border-amber-800/40 bg-black/40 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-200/80 font-bold whitespace-nowrap">
+              {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX' : 'MÁX')}
+            </span>
+          </div>
         </div>
 
-        {/* Badges de Guerra Integrados dentro do Card */}
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-          <span className="rounded-md border border-gold/40 bg-gold/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-gold font-bold whitespace-nowrap shadow-sm">
-            💎 {purity}%
-          </span>
-          <span className="rounded-md border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-300 font-bold whitespace-nowrap shadow-sm">
-            🔥 {streak} {TXT.days[curLang] || TXT.days.pt}
-          </span>
-          <span className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-emerald-300 font-bold whitespace-nowrap shadow-sm">
-            🛡️ {sosWins} SOS
-          </span>
-          <span className="rounded-md border border-amber-800/40 bg-black/40 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-200/80 font-bold whitespace-nowrap">
-            {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX' : 'MÁX')}
-          </span>
-        </div>
+        {/* Frase sobre o guerreiro no topo onde tem o nome */}
+        {TXT.quote[curLang] && (
+          <p className="text-[11px] sm:text-xs font-mono text-amber-200/80 italic text-center w-full mt-0.5">
+            &ldquo;{TXT.quote[curLang]}&rdquo;
+          </p>
+        )}
       </div>
 
-      {/* CANVAS 3D INTERATIVO (O GUERREIRO E AS 3 PLACAS DE FERRO GIRAM JUNTOS) */}
+      {/* CANVAS 3D INTERATIVO (O GUERREIRO E OS 3 ESTANDARTES GIRAM JUNTOS) */}
       <div className="relative z-10 w-full min-h-[350px] flex flex-col items-center justify-center">
         <ErrorBoundary
           fallback={
@@ -248,59 +257,69 @@ export default function Warrior3DCard({
           />
         </ErrorBoundary>
 
-        {/* SELETOR INTERATIVO RÁPIDO DOS 3 PILARES GIRATÓRIOS DO PEDESTAL */}
-        <div className="mt-1 mb-2 flex items-center justify-center gap-1.5 flex-wrap z-20">
-          <button
-            type="button"
-            onClick={() => handleSelectPillar(0)}
-            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
-              selectedPillar === 0
-                ? 'bg-amber-500 text-black border-amber-300 ring-2 ring-amber-400/50 font-black'
-                : 'bg-amber-950/50 text-amber-300 border-amber-700/50 hover:bg-amber-900/50'
-            }`}
-          >
-            <span>🔥</span>
-            <span>{TXT.ret[curLang] || TXT.ret.pt}</span>
-          </button>
+        {/* SELETOR INTERATIVO RÁPIDO DOS 3 PILARES GIRATÓRIOS DO PEDESTAL COM CONTADOR DE HORAS */}
+        <div className="mt-1 mb-2 flex items-center justify-center gap-2 sm:gap-3.5 flex-wrap z-20">
+          {/* Pilar 0: Retenção */}
+          <div className="flex flex-col items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => handleSelectPillar(0)}
+              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
+                selectedPillar === 0
+                  ? 'bg-amber-500 text-black border-amber-300 ring-2 ring-amber-400/50 font-black'
+                  : 'bg-amber-950/50 text-amber-300 border-amber-700/50 hover:bg-amber-900/50'
+              }`}
+            >
+              <span>🔥</span>
+              <span>{TXT.ret[curLang] || TXT.ret.pt}</span>
+            </button>
+            <span className="text-[9px] sm:text-[9.5px] font-mono text-amber-400/90 font-bold tracking-tight">
+              {pillarsData?.ret?.timer || '00h:00m:00s'}
+            </span>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => handleSelectPillar(1)}
-            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
-              selectedPillar === 1
-                ? 'bg-sky-500 text-black border-sky-300 ring-2 ring-sky-400/50 font-black'
-                : 'bg-sky-950/50 text-sky-300 border-sky-700/50 hover:bg-sky-900/50'
-            }`}
-          >
-            <span>🛡️</span>
-            <span>{TXT.porn[curLang] || TXT.porn.pt}</span>
-          </button>
+          {/* Pilar 1: Sem Pornô */}
+          <div className="flex flex-col items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => handleSelectPillar(1)}
+              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
+                selectedPillar === 1
+                  ? 'bg-sky-500 text-black border-sky-300 ring-2 ring-sky-400/50 font-black'
+                  : 'bg-sky-950/50 text-sky-300 border-sky-700/50 hover:bg-sky-900/50'
+              }`}
+            >
+              <span>🛡️</span>
+              <span>{TXT.porn[curLang] || TXT.porn.pt}</span>
+            </button>
+            <span className="text-[9px] sm:text-[9.5px] font-mono text-sky-300/90 font-bold tracking-tight">
+              {pillarsData?.porn?.timer || '00h:00m:00s'}
+            </span>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => handleSelectPillar(2)}
-            className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm ${
-              selectedPillar === 2
-                ? 'bg-orange-500 text-black border-orange-300 ring-2 ring-orange-400/50 font-black'
-                : 'bg-orange-950/50 text-orange-300 border-orange-700/50 hover:bg-orange-900/50'
-            }`}
-          >
-            <span>⚒️</span>
-            <span>{TXT.mast[curLang] || TXT.mast.pt}</span>
-          </button>
+          {/* Pilar 2: Sem Masturbação */}
+          <div className="flex flex-col items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => handleSelectPillar(2)}
+              className={`px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold tracking-wide transition-all border flex items-center gap-1 shadow-sm cursor-pointer ${
+                selectedPillar === 2
+                  ? 'bg-orange-500 text-black border-orange-300 ring-2 ring-orange-400/50 font-black'
+                  : 'bg-orange-950/50 text-orange-300 border-orange-700/50 hover:bg-orange-900/50'
+              }`}
+            >
+              <span>⚒️</span>
+              <span>{TXT.mast[curLang] || TXT.mast.pt}</span>
+            </button>
+            <span className="text-[9px] sm:text-[9.5px] font-mono text-orange-300/90 font-bold tracking-tight">
+              {pillarsData?.mast?.timer || '00h:00m:00s'}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* DETALHES DE CLASSE E PROGRESSÃO */}
-      <div className="relative z-10 w-full flex flex-col items-center text-center mt-1">
-        <h3 className="text-xl sm:text-2xl font-display font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#FFFEEA] via-[#FFD152] to-[#F59E0B]">
-          {safeTier.name}
-        </h3>
-
-        <p className="text-xs font-mono text-amber-200/80 italic mt-0.5 max-w-md">
-          {TXT.quote[curLang]}
-        </p>
-
+      <div className="relative z-10 w-full flex flex-col items-center text-center mt-0.5">
         {/* Blocos de Armamento & Armadura da Classe */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full my-2.5">
           {/* Armamento da Classe */}

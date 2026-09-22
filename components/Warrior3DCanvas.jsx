@@ -276,145 +276,156 @@ function getTier3DConfig(minDays = 0) {
   };
 }
 
-/* --- CONFIGURAÇÃO E DESENHO DAS PLACAS DE FERRO FORJADO DOS 3 PILARES --- */
-const PLAQUE_CONFIGS = {
+/* --- CONFIGURAÇÃO E DESENHO DOS ESTANDARTES MEDIEVAIS DOS 3 PILARES --- */
+const BANNER_CONFIGS = {
   ret: {
     title: { pt: 'RETENÇÃO', en: 'RETENTION', es: 'RETENCIÓN' },
-    sub: { pt: 'FOGO VITAL SOLAR', en: 'SOLAR VITAL FIRE', es: 'FUEGO VITAL SOLAR' },
     icon: '🔥',
-    theme: '#f59e0b',
-    border: '#d97706',
+    bgTop: '#5c0f06',
+    bgMid: '#320803',
+    bgBot: '#150301',
+    trim: '#f59e0b',
+    trimSecondary: '#fef08a',
+    numColor: '#ffd566',
   },
   porn: {
     title: { pt: 'SEM PORNÔ', en: 'NO PORN', es: 'SIN PORNO' },
-    sub: { pt: 'VISÃO PURA & FOCO', en: 'PURE MIND & FOCUS', es: 'MENTE PURA & FOCO' },
     icon: '🛡️',
-    theme: '#38bdf8',
-    border: '#0284c7',
+    bgTop: '#0b2a52',
+    bgMid: '#061932',
+    bgBot: '#020a16',
+    trim: '#38bdf8',
+    trimSecondary: '#bae6fd',
+    numColor: '#7dd3fc',
   },
   mast: {
     title: { pt: 'SEM MASTURBAÇÃO', en: 'NO MASTURBATION', es: 'SIN MASTURBACIÓN' },
-    sub: { pt: 'AUTODOMÍNIO DE FERRO', en: 'IRON SELF-MASTERY', es: 'AUTODOMINIO DE HIERRO' },
     icon: '⚒️',
-    theme: '#fb923c',
-    border: '#ea580c',
+    bgTop: '#421f06',
+    bgMid: '#241002',
+    bgBot: '#0f0601',
+    trim: '#fb923c',
+    trimSecondary: '#fed7aa',
+    numColor: '#fdba74',
   },
 };
 
-function drawIronPlaque(canvas, data, curLang, type) {
+function drawMedievalBanner(canvas, data, curLang, type) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const w = canvas.width;
   const h = canvas.height;
-  const cfg = PLAQUE_CONFIGS[type] || PLAQUE_CONFIGS.ret;
+  const cfg = BANNER_CONFIGS[type] || BANNER_CONFIGS.ret;
   const langKey = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const title = (cfg.title && cfg.title[langKey]) || cfg.title.pt;
-  const sub = (cfg.sub && cfg.sub[langKey]) || cfg.sub.pt;
   const daysNum = data && typeof data.days === 'number' ? data.days : 0;
   const dayUnit = daysNum === 1
     ? (langKey === 'en' ? 'DAY' : langKey === 'es' ? 'DÍA' : 'DIA')
     : (langKey === 'en' ? 'DAYS' : langKey === 'es' ? 'DÍAS' : 'DIAS');
-  const timerStr = (data && data.timer) || '00h:00m:00s';
 
-  // Fundo metálico de aço forjado escuro
+  ctx.clearRect(0, 0, w, h);
+
+  // Formato do Estandarte Medieval: Corte chanfrado swallowtail (duas pontas inferiores)
+  ctx.beginPath();
+  ctx.moveTo(14, 14);
+  ctx.lineTo(w - 14, 14);
+  ctx.lineTo(w - 14, h - 75);
+  ctx.lineTo(w / 2, h - 25); // Chanfrado central
+  ctx.lineTo(14, h - 75);
+  ctx.closePath();
+
+  // Fundo gradiente tapeçaria medieval
   const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
-  bgGrad.addColorStop(0, '#261b14');
-  bgGrad.addColorStop(0.3, '#16100c');
-  bgGrad.addColorStop(0.7, '#0f0a07');
-  bgGrad.addColorStop(1, '#070503');
+  bgGrad.addColorStop(0, cfg.bgTop);
+  bgGrad.addColorStop(0.5, cfg.bgMid);
+  bgGrad.addColorStop(1, cfg.bgBot);
   ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, w, h);
+  ctx.fill();
 
-  // Escovado metálico sutil
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
-  for (let y = 3; y < h; y += 4) {
-    ctx.fillRect(0, y, w, 1);
+  // Textura sutil de tecido artesanal
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+  for (let y = 16; y < h - 70; y += 4) {
+    ctx.fillRect(16, y, w - 32, 1.5);
   }
 
-  // Borda externa de ferro forjado
-  ctx.strokeStyle = cfg.border;
-  ctx.lineWidth = 6;
-  ctx.strokeRect(5, 5, w - 10, h - 10);
+  // Borda grossa bordada (fio de ouro / prata / bronze)
+  ctx.strokeStyle = cfg.trim;
+  ctx.lineWidth = 5;
+  ctx.stroke();
 
-  // Borda interna decorativa chanfrada
-  ctx.strokeStyle = cfg.theme;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(14, 14, w - 28, h - 28);
+  // Borda interna ornamental refinada
+  ctx.beginPath();
+  ctx.moveTo(24, 24);
+  ctx.lineTo(w - 24, 24);
+  ctx.lineTo(w - 24, h - 85);
+  ctx.lineTo(w / 2, h - 35);
+  ctx.lineTo(24, h - 85);
+  ctx.closePath();
+  ctx.strokeStyle = cfg.trimSecondary || 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 
-  // 4 Rebites de fixação de aço forjado nos 4 cantos
-  const rivets = [
-    [24, 24],
-    [w - 24, 24],
-    [24, h - 24],
-    [w - 24, h - 24],
-  ];
-  for (const [rx, ry] of rivets) {
-    ctx.beginPath();
-    ctx.arc(rx, ry, 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#382618';
-    ctx.fill();
-    ctx.strokeStyle = cfg.theme;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Brilho do rebite
-    ctx.beginPath();
-    ctx.arc(rx - 1.5, ry - 1.5, 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
+  // Detalhes decorativos de ilhós/costura superior
+  ctx.fillStyle = cfg.trim;
+  for (let x = 32; x < w - 32; x += 22) {
+    ctx.fillRect(x, 16, 10, 6);
   }
 
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Faixa do Cabeçalho com Ícone e Título
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(30, 22, w - 60, 42);
-  ctx.strokeStyle = cfg.theme;
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(30, 22, w - 60, 42);
-
-  ctx.font = '900 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = cfg.theme;
-  ctx.shadowColor = cfg.theme;
-  ctx.shadowBlur = 8;
-  ctx.fillText(`${cfg.icon}  ${title}`, w / 2, 43);
+  // 1. Ícone Heráldico
+  ctx.font = '52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.shadowColor = cfg.trim;
+  ctx.shadowBlur = 12;
+  ctx.fillText(cfg.icon, w / 2, 75);
   ctx.shadowBlur = 0;
 
-  // Contador de Dias Central (Em grande destaque)
-  ctx.font = '900 76px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  const numGrad = ctx.createLinearGradient(0, 80, 0, 160);
-  numGrad.addColorStop(0, '#ffffff');
-  numGrad.addColorStop(0.4, '#fff2d6');
-  numGrad.addColorStop(1, cfg.theme);
-  ctx.fillStyle = numGrad;
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-  ctx.shadowBlur = 10;
-  ctx.fillText(`${daysNum}`, w / 2 - 38, 122);
-  ctx.shadowBlur = 0;
-
-  ctx.font = '900 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = '#ede5d5';
-  ctx.fillText(dayUnit, w / 2 + 52, 124);
-
-  // Subtítulo do Pilar
-  ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  ctx.fillStyle = cfg.theme;
-  ctx.fillText(sub, w / 2, 168);
-
-  // Painel de Horas / Minutos / Segundos
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
-  ctx.fillRect(40, 192, w - 80, 52);
-  ctx.strokeStyle = cfg.theme;
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(40, 192, w - 80, 52);
-
-  ctx.font = 'bold 24px "Courier New", monospace';
+  // 2. Nome do Pilar em Caixa Alta Chivalric
+  ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = cfg.theme;
-  ctx.shadowBlur = 7;
-  ctx.fillText(`⏱️ ${timerStr}`, w / 2, 218);
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+  ctx.shadowBlur = 8;
+  ctx.fillText(title, w / 2, 138);
   ctx.shadowBlur = 0;
+
+  // Divisor ornamental sob o título
+  ctx.strokeStyle = cfg.trim;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(w / 2 - 90, 166);
+  ctx.lineTo(w / 2 + 90, 166);
+  ctx.stroke();
+
+  ctx.fillStyle = cfg.trim;
+  ctx.beginPath();
+  ctx.arc(w / 2, 166, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Dias (Número Heroico)
+  ctx.font = '900 112px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const numGrad = ctx.createLinearGradient(0, 190, 0, 310);
+  numGrad.addColorStop(0, '#ffffff');
+  numGrad.addColorStop(0.35, '#fff6e5');
+  numGrad.addColorStop(1, cfg.numColor || cfg.trim);
+  ctx.fillStyle = numGrad;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+  ctx.shadowBlur = 14;
+  ctx.fillText(`${daysNum}`, w / 2, 260);
+  ctx.shadowBlur = 0;
+
+  // 4. Unidade de Tempo (DIAS / DAYS / DÍAS)
+  ctx.font = '900 28px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = cfg.trim;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+  ctx.shadowBlur = 8;
+  ctx.fillText(dayUnit, w / 2, 340);
+  ctx.shadowBlur = 0;
+
+  // Franja / lema de honra inferior
+  ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.fillText('⚔️ FORJA ⚔️', w / 2, 400);
 }
 
 export default function Warrior3DCanvas({
@@ -433,7 +444,7 @@ export default function Warrior3DCanvas({
   const sceneRef = useRef(null);
   const rotationRef = useRef(0);
   const setTargetRotationRef = useRef(null);
-  const updatePlaquesRef = useRef(null);
+  const updateBannersRef = useRef(null);
   const pillarsDataRef = useRef(pillarsData);
   pillarsDataRef.current = pillarsData;
   const curLangRef = useRef(curLang);
@@ -448,10 +459,10 @@ export default function Warrior3DCanvas({
 
   const tierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
 
-  // Atualização instantânea suave das placas de ferro quando os dados/temporizador mudam
+  // Atualização instantânea dos estandartes medievais quando os dias mudam
   useEffect(() => {
-    if (updatePlaquesRef.current) {
-      updatePlaquesRef.current(pillarsData, curLang);
+    if (updateBannersRef.current) {
+      updateBannersRef.current(pillarsData, curLang);
     }
   }, [pillarsData, curLang]);
 
@@ -594,82 +605,123 @@ export default function Warrior3DCanvas({
       pedestalGroup.add(flameMesh);
     });
 
-    // --- 3 PLACAS DE FERRO FORJADO DOS 3 PILARES GIRANDO COM O PEDESTAL ---
-    const plaqueWidth = 512;
-    const plaqueHeight = 280;
+    // --- 3 ESTANDARTES MEDIEVAIS HASTEADOS NO PEDESTAL (GIRAM COM A PLATAFORMA) ---
+    const bannerWidth = 360;
+    const bannerHeight = 540;
 
-    const plaqueCanvases = {
+    const bannerCanvases = {
       ret: document.createElement('canvas'),
       porn: document.createElement('canvas'),
       mast: document.createElement('canvas'),
     };
-    plaqueCanvases.ret.width = plaqueWidth;
-    plaqueCanvases.ret.height = plaqueHeight;
-    plaqueCanvases.porn.width = plaqueWidth;
-    plaqueCanvases.porn.height = plaqueHeight;
-    plaqueCanvases.mast.width = plaqueWidth;
-    plaqueCanvases.mast.height = plaqueHeight;
+    bannerCanvases.ret.width = bannerWidth;
+    bannerCanvases.ret.height = bannerHeight;
+    bannerCanvases.porn.width = bannerWidth;
+    bannerCanvases.porn.height = bannerHeight;
+    bannerCanvases.mast.width = bannerWidth;
+    bannerCanvases.mast.height = bannerHeight;
 
-    const plaqueTextures = {
-      ret: new THREE.CanvasTexture(plaqueCanvases.ret),
-      porn: new THREE.CanvasTexture(plaqueCanvases.porn),
-      mast: new THREE.CanvasTexture(plaqueCanvases.mast),
+    const bannerTextures = {
+      ret: new THREE.CanvasTexture(bannerCanvases.ret),
+      porn: new THREE.CanvasTexture(bannerCanvases.porn),
+      mast: new THREE.CanvasTexture(bannerCanvases.mast),
     };
 
-    const updateAllPlaques = (pData, pLang) => {
+    const updateAllBanners = (pData, pLang) => {
       const currentPData = pData || pillarsDataRef.current || {
-        ret: { days: days || 0, timer: '00h:00m:00s' },
-        porn: { days: days || 0, timer: '00h:00m:00s' },
-        mast: { days: days || 0, timer: '00h:00m:00s' },
+        ret: { days: days || 0 },
+        porn: { days: days || 0 },
+        mast: { days: days || 0 },
       };
       const currentLang = pLang || curLangRef.current || 'pt';
 
-      drawIronPlaque(plaqueCanvases.ret, currentPData.ret, currentLang, 'ret');
-      plaqueTextures.ret.needsUpdate = true;
+      drawMedievalBanner(bannerCanvases.ret, currentPData.ret, currentLang, 'ret');
+      bannerTextures.ret.needsUpdate = true;
 
-      drawIronPlaque(plaqueCanvases.porn, currentPData.porn, currentLang, 'porn');
-      plaqueTextures.porn.needsUpdate = true;
+      drawMedievalBanner(bannerCanvases.porn, currentPData.porn, currentLang, 'porn');
+      bannerTextures.porn.needsUpdate = true;
 
-      drawIronPlaque(plaqueCanvases.mast, currentPData.mast, currentLang, 'mast');
-      plaqueTextures.mast.needsUpdate = true;
+      drawMedievalBanner(bannerCanvases.mast, currentPData.mast, currentLang, 'mast');
+      bannerTextures.mast.needsUpdate = true;
     };
 
-    updatePlaquesRef.current = updateAllPlaques;
-    updateAllPlaques(pillarsDataRef.current, curLangRef.current);
+    updateBannersRef.current = updateAllBanners;
+    updateAllBanners(pillarsDataRef.current, curLangRef.current);
 
-    // Geometria das 3 placas de ferro soldadas ao pedestal (Retenção na frente, Sem Pornô na esquerda, Sem Masturbação na direita)
-    const plaqueDef = [
+    // Geometria dos 3 estandartes medievais hasteados nos cantos do pedestal
+    const bannerDef = [
       { key: 'ret', angle: 0 },
       { key: 'porn', angle: -(2 * Math.PI) / 3 }, // -120°
       { key: 'mast', angle: (2 * Math.PI) / 3 }, // +120°
     ];
 
-    const plaqueRadius = 1.34;
-    const plaqueGeo = new THREE.PlaneGeometry(0.96, 0.52);
-    const ironBackGeo = new THREE.BoxGeometry(0.98, 0.54, 0.04);
-    const ironBackMat = new THREE.MeshStandardMaterial({
-      color: 0x18120c,
-      roughness: 0.7,
-      metalness: 0.8,
+    const bannerRadius = 1.28;
+    const bannerClothMeshes = [];
+
+    // Materiais compartilhados dos mastros e lanças dos estandartes
+    const poleMat = new THREE.MeshStandardMaterial({
+      color: 0x22150b,
+      roughness: 0.85,
+      metalness: 0.2,
+    });
+    const spearMat = new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      roughness: 0.3,
+      metalness: 0.85,
+    });
+    const crossbarMat = new THREE.MeshStandardMaterial({
+      color: 0x3a2211,
+      roughness: 0.8,
     });
 
-    plaqueDef.forEach(({ key, angle }) => {
-      const plaqueGroup = new THREE.Group();
-      plaqueGroup.position.set(Math.sin(angle) * plaqueRadius, 0.22, Math.cos(angle) * plaqueRadius);
-      plaqueGroup.rotation.y = angle;
-      plaqueGroup.rotation.x = -0.09; // Leve inclinação para ótima legibilidade frontal
+    bannerDef.forEach(({ key, angle }) => {
+      const bannerGroup = new THREE.Group();
+      bannerGroup.position.set(Math.sin(angle) * bannerRadius, 0.28, Math.cos(angle) * bannerRadius);
+      bannerGroup.rotation.y = angle;
 
-      const ironBack = new THREE.Mesh(ironBackGeo, ironBackMat);
-      ironBack.position.z = -0.02;
-      plaqueGroup.add(ironBack);
+      // 1. Mastro de madeira escura com anéis de ferro cravado no pedestal
+      const poleGeo = new THREE.CylinderGeometry(0.016, 0.02, 1.44, 10);
+      const pole = new THREE.Mesh(poleGeo, poleMat);
+      pole.position.set(-0.28, 0.72, 0);
+      bannerGroup.add(pole);
 
-      const plaqueMat = new THREE.MeshBasicMaterial({
-        map: plaqueTextures[key],
+      // 2. Ponta de lança metálica dourada no cume do mastro
+      const spearGeo = new THREE.ConeGeometry(0.035, 0.15, 8);
+      const spear = new THREE.Mesh(spearGeo, spearMat);
+      spear.position.set(-0.28, 1.49, 0);
+      bannerGroup.add(spear);
+
+      // 3. Haste horizontal (crossbar) que sustenta o estandarte
+      const crossbarGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.62, 8);
+      const crossbar = new THREE.Mesh(crossbarGeo, crossbarMat);
+      crossbar.rotation.z = Math.PI / 2;
+      crossbar.position.set(0, 1.36, 0);
+      bannerGroup.add(crossbar);
+
+      // Pomos dourados nas pontas da haste horizontal
+      [-0.31, 0.31].forEach((bx) => {
+        const pommelGeo = new THREE.SphereGeometry(0.018, 8, 8);
+        const pommel = new THREE.Mesh(pommelGeo, spearMat);
+        pommel.position.set(bx, 1.36, 0);
+        bannerGroup.add(pommel);
       });
-      const plaqueMesh = new THREE.Mesh(plaqueGeo, plaqueMat);
-      plaqueGroup.add(plaqueMesh);
 
-      pedestalGroup.add(plaqueGroup);
+      // 4. Tecido do estandarte de guerra (swallowtail drapeado)
+      const fabricGeo = new THREE.PlaneGeometry(0.56, 0.84, 8, 8);
+      const fabricMat = new THREE.MeshStandardMaterial({
+        map: bannerTextures[key],
+        transparent: true,
+        alphaTest: 0.08,
+        side: THREE.DoubleSide,
+        roughness: 0.65,
+        metalness: 0.12,
+      });
+      const fabricMesh = new THREE.Mesh(fabricGeo, fabricMat);
+      fabricMesh.position.set(0, 0.90, 0.01);
+      bannerGroup.add(fabricMesh);
+
+      bannerClothMeshes.push({ mesh: fabricMesh, angle });
+      pedestalGroup.add(bannerGroup);
     });
 
     // --- ANEL RÚNICO GIRATÓRIO NO CHÃO (Níveis 8, 9, 10) ---
@@ -1234,6 +1286,12 @@ export default function Warrior3DCanvas({
       // Respiração viva
       const breatheOffset = Math.sin(elapsedTime * 2.2) * 0.018;
       warrior.position.y = 0.28 + breatheOffset;
+
+      // Ondulação suave do tecido dos 3 estandartes de guerra na brisa da forja
+      bannerClothMeshes.forEach(({ mesh, angle }, idx) => {
+        mesh.rotation.y = Math.sin(elapsedTime * 2.4 + idx * 2.1) * 0.045;
+        mesh.rotation.z = Math.sin(elapsedTime * 1.8 + idx * 1.7) * 0.02;
+      });
 
       // Anel rúnico no chão gira lentamente
       if (runicCircle) {
