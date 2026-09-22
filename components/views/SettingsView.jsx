@@ -44,7 +44,6 @@ export default function SettingsView() {
   
   // Categorias para organização minimalista
   const [activeCategory, setActiveCategory] = useState('general');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const [pinCur, setPinCur] = useState('');
   const [pinNew, setPinNew] = useState('');
@@ -175,106 +174,30 @@ export default function SettingsView() {
 
   return (
     <div className="flex flex-col gap-3 pb-16">
-      {/* 1. SELETOR NO CELULAR (3 PONTINHOS PARA ABRIR AS OPÇÕES) */}
-      <div className="relative sm:hidden">
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface p-1.5 shadow-sm">
-          <button
-            type="button"
-            onClick={() => { AF.click(); setMobileMenuOpen(prev => !prev); }}
-            className="flex items-center gap-2 px-2.5 py-1 rounded bg-gold/10 border border-gold/30 text-gold text-xs font-bold text-left"
-          >
-            <ActiveIcon size={14} className="flex-none" />
-            <span className="truncate">{T(activeCatObj.key, activeCatObj.label)}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { AF.click(); setMobileMenuOpen(prev => !prev); }}
-            className={`flex items-center justify-center h-8 w-8 rounded border transition-all ${
-              mobileMenuOpen
-                ? 'border-gold bg-gold text-[#141414] shadow-[0_0_8px_rgba(255,200,70,0.3)]'
-                : 'border-line/60 bg-surface2 text-muted hover:text-ink hover:border-gold/40'
-            }`}
-            aria-label="Opções de configurações"
-          >
-            <MoreVertical size={16} />
-          </button>
-        </div>
-
-        {/* Dropdown Flutuante no Celular */}
-        {mobileMenuOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <div className="absolute right-0 top-full mt-1.5 z-50 w-full rounded-lg border border-line bg-surface p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-2.5 py-1 border-b border-line/40 mb-1 flex items-center justify-between text-muted">
-                <span className="text-[10px] font-mono uppercase tracking-wider">
-                  ⚙️ {T('sec_settings', 'CONFIGURAÇÕES')}
-                </span>
-                <span className="text-[10px] font-mono text-gold font-bold">3 SEÇÕES</span>
-              </div>
-              <div className="space-y-1">
-                {SETTINGS_CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const sel = activeCategory === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        AF.click();
-                        setActiveCategory(cat.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between gap-2.5 rounded px-3 py-2 text-xs transition-all ${
-                        sel
-                          ? 'bg-gold text-[#141414] font-bold shadow-[0_0_8px_rgba(255,200,70,0.25)]'
-                          : 'text-muted hover:bg-surface2 hover:text-ink font-medium'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon size={14} className={sel ? 'text-[#141414]' : 'text-gold'} />
-                        <span>{T(cat.key, cat.label)}</span>
-                      </div>
-                      {sel && <Check size={14} className="text-[#141414]" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* 2. SELETOR NO PC / DESKTOP (COMO ESTAVA) */}
-      <div className="hidden sm:flex items-center justify-between gap-2 rounded-lg border border-line bg-surface p-1.5 shadow-sm">
-        <div className="flex items-center gap-1">
-          {SETTINGS_CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const sel = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => { AF.click(); setActiveCategory(cat.id); }}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded px-3 py-1.5 text-xs font-bold transition-all ${
-                  sel
-                    ? 'bg-gold text-[#141414] shadow-[0_0_10px_rgba(255,200,70,0.25)]'
-                    : 'text-muted hover:bg-surface2 hover:text-ink'
-                }`}
-              >
-                <Icon size={13} />
-                <span>{T(cat.key, cat.label)}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <span className="text-[11px] font-mono text-muted pr-2">
-          ⚙️ {T('sec_settings', 'CONFIGURAÇÕES DO QG')}
-        </span>
+      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
+      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
+        {SETTINGS_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          const sel = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => {
+                AF.click();
+                setActiveCategory(cat.id);
+              }}
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+                sel
+                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
+              }`}
+            >
+              <Icon size={14} className="flex-none" />
+              <span className="truncate">{T(cat.key, cat.label)}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* 1. SEÇÃO GERAL & VISUAL */}

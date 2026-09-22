@@ -22,7 +22,6 @@ export default function LibraryView() {
   const PN = (k) => cx(lang, 'prog', k) || BREATH_PROGRAMS[k].nome;
   const BR = (l) => cxBreath(lang, l);
   const [tab, setTab] = useState('licoes');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [prog, setProg] = useState('combate');
   const [br, setBr] = useState({ lab: BR('PRONTO'), num: 0, ph: '' });
   const [on, setOn] = useState(false);
@@ -42,106 +41,38 @@ export default function LibraryView() {
 
   return (
     <div className="grid gap-3.5">
-      {/* SELETOR DE CATEGORIAS RESPONSIVO (Desktop: Abas / Mobile: 3 Pontinhos) */}
-      <div className="flex items-center justify-between gap-2 border-b border-line pb-3">
-        {/* Mobile: Categoria Ativa + 3 Pontinhos */}
-        <div className="sm:hidden flex items-center justify-between w-full relative">
-          <div className="flex items-center gap-2">
-            {(() => {
-              const currentCat = LIB_CATEGORIES.find((c) => c.id === tab) || LIB_CATEGORIES[0];
-              const IconComp = currentCat.icon;
-              return (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface2 border border-gold/30 text-gold font-bold text-xs">
-                  <IconComp size={15} />
-                  <span>{t(currentCat.labelKey)}</span>
-                </div>
-              );
-            })()}
-          </div>
-
-          <div className="relative">
+      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
+      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
+        {LIB_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          const isSelected = tab === cat.id;
+          const count = cat.id === 'licoes' ? LESSONS.length : cat.id === 'leituras' ? READINGS.length : null;
+          return (
             <button
+              key={cat.id}
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg border border-line bg-surface hover:border-gold/50 text-ink transition-colors flex items-center justify-center"
-              aria-label="Abrir menu de categorias"
+              onClick={() => {
+                setTab(cat.id);
+                AF.click();
+              }}
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+                isSelected
+                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
+              }`}
             >
-              <MoreVertical size={16} />
+              <Icon size={14} className="flex-none" />
+              <span className="truncate">{t(cat.labelKey)}</span>
+              {count !== null && (
+                <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-mono font-bold flex-none ${
+                  isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold'
+                }`}>
+                  {count}
+                </span>
+              )}
             </button>
-
-            {mobileMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-56 rounded-lg border border-line bg-surface2 shadow-xl z-50 p-1">
-                {LIB_CATEGORIES.map((cat) => {
-                  const Icon = cat.icon;
-                  const isSelected = tab === cat.id;
-                  const count = cat.id === 'licoes' ? LESSONS.length : cat.id === 'leituras' ? READINGS.length : null;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setTab(cat.id);
-                        setMobileMenuOpen(false);
-                        AF.click();
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
-                        isSelected
-                          ? 'bg-gold/15 text-gold font-bold'
-                          : 'text-muted hover:text-ink hover:bg-surface'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon size={14} className={isSelected ? 'text-gold' : 'text-muted'} />
-                        <span>{t(cat.labelKey)}</span>
-                      </div>
-                      {count !== null && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface border border-line">
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop: Abas Horizontais */}
-        <div className="hidden sm:flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            {LIB_CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isSelected = tab === cat.id;
-              const count = cat.id === 'licoes' ? LESSONS.length : cat.id === 'leituras' ? READINGS.length : null;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => {
-                    setTab(cat.id);
-                    AF.click();
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all border ${
-                    isSelected
-                      ? 'border-gold bg-gold/15 text-gold shadow-sm'
-                      : 'border-line bg-surface hover:bg-surface2 text-muted hover:text-ink'
-                  }`}
-                >
-                  <Icon size={14} className={isSelected ? 'text-gold' : 'text-muted'} />
-                  <span>{t(cat.labelKey)}</span>
-                  {count !== null && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
-                      isSelected ? 'bg-gold/20 text-gold' : 'bg-surface2 text-muted'
-                    }`}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {tab === 'licoes' && (

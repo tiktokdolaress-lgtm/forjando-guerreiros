@@ -57,7 +57,6 @@ export default function EnemyView() {
   const rows = cxTable(lang, DOSSIER_TABLE);
 
   const [activeCategory, setActiveCategory] = useState('dossier');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Por padrão os dossiês já começam abertos para consulta imediata ou com controle
   const [open, setOpen] = useState({ deip: true, brain: true, grip: true, pelvic: true, escalation: true, social: true });
@@ -70,111 +69,33 @@ export default function EnemyView() {
     setOpen(nextState);
   };
 
-  const currentCategory = ENEMY_CATEGORIES.find((c) => c.id === activeCategory) || ENEMY_CATEGORIES[0];
-  const CurrentIcon = currentCategory.icon;
-
   return (
     <div className="flex flex-col gap-3.5 pb-16">
-      {/* SELETOR DE CATEGORIAS: Desktop Tabs & Mobile 3-Dots Dropdown */}
-      <Card className="border-gold/30 bg-surface2/60 p-2.5 sm:p-3">
-        {/* Mobile: Categoria Ativa + Botão de 3 Pontinhos */}
-        <div className="relative flex items-center justify-between sm:hidden">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
-              <CurrentIcon size={16} />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider block">Dossiê</span>
-              <span className="text-xs font-bold font-mono text-gold">{currentCategory.label}</span>
-            </div>
-          </div>
-
-          <div className="relative">
+      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
+      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
+        {ENEMY_CATEGORIES.map((cat) => {
+          const Icon = cat.icon;
+          const isSelected = activeCategory === cat.id;
+          return (
             <button
+              key={cat.id}
               type="button"
               onClick={() => {
                 AF.click();
-                setMobileMenuOpen(!mobileMenuOpen);
+                setActiveCategory(cat.id);
               }}
-              className={`p-2 rounded-md border transition-all ${
-                mobileMenuOpen
-                  ? 'bg-gold text-[#141414] border-gold shadow-sm'
-                  : 'bg-surface border-line text-muted hover:text-ink hover:border-gold/40'
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+                isSelected
+                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
+                  : 'text-muted hover:text-ink hover:bg-surface/50'
               }`}
-              title="Opções do Dossiê"
             >
-              <MoreVertical size={16} />
+              <Icon size={14} className="flex-none" />
+              <span className="truncate">{cat.label}</span>
             </button>
-
-            {/* Dropdown Flutuante no Mobile */}
-            {mobileMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setMobileMenuOpen(false)}
-                />
-                <div className="absolute right-0 top-full mt-1.5 w-56 rounded-lg border border-gold/30 bg-[#1a1a20] shadow-xl z-50 py-1 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3 py-1.5 text-[10px] font-mono text-muted uppercase font-bold border-b border-line/60">
-                    Navegação do Dossiê
-                  </div>
-                  {ENEMY_CATEGORIES.map((cat) => {
-                    const CatIcon = cat.icon;
-                    const isSel = activeCategory === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => {
-                          AF.click();
-                          setActiveCategory(cat.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 text-xs font-mono font-semibold flex items-center justify-between transition-colors ${
-                          isSel
-                            ? 'bg-gold/15 text-gold border-l-2 border-gold font-bold'
-                            : 'text-ink hover:bg-surface2'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <CatIcon size={14} className={isSel ? 'text-gold' : 'text-muted'} />
-                          <span>{cat.label}</span>
-                        </div>
-                        {isSel && <Check size={14} className="text-gold flex-none" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop: Abas Segmentadas */}
-        <div className="hidden sm:grid sm:grid-cols-3 gap-1.5">
-          {ENEMY_CATEGORIES.map((cat) => {
-            const CatIcon = cat.icon;
-            const isSel = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  AF.click();
-                  setActiveCategory(cat.id);
-                }}
-                className={`py-2 px-3 rounded text-xs font-mono font-bold transition-all flex items-center justify-center gap-2 ${
-                  isSel
-                    ? 'bg-gold text-[#141414] shadow-sm'
-                    : 'bg-surface text-muted hover:text-ink hover:border-gold/40 border border-line'
-                }`}
-              >
-                <CatIcon size={14} />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
+          );
+        })}
+      </div>
 
       {/* CATEGORIA 1: DOSSIÊS CIENTÍFICOS */}
       {activeCategory === 'dossier' && (
