@@ -332,8 +332,26 @@ export default function QgView() {
           <button className="btn-gold btn-big" onClick={() => {
             update((s) => {
               const dd = today();
-              s.journal[dd] = s.journal[dd] || { mood: '', good: '', ch: '' };
-              Object.assign(s.journal[dd], { fall: true, fallTypes: types, fallTriggers: triggers, vent: vent || s.journal[dd].vent || '' });
+              if (Array.isArray(s.journal)) {
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                s.journal.unshift({
+                  id: 'j_fall_' + Date.now(),
+                  date: dd,
+                  time: timeStr,
+                  mood: 'guerra',
+                  fall: true,
+                  fallTypes: types,
+                  fallTriggers: triggers,
+                  vent: vent || '',
+                  text: vent || '⚠️ Queda registrada.',
+                  createdAt: Date.now(),
+                });
+              } else {
+                s.journal = s.journal || {};
+                s.journal[dd] = s.journal[dd] || { mood: '', good: '', ch: '' };
+                Object.assign(s.journal[dd], { fall: true, fallTypes: types, fallTriggers: triggers, vent: vent || s.journal[dd].vent || '' });
+              }
             });
             closeModal(); toast(t('savedj'));
           }}>{t('fall_save')}</button>

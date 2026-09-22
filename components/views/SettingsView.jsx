@@ -561,44 +561,57 @@ export default function SettingsView() {
                 <span className="text-[10px] font-mono text-muted">{S.phrases.length} {T('lbl_extras', 'EXTRAS')}</span>
               </div>
 
-              <div className="mb-2 flex gap-1.5">
-                <input
-                  className="field flex-1 text-xs py-1.5"
-                  maxLength={140}
-                  placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra...')}
-                  value={ph}
-                  onChange={(e) => setPh(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && ph.trim()) {
+              <div className="mb-2 flex flex-col gap-1.5">
+                <div className="flex gap-1.5 items-start">
+                  <textarea
+                    rows={2}
+                    className="field flex-1 text-xs py-2 px-2.5 resize-y min-h-[44px] max-h-[160px] leading-relaxed"
+                    maxLength={1000}
+                    placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 1000 caracteres)...')}
+                    value={ph}
+                    onChange={(e) => setPh(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && ph.trim()) {
+                        e.preventDefault();
+                        update((s) => { s.phrases.push(ph.trim()); });
+                        setPh('');
+                        toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn-gold flex-none px-3.5 h-[44px] flex items-center justify-center"
+                    onClick={() => {
+                      if (!ph.trim()) return;
                       update((s) => { s.phrases.push(ph.trim()); });
                       setPh('');
                       toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                    }
-                  }}
-                />
-                <button
-                  className="btn-gold flex-none px-3 py-1.5"
-                  onClick={() => {
-                    if (!ph.trim()) return;
-                    update((s) => { s.phrases.push(ph.trim()); });
-                    setPh('');
-                    toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                  }}
-                >
-                  <Plus size={14} />
-                </button>
+                    }}
+                    title="Adicionar Frase"
+                  >
+                    <Plus size={15} />
+                  </button>
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-mono text-muted px-0.5">
+                  <span>Enter para salvar (Shift+Enter para nova linha)</span>
+                  <span className={ph.length >= 900 ? 'text-danger font-bold' : ''}>
+                    {ph.length}/1000
+                  </span>
+                </div>
               </div>
 
-              <div className="max-h-[140px] overflow-y-auto space-y-1 pr-1">
+              <div className="max-h-[220px] overflow-y-auto space-y-1.5 pr-1">
                 {S.phrases.length ? (
                   S.phrases.map((p, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2 rounded border border-line/60 bg-surface2/60 px-2 py-1.5 text-xs">
-                      <span className="italic text-ink truncate">"{p}"</span>
+                    <div key={i} className="flex items-start justify-between gap-2 rounded border border-line/60 bg-surface2/60 p-2 text-xs">
+                      <span className="italic text-ink whitespace-pre-wrap leading-relaxed break-words flex-1">"{p}"</span>
                       <button
-                        className="text-muted hover:text-danger flex-none p-0.5"
+                        className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5"
                         onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), `Remover "${p}" do Código?`, () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
+                        title="Excluir frase"
                       >
-                        <X size={12} />
+                        <X size={13} />
                       </button>
                     </div>
                   ))

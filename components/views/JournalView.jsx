@@ -42,13 +42,20 @@ export default function JournalView() {
   const rawJournal = (S && S.journal) || [];
   let entries = [];
   if (Array.isArray(rawJournal)) {
-    entries = rawJournal;
-  } else if (typeof rawJournal === 'object') {
-    entries = Object.keys(rawJournal).map((dateKey) => ({
-      id: dateKey,
-      date: dateKey,
-      ...(typeof rawJournal[dateKey] === 'object' ? rawJournal[dateKey] : { text: String(rawJournal[dateKey]) }),
-    })).reverse();
+    entries = [...rawJournal].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } else if (typeof rawJournal === 'object' && rawJournal !== null) {
+    entries = Object.keys(rawJournal).map((dateKey) => {
+      const val = rawJournal[dateKey];
+      const isObj = val && typeof val === 'object';
+      return {
+        id: isObj && val.id ? val.id : 'j_' + dateKey,
+        date: isObj && val.date ? val.date : dateKey,
+        mood: isObj ? (val.mood || val.ch || 'firme') : 'firme',
+        text: isObj ? (val.text || val.vent || val.good || '') : String(val || ''),
+        time: isObj && val.time ? val.time : '',
+        createdAt: isObj && (val.createdAt || val.updatedAt) ? (val.createdAt || val.updatedAt) : 0,
+      };
+    }).reverse();
   }
 
   // Indicadores táticos de consistência de auditoria
@@ -70,24 +77,38 @@ export default function JournalView() {
     e.preventDefault();
     if (!text.trim()) return toast('Escreva sua reflexão antes de salvar');
 
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const newEntry = {
+      id: 'j_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      date: today(),
+      time: timeStr,
+      mood,
+      text: text.trim(),
+      createdAt: Date.now(),
+    };
+
     update((s) => {
       if (Array.isArray(s.journal)) {
-        s.journal.unshift({
-          id: 'j_' + Date.now(),
-          date: today(),
-          mood,
-          text: text.trim(),
-          createdAt: Date.now(),
-        });
+        s.journal.unshift(newEntry);
       } else {
-        s.journal = s.journal || {};
-        s.journal[today()] = {
-          mood,
-          text: text.trim(),
-          good: text.trim(),
-          ch: mood,
-          updatedAt: Date.now(),
-        };
+        // Converte objeto existente para array para permitir múltiplas anotações por dia sem apagar
+        const existing = [];
+        if (s.journal && typeof s.journal === 'object') {
+          Object.keys(s.journal).forEach((k) => {
+            const val = s.journal[k];
+            const isObj = val && typeof val === 'object';
+            existing.push({
+              id: isObj && val.id ? val.id : 'j_' + k,
+              date: isObj && val.date ? val.date : k,
+              mood: isObj ? (val.mood || val.ch || 'firme') : 'firme',
+              text: isObj ? (val.text || val.vent || val.good || '') : String(val || ''),
+              time: isObj && val.time ? val.time : '',
+              createdAt: isObj && (val.createdAt || val.updatedAt) ? (val.createdAt || val.updatedAt) : 0,
+            });
+          });
+        }
+        s.journal = [newEntry, ...existing];
       }
     });
 
@@ -101,7 +122,7 @@ export default function JournalView() {
     update((s) => {
       if (Array.isArray(s.journal)) {
         s.journal = s.journal.filter((x) => String(x.id) !== String(id));
-      } else if (s.journal && s.journal[id]) {
+      } else if (s.journal && typeof s.journal === 'object') {
         delete s.journal[id];
       }
     });
@@ -246,10 +267,15 @@ export default function JournalView() {
                     className="p-3 rounded border border-line bg-surface2/70 hover:border-gold/30 transition-all flex flex-col gap-2"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-mono text-xs font-bold text-ink">
                           {fmtD(item.date || today())}
                         </span>
+                        {item.time && (
+                          <span className="text-[10px] font-mono text-gold/90 bg-gold/10 px-1.5 py-0.5 rounded border border-gold/20">
+                            {item.time}
+                          </span>
+                        )}
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded border uppercase ${moodBadge}`}>
                           {itemMood}
                         </span>
