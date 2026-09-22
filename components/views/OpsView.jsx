@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
@@ -76,8 +76,8 @@ export default function OpsView() {
   const tasks = S.tasks || [];
   const projects = S.projects || [];
   const archivedProjectIds = useMemo(() => new Set(
-    projects.filter((p) => p && p.archived).map((p) => String(p.id))
-  ), [projects]);
+    (S.projects || []).filter((p) => p && p.archived).map((p) => String(p.id))
+  ), [S.projects]);
 
   const isTaskActive = useCallback((t) => {
     if (!t || t.archived) return false;

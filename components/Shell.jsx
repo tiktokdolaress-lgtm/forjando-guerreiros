@@ -16,6 +16,7 @@ import JournalView from './views/JournalView';
 import StatsView from './views/StatsView';
 import EnemyView from './views/EnemyView';
 import SettingsView from './views/SettingsView';
+import ErrorBoundary from './ErrorBoundary';
 
 const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, enemy: Skull, settings: Settings };
 const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView };
@@ -120,7 +121,9 @@ export default function Shell() {
         </header>
 
         <main className="w-full min-w-0 flex-1 px-3 sm:px-4 pb-32 pt-2.5 sm:pt-3 lg:px-8 lg:pb-16 overflow-x-hidden">
-          <View key={tab} />
+          <ErrorBoundary key={tab}>
+            <View />
+          </ErrorBoundary>
         </main>
       </div>
 
