@@ -11,6 +11,7 @@ import { today, dstr, fdmy, fmtD, pad, yesterday } from '@/lib/utils';
 import WarriorLogo from '@/components/WarriorLogo';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
+import HolographicWarriorCard from '@/components/HolographicWarriorCard';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -557,102 +558,18 @@ export default function QgView() {
           </div>
         </div>
 
-        {/* O GUERREIRO VIVO DA FORJA (AVATAR RECORTADO + CHAMA DA FORNALHA + BIGORNA) */}
-        <div className="relative my-3 sm:my-4 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[360px] w-full overflow-hidden rounded-2xl bg-gradient-to-b from-[#140f0c] via-[#0d0907] to-[#080605] border border-amber-900/40 p-2 sm:p-4 shadow-inner group">
-          {/* Luz de Tocha / Braseiro pulsante atrás do Guerreiro com aura dinâmica */}
-          <div className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[260px] w-[260px] sm:h-[340px] sm:w-[340px] rounded-full ${
-            tier.min >= 365 ? 'bg-[radial-gradient(circle,rgba(255,215,0,0.45)_0%,rgba(245,158,11,0.25)_45%,transparent_75%)] anim-solar-aura' :
-            tier.min >= 180 ? 'bg-[radial-gradient(circle,rgba(56,189,248,0.3)_0%,rgba(245,158,11,0.2)_45%,transparent_75%)] anim-torch-glow' :
-            tier.min >= 61 ? 'bg-[radial-gradient(circle,rgba(245,158,11,0.4)_0%,rgba(234,88,12,0.22)_45%,transparent_70%)] anim-torch-glow' :
-            tier.min <= 3 ? 'bg-[radial-gradient(circle,rgba(160,160,160,0.18)_0%,rgba(100,100,100,0.08)_45%,transparent_70%)]' :
-            'bg-[radial-gradient(circle,rgba(245,158,11,0.3)_0%,rgba(217,119,6,0.12)_45%,transparent_70%)] anim-torch-glow'
-          }`} />
-
-          {/* Efeito de Runas Sagradas para Soberano do Templo (270+ dias) */}
-          {tier.min >= 270 && (
-            <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center anim-runic-pulse">
-              <span className="text-amber-400/40 text-4xl select-none font-mono">᚛ ᚠ ᚢ ᚦ ᚬ ᚱ ᚴ ᚜</span>
-            </div>
-          )}
-
-          {/* Centelhas e Faíscas Vivas de Bigorna subindo */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
-            <span className="absolute bottom-12 left-[20%] h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b] anim-spark-drift-1" />
-            <span className="absolute bottom-16 right-[22%] h-2 w-2 rounded-full bg-yellow-300 shadow-[0_0_10px_#fde047] anim-spark-drift-2" />
-            <span className="absolute bottom-10 left-[48%] h-1 w-1 rounded-full bg-orange-500 shadow-[0_0_6px_#f97316] anim-spark-drift-3" />
-            <span className="absolute bottom-8 right-[38%] h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#fbbf24] anim-spark-drift-1" style={{ animationDelay: '1.5s' }} />
-          </div>
-
-          {/* Avatar Recortado do Guerreiro (Clicável para acionar a celebração de nível) */}
-          <div
-            onClick={() => {
-              AF.seal();
-              setLevelUpModalTier(tier);
-            }}
-            className="relative z-10 flex flex-col items-center justify-end w-full cursor-pointer group/warrior transition-transform active:scale-98"
-            title={curLang === 'en' ? 'Click to view rank celebration animation' : curLang === 'es' ? 'Clic para ver animación de celebración de rango' : 'Clique para ver a animação de celebração da patente'}
-          >
-            {/* Varredura reluzente de aço temperado para Cavaleiro em diante */}
-            {tier.min >= 31 && (
-              <div className="pointer-events-none absolute inset-0 overflow-hidden z-20">
-                <div className="h-full w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent anim-armor-shine" />
-              </div>
-            )}
-
-            <img
-              src={tier.image || "/escudeiro.png"}
-              alt={tier.name || "Guerreiro da Forja"}
-              style={{
-                filter: tier.min <= 3
-                  ? 'grayscale(0.42) contrast(1.1) brightness(0.85) drop-shadow(0 16px 28px rgba(0,0,0,0.98))'
-                  : tier.min <= 7
-                  ? 'sepia(0.18) contrast(1.06) brightness(0.92) drop-shadow(0 16px 28px rgba(0,0,0,0.98)) drop-shadow(0 0 18px rgba(217,119,6,0.2))'
-                  : tier.min >= 365
-                  ? 'drop-shadow(0 16px 28px rgba(0,0,0,0.98)) drop-shadow(0 0 35px rgba(255,215,0,0.85))'
-                  : tier.min >= 61
-                  ? 'drop-shadow(0 16px 28px rgba(0,0,0,0.98)) drop-shadow(0 0 28px rgba(245,158,11,0.65))'
-                  : 'drop-shadow(0 16px 28px rgba(0,0,0,0.98)) drop-shadow(0 0 24px rgba(245,158,11,0.25))',
-              }}
-              className="h-[220px] min-[390px]:h-[250px] sm:h-[300px] md:h-[330px] w-auto max-w-full object-contain anim-warrior-breathe select-none pointer-events-none transition-transform group-hover/warrior:scale-[1.02]"
-            />
-
-            {/* Pedestal de Ferro e Bigorna da Forja com Selo da Patente */}
-            <div className="relative z-20 -mt-3 sm:-mt-4 w-full max-w-[280px] sm:max-w-[340px]">
-              <div className="h-6 sm:h-7 rounded-t-lg bg-gradient-to-r from-[#1f160e] via-[#3d2712] to-[#1f160e] border-t-2 border-x-2 border-amber-600/70 shadow-[0_6px_20px_rgba(0,0,0,0.95)] flex items-center justify-between px-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
-                <span className="text-[8.5px] sm:text-[10px] font-mono font-black uppercase tracking-wider text-amber-200 truncate">
-                  ⚔️ {tier.name} {tier.subtitle ? `· ${tier.subtitle}` : ''}
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
-              </div>
-            </div>
-          </div>
-
-          {/* Botões de Ação Rápida: Galeria de Armaduras & Teste da Animação */}
-          <div className="relative z-20 flex items-center justify-center gap-2 mt-2 pt-1 border-t border-amber-950/40 w-full max-w-[340px]">
-            <button
-              onClick={() => {
-                AF.click();
-                setShowEvolutionGallery(true);
-              }}
-              className="flex-1 py-1 px-2 rounded-lg bg-amber-950/30 hover:bg-amber-900/40 border border-amber-600/40 hover:border-amber-400/70 text-amber-200 text-[9px] sm:text-[10px] font-mono font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1 shadow"
-            >
-              <Eye size={12} className="text-amber-400 flex-none" />
-              <span className="truncate">{curLang === 'en' ? '11 Armors' : curLang === 'es' ? '11 Armaduras' : '11 Armaduras'}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                AF.seal();
-                setLevelUpModalTier(tier);
-              }}
-              className="flex-1 py-1 px-2 rounded-lg bg-gradient-to-r from-amber-600/25 to-amber-500/25 hover:from-amber-600/40 hover:to-amber-500/40 border border-amber-400/60 hover:border-amber-400 text-amber-200 text-[9px] sm:text-[10px] font-mono font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.25)]"
-            >
-              <Play size={10} className="text-amber-300 flex-none fill-amber-300" />
-              <span className="truncate">{curLang === 'en' ? 'Level Up FX' : curLang === 'es' ? 'Animación Nivel' : 'Animação Nível'}</span>
-            </button>
-          </div>
-        </div>
+        {/* O GUERREIRO VIVO DA FORJA (CARD HOLOGRÁFICO 2.5D PARALLAX INTERATIVO) */}
+        <HolographicWarriorCard
+          tier={tier}
+          d={d}
+          nt={nt}
+          curLang={curLang}
+          onOpenGallery={() => setShowEvolutionGallery(true)}
+          onLevelUpClick={() => {
+            AF.seal();
+            setLevelUpModalTier(tier);
+          }}
+        />
 
         {/* TRÍPTICO TÁTICO DA FORJA (HUD DE COMBATE DAS 3 FORÇAS VITÁIS) */}
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 my-2 relative z-10 w-full min-w-0">
