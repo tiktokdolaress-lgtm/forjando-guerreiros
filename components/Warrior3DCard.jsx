@@ -23,32 +23,92 @@ export default function Warrior3DCard({
   onOpenGallery,
   onLevelUpClick,
 }) {
-  // Dados de armamento e armadura dinâmicos por tier
+  // Dados de armamento e armadura dinâmicos para cada uma das 11 patentes
   const getArmament = () => {
+    if (tier.min >= 730) {
+      return {
+        stageNum: 11,
+        weapon: curLang === 'en' ? 'Cosmic Godblade & Aegis of Eternity' : curLang === 'es' ? 'Espada Cósmica y Égida de la Eternidad' : 'Espada Cósmica da Criação & Égide da Eternidade',
+        armor: curLang === 'en' ? 'Ascended Divine Armor with Solar Wings' : curLang === 'es' ? 'Armadura Ascendida con Alas Solares' : 'Armadura Ascendida com Asas Celestiais',
+        stage: 'Estágio 11 (Máximo Cósmico)',
+      };
+    }
     if (tier.min >= 365) {
       return {
-        weapon: curLang === 'en' ? 'Divine Sunblade & Celestial Shield' : curLang === 'es' ? 'Espada Solar Divina y Escudo Celestial' : 'Espada Solar Divina & Escudo Celestial',
-        armor: curLang === 'en' ? 'Immortal Solid Gold Plate' : curLang === 'es' ? 'Placas de Oro Macizo Inmortal' : 'Peitoral de Ouro Maciço Imortal',
-        stage: 'Estágio 5 (Máximo)',
+        stageNum: 10,
+        weapon: curLang === 'en' ? 'Divine Sunblade & Pure Gold Sun Shield' : curLang === 'es' ? 'Espada Solar Divina y Escudo de Oro' : 'Espada Solar Divina & Escudo Solar de Ouro Puro',
+        armor: curLang === 'en' ? 'Complete Solid 24k Gold Armor & Crown' : curLang === 'es' ? 'Armadura de Oro Puro 24k y Corona' : 'Armadura Completa de Ouro Puro 24k Maciço',
+        stage: 'Estágio 10 (Imortal)',
+      };
+    }
+    if (tier.min >= 270) {
+      return {
+        stageNum: 9,
+        weapon: curLang === 'en' ? 'Temple Runic Sword & Gilded Relic Shield' : curLang === 'es' ? 'Espada Rúnica del Templo y Escudo Reliquia' : 'Espada Rúnica do Templo & Escudo Relíquia de Ébano',
+        armor: curLang === 'en' ? 'Sacred Ebony Plates with Gold Runes' : curLang === 'es' ? 'Placas Sagradas de Ébano y Oro' : 'Placas Sagradas de Ébano com Filigranas Douradas',
+        stage: 'Estágio 9',
       };
     }
     if (tier.min >= 180) {
       return {
-        weapon: curLang === 'en' ? 'Damascus Greatsword & Sacred Shield' : curLang === 'es' ? 'Mandoble de Damasco y Escudo Sagrado' : 'Montante de Damasco & Escudo Sagrado',
-        armor: curLang === 'en' ? 'Enchanted Damascus Steel' : curLang === 'es' ? 'Acero de Damasco Encantado' : 'Aço de Damasco do Grão-Mestre',
-        stage: 'Estágio 4',
+        stageNum: 8,
+        weapon: curLang === 'en' ? 'Mystic Sapphire Claymore & Blue Cross Shield' : curLang === 'es' ? 'Claymore de Zafiro y Escudo Cruz Azul' : 'Montante Rúnico Místico & Escudo de Cruz Azul',
+        armor: curLang === 'en' ? 'Sapphire Damascus Steel Armor & Fur Mantle' : curLang === 'es' ? 'Acero de Damasco Zafiro y Manto de Piel' : 'Aço Damasco Místico com Runas Azuis',
+        stage: 'Estágio 8',
+      };
+    }
+    if (tier.min >= 120) {
+      return {
+        stageNum: 7,
+        weapon: curLang === 'en' ? 'Commander Double Sword & Bronze Lion Shield' : curLang === 'es' ? 'Espada de Comandante y Escudo de León' : 'Espada de Comando Imperial & Escudo de Bronze do Leão',
+        armor: curLang === 'en' ? 'Dark Damascus Plates with Lion Pauldrons & Crimson Cape' : curLang === 'es' ? 'Placas de Damasco Oscuro y Capa Carmesí' : 'Aço Damasco com Ombreiras de Leão & Capa Carmesim',
+        stage: 'Estágio 7',
+      };
+    }
+    if (tier.min >= 61) {
+      return {
+        stageNum: 6,
+        weapon: curLang === 'en' ? 'Gothic Zweihänder & Spiked Tower Shield' : curLang === 'es' ? 'Zweihänder Gótico y Escudo Torre con Espinas' : 'Montante Zweihänder Gótico & Escudo Torre Espinhado',
+        armor: curLang === 'en' ? 'Blackened Gothic Plate Armor & Winged Visor' : curLang === 'es' ? 'Armadura Gótica Negra y Visera Alada' : 'Aço Negro Gótico com Visor Alado & Capa de Batalha',
+        stage: 'Estágio 6',
       };
     }
     if (tier.min >= 31) {
       return {
-        weapon: curLang === 'en' ? 'Forged Longsword & Heater Shield' : curLang === 'es' ? 'Espada Larga Forjada y Escudo Heráldico' : 'Espada Longa Forjada & Escudo de Armas',
-        armor: curLang === 'en' ? 'Full Knight Steel Plate' : curLang === 'es' ? 'Armadura Completa de Placas' : 'Peitoral de Placas de Aço Polido',
+        stageNum: 5,
+        weapon: curLang === 'en' ? 'Polished Steel Longsword & Knight Heater Shield' : curLang === 'es' ? 'Espada Larga de Acero y Escudo Triangular' : 'Espada Longa de Aço Forjado & Escudo de Armas',
+        armor: curLang === 'en' ? 'Full Mirror Steel Plates with Cross Visor & Blue Cape' : curLang === 'es' ? 'Armadura Completa de Placas y Capa Azul' : 'Peitoral de Placas de Aço Polido & Manto Azul Real',
+        stage: 'Estágio 5',
+      };
+    }
+    if (tier.min >= 15) {
+      return {
+        stageNum: 4,
+        weapon: curLang === 'en' ? 'Steel Arming Sword & Norman Kite Shield' : curLang === 'es' ? 'Espada de Armar y Escudo Pipa Normando' : 'Espada de Armar de Ferro & Escudo Pipa Normando',
+        armor: curLang === 'en' ? 'Steel Chainmail Hauberk & Norman Nasal Helmet' : curLang === 'es' ? 'Cota de Malla de Acero y Casco Normando' : 'Cota de Malha de Aço Escuro com Elmo Normando',
+        stage: 'Estágio 4',
+      };
+    }
+    if (tier.min >= 8) {
+      return {
+        stageNum: 3,
+        weapon: curLang === 'en' ? 'Battle Axe & Viking Round Oak Shield' : curLang === 'es' ? 'Hacha de Batalla y Escudo Redondo' : 'Machado de Batalha Forjado & Escudo Redondo de Carvalho',
+        armor: curLang === 'en' ? 'Studded Leather Brigandine & Spangenhelm' : curLang === 'es' ? 'Brigantina de Cuero y Casco Spangenhelm' : 'Gibão de Couro Batido com Placas & Spangenhelm',
         stage: 'Estágio 3',
       };
     }
+    if (tier.min >= 4) {
+      return {
+        stageNum: 2,
+        weapon: curLang === 'en' ? 'Forged Handaxe & Wooden Buckler' : curLang === 'es' ? 'Hachuela Forjada y Rodela de Madera' : 'Machadinha Forjada de Ferro & Broquel de Madeira',
+        armor: curLang === 'en' ? 'Reinforced Raw Leather Vest & Iron Coif' : curLang === 'es' ? 'Chaleco de Cuero Reforzado y Gorjal' : 'Colete de Couro Cru Reforçado & Gorjal de Ferro',
+        stage: 'Estágio 2',
+      };
+    }
     return {
-      weapon: curLang === 'en' ? 'Medieval Forged Axe & Round Shield' : curLang === 'es' ? 'Hacha Forjada Medieval y Escudo Redondo' : 'Machado Forjado Medieval & Escudo Redondo',
-      armor: curLang === 'en' ? 'Reinforced Leather Cuirass' : curLang === 'es' ? 'Peto de Cuero Reforzado' : 'Peitoral de Couro & Aço da Forja',
+      stageNum: 1,
+      weapon: curLang === 'en' ? 'Rustic Forged Dagger (No Shield)' : curLang === 'es' ? 'Daga Forjada Rústica (Sin Escudo)' : 'Adaga Curta Forjada Rústica (Sem Escudo)',
+      armor: curLang === 'en' ? 'Ash Linen Tunic & Leather Headband' : curLang === 'es' ? 'Túnica de Lino y Cenizas con Cinta' : 'Túnica de Linho e Cinzas & Faixa de Couro',
       stage: 'Estágio 1',
     };
   };
@@ -97,7 +157,7 @@ export default function Warrior3DCard({
       <div className="relative z-10 flex items-center justify-between pb-2 mb-1 border-b border-amber-900/40">
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
           <span>⚔️</span>
-          <span>ESTÁGIO {tier.min >= 365 ? '10' : tier.min >= 61 ? '5' : tier.min >= 31 ? '3' : '1'}: {tier.name}</span>
+          <span>ESTÁGIO {arm.stageNum}: {tier.name}</span>
         </div>
 
         <div className="text-[10px] sm:text-xs font-mono font-bold text-amber-200/80">
