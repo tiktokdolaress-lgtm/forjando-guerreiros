@@ -103,7 +103,7 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
                     <span className="text-sm">{t.icon}</span>
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-[11px] truncate leading-tight">{t.name}</span>
-                      <span className="text-[9px] font-mono text-muted">{t.min}+ dias</span>
+                      <span className="text-[9px] font-mono text-muted">{t.min}+ {curLang === 'en' ? 'days' : curLang === 'es' ? 'días' : 'dias'}</span>
                     </div>
                   </div>
                   {unlocked ? (
@@ -128,11 +128,11 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
                   ? 'border-ok/60 bg-ok/10 text-ok'
                   : 'border-amber-600/40 bg-amber-950/20 text-amber-400'
               }`}>
-                {isUnlocked ? `✓ ${TXT.unlocked[curLang]}` : `🔒 ${TXT.locked[curLang]} (${selectedTier.min}+ DIAS)`}
+                {isUnlocked ? `✓ ${TXT.unlocked[curLang]}` : `🔒 ${TXT.locked[curLang]} (${selectedTier.min}+ ${curLang === 'en' ? 'DAYS' : curLang === 'es' ? 'DÍAS' : 'DIAS'})`}
               </span>
 
               <span className="text-[9.5px] sm:text-[10px] font-mono text-muted">
-                Nível {selectedIdx + 1} de {tiers.length}
+                {curLang === 'en' ? `Level ${selectedIdx + 1} of ${tiers.length}` : curLang === 'es' ? `Nivel ${selectedIdx + 1} de ${tiers.length}` : `Nível ${selectedIdx + 1} de ${tiers.length}`}
               </span>
             </div>
 

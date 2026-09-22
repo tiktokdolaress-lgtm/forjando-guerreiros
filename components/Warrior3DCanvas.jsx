@@ -287,15 +287,16 @@ export default function Warrior3DCanvas({
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
   const sceneRef = useRef(null);
-  const warriorGroupRef = useRef(null);
+  const rotationRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
+
+  const tierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const cfg = getTier3DConfig(tier.min);
+    const cfg = getTier3DConfig(tierMin);
 
     // --- SETUP SCENE, CAMERA, RENDERER ---
     const scene = new THREE.Scene();
@@ -873,9 +874,9 @@ export default function Warrior3DCanvas({
     const emberParticles = new THREE.Points(emberGeo, emberMat);
     scene.add(emberParticles);
 
-    // --- CONTROLES DE ROTAÇÃO 360° ---
-    let targetRotationY = 0;
-    let currentRotationY = 0;
+    // --- CONTROLES DE ROTAÇÃO 360° COM POINTER EVENTS ---
+    let targetRotationY = rotationRef.current || 0;
+    let currentRotationY = rotationRef.current || 0;
     let previousMouseX = 0;
     let angularVelocity = 0;
     let dragging = false;
@@ -883,33 +884,38 @@ export default function Warrior3DCanvas({
     const onPointerDown = (e) => {
       dragging = true;
       setIsDragging(true);
-      setHasInteracted(true);
-      previousMouseX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      previousMouseX = e.clientX;
       angularVelocity = 0;
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (err) {}
     };
 
     const onPointerMove = (e) => {
       if (!dragging) return;
-      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-      const deltaX = clientX - previousMouseX;
-      previousMouseX = clientX;
+      const deltaX = e.clientX - previousMouseX;
+      previousMouseX = e.clientX;
 
       angularVelocity = deltaX * 0.012;
       targetRotationY += angularVelocity;
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e) => {
+      if (!dragging) return;
       dragging = false;
       setIsDragging(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch (err) {}
     };
 
     const domElement = renderer.domElement;
-    domElement.addEventListener('mousedown', onPointerDown);
-    domElement.addEventListener('touchstart', onPointerDown, { passive: true });
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('touchmove', onPointerMove, { passive: true });
-    window.addEventListener('mouseup', onPointerUp);
-    window.addEventListener('touchend', onPointerUp);
+    domElement.style.touchAction = 'none';
+    domElement.style.cursor = 'grab';
+    domElement.addEventListener('pointerdown', onPointerDown);
+    domElement.addEventListener('pointermove', onPointerMove);
+    domElement.addEventListener('pointerup', onPointerUp);
+    domElement.addEventListener('pointercancel', onPointerUp);
 
     // --- LOOP DE ANIMAÇÃO A 60FPS ---
     let clock = new THREE.Clock();
@@ -919,14 +925,25 @@ export default function Warrior3DCanvas({
       animationId = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      if (!dragging && autoRotate && !hasInteracted) {
-        targetRotationY += 0.008;
-      } else if (!dragging) {
-        targetRotationY += angularVelocity;
-        angularVelocity *= 0.94;
+      if (dragging) {
+        // Usuário arrastando ativamente com o dedo/mouse
+      } else {
+        // Desaceleração suave por inércia após soltar o arraste
+        if (Math.abs(angularVelocity) > 0.0001) {
+          targetRotationY += angularVelocity;
+          angularVelocity *= 0.92;
+        } else {
+          angularVelocity = 0;
+        }
+
+        // Rotação contínua automática suave e majestosa (nunca trava)
+        if (autoRotate) {
+          targetRotationY += 0.006;
+        }
       }
 
       currentRotationY += (targetRotationY - currentRotationY) * 0.12;
+      rotationRef.current = currentRotationY;
       rootGroup.rotation.y = currentRotationY;
 
       // Respiração viva
@@ -975,22 +992,20 @@ export default function Warrior3DCanvas({
 
     return () => {
       cancelAnimationFrame(animationId);
-      domElement.removeEventListener('mousedown', onPointerDown);
-      domElement.removeEventListener('touchstart', onPointerDown);
-      window.removeEventListener('mousemove', onPointerMove);
-      window.removeEventListener('touchmove', onPointerMove);
-      window.removeEventListener('mouseup', onPointerUp);
-      window.removeEventListener('touchend', onPointerUp);
+      domElement.removeEventListener('pointerdown', onPointerDown);
+      domElement.removeEventListener('pointermove', onPointerMove);
+      domElement.removeEventListener('pointerup', onPointerUp);
+      domElement.removeEventListener('pointercancel', onPointerUp);
       window.removeEventListener('resize', handleResize);
 
-      if (rendererRef.current && rendererRef.current.domElement) {
+      if (rendererRef.current) {
         rendererRef.current.dispose();
       }
       if (container) {
         container.innerHTML = '';
       }
     };
-  }, [tier, height, autoRotate]);
+  }, [tierMin, height, autoRotate]);
 
   return (
     <div className="relative w-full flex flex-col items-center select-none">

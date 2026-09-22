@@ -157,11 +157,11 @@ export default function Warrior3DCard({
       <div className="relative z-10 flex items-center justify-between pb-2 mb-1 border-b border-amber-900/40">
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/60 border border-amber-500/40 text-amber-300 text-[10px] sm:text-xs font-mono font-black uppercase tracking-wider shadow">
           <span>⚔️</span>
-          <span>ESTÁGIO {arm.stageNum}: {tier.name}</span>
+          <span>{curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}: {tier.name}</span>
         </div>
 
         <div className="text-[10px] sm:text-xs font-mono font-bold text-amber-200/80">
-          {nt ? `${d}d / ${nt.min}d` : 'PATENTE MÁXIMA'}
+          {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX RANK' : curLang === 'es' ? 'RANGO MÁXIMO' : 'PATENTE MÁXIMA')}
         </div>
       </div>
 
