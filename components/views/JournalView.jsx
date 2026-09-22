@@ -6,15 +6,12 @@ import { Card, K, Empty } from '@/components/ui';
 import { today, fdmy, dstr, fmtD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 
-const JOURNAL_CATEGORIES = [
-  { id: 'write', label: 'Novo Relatório', icon: PenTool },
-  { id: 'history', label: 'Histórico de Auditorias', icon: History },
-  { id: 'metrics', label: 'Métricas & Vigor', icon: BarChart3 },
-];
-
 const I18N = {
-  title: { pt: 'DIÁRIO DE BORDO', en: 'CAPTAIN\'S LOG', es: 'DIARIO DE A BORDO' },
-  subtitle: { pt: 'Auditoria noturna do guerreiro. Registre suas vitórias e gatilhos.', en: 'Warrior\'s evening audit. Log victories and triggers.', es: 'Auditoría nocturna del guerrero. Registra victorias y detonantes.' },
+  title: { pt: 'DIÁRIO DE BORDO', en: "SHIP'S LOG", es: 'DIARIO DE A BORDO' },
+  subtitle: { pt: 'Auditoria noturna do guerreiro. Registre suas vitórias e gatilhos.', en: "Warrior's evening audit. Log victories and triggers.", es: 'Auditoría nocturna del guerrero. Registra victorias y detonantes.' },
+  catWrite: { pt: 'Novo Relatório', en: 'New Report', es: 'Nuevo Informe' },
+  catHistory: { pt: 'Histórico de Auditorias', en: 'Audit History', es: 'Historial de Auditorías' },
+  catMetrics: { pt: 'Métricas & Vigor', en: 'Metrics & Vigor', es: 'Métricas y Vigor' },
   newEntry: { pt: 'NOVO REGISTRO DO DIA', en: 'NEW DAILY ENTRY', es: 'NUEVO REGISTRO DEL DÍA' },
   moodLabel: { pt: 'Estado de Espírito / Vigor:', en: 'State of Mind / Vigor:', es: 'Estado de Ánimo / Vigor:' },
   moodGreat: { pt: 'Em Chamas 🔥', en: 'On Fire 🔥', es: 'En Llamas 🔥' },
@@ -24,8 +21,26 @@ const I18N = {
   textLabel: { pt: 'Reflexão & Prestação de Contas:', en: 'Reflection & Accountability:', es: 'Reflexión y Rendición de Cuentas:' },
   textPh: { pt: 'Como você venceu suas batalhas hoje? Que tentação enfrentou?', en: 'How did you win your battles today? What urge did you conquer?', es: '¿Cómo venciste tus batallas hoy? ¿Qué tentación enfrentaste?' },
   saveBtn: { pt: 'GRAVAR NO DIÁRIO', en: 'SAVE TO LOG', es: 'GUARDAR EN DIARIO' },
-  historyTitle: { pt: 'HISTÓRICO DE AUDITORIAS', en: 'LOG HISTORY', es: 'HISTORIAL DE AUDITORÍAS' },
+  historyTitle: { pt: 'HISTÓRICO DE AUDITORIAS', en: 'AUDIT HISTORY', es: 'HISTORIAL DE AUDITORÍAS' },
   noEntries: { pt: 'Nenhum registro no diário ainda. Escreva seu primeiro relatório hoje!', en: 'No log entries yet. Write your first report today!', es: 'Sin registros aún. ¡Escribe tu primer reporte hoy!' },
+  alreadyLogged: { pt: 'Você já registrou um relatório hoje! Pode registrar outro ou consultar o histórico.', en: 'You already recorded a report today! You can record another or view the history.', es: '¡Ya registraste un informe hoy! Puedes registrar otro o consultar el historial.' },
+  viewHist: { pt: 'Ver histórico', en: 'View history', es: 'Ver historial' },
+  plusNew: { pt: '+ Novo Relatório', en: '+ New Report', es: '+ Nuevo Informe' },
+  writeFirst: { pt: 'Escrever Primeiro Relatório', en: 'Write First Report', es: 'Escribir Primer Informe' },
+  noNotes: { pt: 'Sem anotações textuais.', en: 'No text notes.', es: 'Sin anotaciones textuales.' },
+  delPrompt: { pt: 'Excluir este registro do diário?', en: 'Delete this entry from the log?', es: '¿Eliminar este registro del diario?' },
+  delToast: { pt: 'Registro excluído', en: 'Entry deleted', es: 'Registro eliminado' },
+  saveToast: { pt: '✅ Relatório gravado no Diário de Bordo!', en: "✅ Report recorded in Ship's Log!", es: '✅ ¡Informe guardado en el Diario!' },
+  emptyPrompt: { pt: 'Escreva sua reflexão antes de salvar', en: 'Write your reflection before saving', es: 'Escribe tu reflexión antes de guardar' },
+  totalReports: { pt: 'Total de Relatórios', en: 'Total Reports', es: 'Total de Informes' },
+  todayAudit: { pt: 'Auditoria de Hoje', en: "Today's Audit", es: 'Auditoría de Hoy' },
+  predVigor: { pt: 'Vigor Predominante', en: 'Predominant Vigor', es: 'Vigor Predominante' },
+  lastReport: { pt: 'Último Relatório', en: 'Latest Report', es: 'Último Informe' },
+  completed: { pt: '✓ Concluída', en: '✓ Completed', es: '✓ Completada' },
+  pending: { pt: '⚠️ Pendente', en: '⚠️ Pending', es: '⚠️ Pendiente' },
+  none: { pt: 'Nenhum', en: 'None', es: 'Ninguno' },
+  moodDist: { pt: 'DISTRIBUIÇÃO DE ESTADOS DE ESPÍRITO', en: 'STATE OF MIND DISTRIBUTION', es: 'DISTRIBUCIÓN DE ESTADOS DE ÁNIMO' },
+  delTitle: { pt: 'Excluir Registro', en: 'Delete Entry', es: 'Eliminar Registro' },
 };
 
 export default function JournalView() {
@@ -73,9 +88,15 @@ export default function JournalView() {
     guerra: tx.moodUrge[curLang],
   }[topMood] || 'Firme ⚔️';
 
+  const categories = [
+    { id: 'write', label: tx.catWrite[curLang], icon: PenTool },
+    { id: 'history', label: tx.catHistory[curLang], icon: History },
+    { id: 'metrics', label: tx.catMetrics[curLang], icon: BarChart3 },
+  ];
+
   const handleSave = (e) => {
     e.preventDefault();
-    if (!text.trim()) return toast('Escreva sua reflexão antes de salvar');
+    if (!text.trim()) return toast(tx.emptyPrompt[curLang]);
 
     const now = new Date();
     const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -114,11 +135,11 @@ export default function JournalView() {
 
     setText('');
     AF.click();
-    toast('✅ Relatório gravado no Diário de Bordo!');
+    toast(tx.saveToast[curLang]);
   };
 
   const deleteEntry = (id) => {
-    if (!window.confirm('Excluir este registro do diário?')) return;
+    if (!window.confirm(tx.delPrompt[curLang])) return;
     update((s) => {
       if (Array.isArray(s.journal)) {
         s.journal = s.journal.filter((x) => String(x.id) !== String(id));
@@ -127,14 +148,14 @@ export default function JournalView() {
       }
     });
     AF.click();
-    toast('Registro excluído');
+    toast(tx.delToast[curLang]);
   };
 
   return (
     <div className="grid gap-3.5">
       {/* SELETOR DE CATEGORIAS RESPONSIVO */}
       <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
-        {JOURNAL_CATEGORIES.map((cat) => {
+        {categories.map((cat) => {
           const Icon = cat.icon;
           const isSelected = activeCategory === cat.id;
           const count = cat.id === 'history' ? entries.length : null;
@@ -172,14 +193,14 @@ export default function JournalView() {
           {hasTodayEntry && (
             <div className="mb-3 p-3 rounded-lg border border-gold/30 bg-gold/10 flex items-center justify-between gap-2 text-xs">
               <span className="text-gold font-semibold flex items-center gap-1.5">
-                <Check size={14} /> Você já registrou um relatório hoje! Pode registrar outro ou consultar o histórico.
+                <Check size={14} /> {tx.alreadyLogged[curLang]}
               </span>
               <button
                 type="button"
                 onClick={() => setActiveCategory('history')}
-                className="text-xs font-bold underline text-gold hover:text-ink"
+                className="text-xs font-bold underline text-gold hover:text-ink whitespace-nowrap ml-2"
               >
-                Ver histórico
+                {tx.viewHist[curLang]}
               </button>
             </div>
           )}
@@ -245,7 +266,7 @@ export default function JournalView() {
               onClick={() => setActiveCategory('write')}
               className="text-xs font-bold text-gold hover:underline flex items-center gap-1"
             >
-              <PenTool size={12} /> + Novo Relatório
+              <PenTool size={12} /> {tx.plusNew[curLang]}
             </button>
           </div>
 
@@ -282,7 +303,7 @@ export default function JournalView() {
                       </div>
                       <button
                         type="button"
-                        title="Excluir Registro"
+                        title={tx.delTitle[curLang]}
                         onClick={() => deleteEntry(item.id || item.date)}
                         className="text-muted/60 hover:text-danger p-1 transition-colors"
                       >
@@ -291,7 +312,7 @@ export default function JournalView() {
                     </div>
 
                     <p className="text-xs sm:text-[13px] text-[#e0e0e8] whitespace-pre-wrap leading-relaxed bg-surface/60 p-2.5 rounded border border-line/40 font-sans">
-                      {itemText || 'Sem anotações textuais.'}
+                      {itemText || tx.noNotes[curLang]}
                     </p>
                   </div>
                 );
@@ -305,7 +326,7 @@ export default function JournalView() {
                 onClick={() => setActiveCategory('write')}
                 className="btn-gold py-1.5 px-4 text-xs font-bold mt-3"
               >
-                Escrever Primeiro Relatório
+                {tx.writeFirst[curLang]}
               </button>
             </div>
           )}
@@ -317,33 +338,33 @@ export default function JournalView() {
         <div className="grid gap-3.5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             <div className="p-3.5 rounded-lg border border-line bg-surface2/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Total de Relatórios</span>
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{tx.totalReports[curLang]}</span>
               <b className="text-xl font-mono text-gold mt-1">{entries.length}</b>
             </div>
             <div className="p-3.5 rounded-lg border border-line bg-surface2/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Auditoria de Hoje</span>
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{tx.todayAudit[curLang]}</span>
               <span className={`text-xs font-mono font-bold mt-1 inline-flex items-center gap-1 ${hasTodayEntry ? 'text-gold' : 'text-danger'}`}>
-                {hasTodayEntry ? '✓ Concluída' : '⚠️ Pendente'}
+                {hasTodayEntry ? tx.completed[curLang] : tx.pending[curLang]}
               </span>
             </div>
             <div className="p-3.5 rounded-lg border border-line bg-surface2/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Vigor Predominante</span>
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{tx.predVigor[curLang]}</span>
               <span className="text-xs font-semibold text-ink mt-1 truncate">{topMoodLabel}</span>
             </div>
             <div className="p-3.5 rounded-lg border border-line bg-surface2/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Último Relatório</span>
-              <span className="text-xs font-mono text-gold2 mt-1 truncate">{entries.length > 0 ? fmtD(entries[0].date || today()) : 'Nenhum'}</span>
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{tx.lastReport[curLang]}</span>
+              <span className="text-xs font-mono text-gold2 mt-1 truncate">{entries.length > 0 ? fmtD(entries[0].date || today()) : tx.none[curLang]}</span>
             </div>
           </div>
 
           <Card className="p-4 border-line">
-            <K className="mb-3">📊 DISTRIBUIÇÃO DE ESTADOS DE ESPÍRITO</K>
+            <K className="mb-3">📊 {tx.moodDist[curLang]}</K>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: 'firme', label: 'Firme ⚔️', count: moodCounts.firme || 0, color: 'bg-gold' },
-                { id: 'fogo', label: 'Em Chamas 🔥', count: moodCounts.fogo || 0, color: 'bg-danger' },
-                { id: 'cansado', label: 'Cansado 🛡️', count: moodCounts.cansado || 0, color: 'bg-muted' },
-                { id: 'guerra', label: 'Guerra / Fissura ⚠️', count: moodCounts.guerra || 0, color: 'bg-amber-500' },
+                { id: 'firme', label: tx.moodGood[curLang], count: moodCounts.firme || 0, color: 'bg-gold' },
+                { id: 'fogo', label: tx.moodGreat[curLang], count: moodCounts.fogo || 0, color: 'bg-danger' },
+                { id: 'cansado', label: tx.moodTired[curLang], count: moodCounts.cansado || 0, color: 'bg-muted' },
+                { id: 'guerra', label: tx.moodUrge[curLang], count: moodCounts.guerra || 0, color: 'bg-amber-500' },
               ].map((m) => {
                 const pct = entries.length ? Math.round((m.count / entries.length) * 100) : 0;
                 return (

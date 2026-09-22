@@ -566,8 +566,8 @@ export default function SettingsView() {
                   <textarea
                     rows={2}
                     className="field flex-1 text-xs py-2 px-2.5 resize-y min-h-[44px] max-h-[160px] leading-relaxed"
-                    maxLength={1000}
-                    placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 1000 caracteres)...')}
+                    maxLength={3000}
+                    placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 3000 caracteres)...')}
                     value={ph}
                     onChange={(e) => setPh(e.target.value)}
                     onKeyDown={(e) => {
@@ -588,15 +588,15 @@ export default function SettingsView() {
                       setPh('');
                       toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
                     }}
-                    title="Adicionar Frase"
+                    title={T('btn_add_phrase_title', 'Adicionar Frase')}
                   >
                     <Plus size={15} />
                   </button>
                 </div>
                 <div className="flex justify-between items-center text-[10px] font-mono text-muted px-0.5">
-                  <span>Enter para salvar (Shift+Enter para nova linha)</span>
-                  <span className={ph.length >= 900 ? 'text-danger font-bold' : ''}>
-                    {ph.length}/1000
+                  <span>{T('phrases_hint', 'Enter para salvar (Shift+Enter para nova linha)')}</span>
+                  <span className={ph.length >= 2800 ? 'text-danger font-bold' : ''}>
+                    {ph.length}/3000
                   </span>
                 </div>
               </div>
@@ -608,7 +608,7 @@ export default function SettingsView() {
                       <span className="italic text-ink whitespace-pre-wrap leading-relaxed break-words flex-1">"{p}"</span>
                       <button
                         className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5"
-                        onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), `Remover "${p}" do Código?`, () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
+                        onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), (T('del_phrase_prefix', 'Remover "') + p + T('del_phrase_suffix', '" do Código?')), () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
                         title="Excluir frase"
                       >
                         <X size={13} />
