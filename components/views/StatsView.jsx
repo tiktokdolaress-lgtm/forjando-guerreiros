@@ -46,7 +46,7 @@ const STATS_CATEGORIES = [
 export default function StatsView() {
   const { S, update, openModal, closeModal, toast } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
-  const T = (id, fb) => cx(lang, 'stats', id) || fb;
+  const T = React.useCallback((id, fb) => cx(lang, 'stats', id) || fb, [lang]);
 
   const [activeCategory, setActiveCategory] = useState('general');
   const [hmOff, setHmOff] = useState(0);
@@ -83,12 +83,12 @@ export default function StatsView() {
     return Object.entries(counts)
       .map(([id, count]) => ({
         id,
-        name: TRIGGER_LABELS[id] || id,
+        name: T('trg_' + id, TRIGGER_LABELS[id] || id),
         count,
         pct: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
       }))
       .sort((a, b) => b.count - a.count);
-  }, [auditFalls]);
+  }, [auditFalls, T]);
 
   /* Linha do Tempo Analítica */
   const timelineData = useMemo(() => {
@@ -97,15 +97,15 @@ export default function StatsView() {
     for (let i = timelineRange - 1; i >= 0; i--) {
       const ds = dstr(new Date(Date.now() - i * 86400000));
       const cc = (S.checkins || {})[ds];
-      let cls = '', lab = 'Sem registro';
-      if (cc && cc.fail) { cls = 'f'; falls++; lab = 'Queda'; }
-      else if (cc && cc.ok) { cls = 'w'; wins++; lab = 'Vitória'; }
-      else if (cc && (cc.p || cc.m || cc.r)) { cls = 'p'; part++; lab = 'Parcial'; }
+      let cls = '', lab = T('day_state_none', 'Sem registro');
+      if (cc && cc.fail) { cls = 'f'; falls++; lab = T('day_state_fall', 'Queda'); }
+      else if (cc && cc.ok) { cls = 'w'; wins++; lab = T('day_state_win', 'Vitória'); }
+      else if (cc && (cc.p || cc.m || cc.r)) { cls = 'p'; part++; lab = T('day_state_part', 'Parcial'); }
       cells.push({ ds, cls, lab });
     }
     const rate = Math.round((wins / timelineRange) * 100);
     return { cells, wins, falls, part, rate };
-  }, [S, timelineRange]);
+  }, [S, timelineRange, T]);
 
   if (!S) return null;
 
@@ -180,15 +180,19 @@ export default function StatsView() {
 
     const DayModal = () => {
       const cur = L.ci(S, ds);
-      const state = cur.fail ? 'Queda' : cur.ok ? 'Vitória' : (cur.p || cur.m || cur.r) ? 'Parcial' : 'Sem registro';
+      const state = cur.fail ? T('day_state_fall', 'Queda') : cur.ok ? T('day_state_win', 'Vitória') : (cur.p || cur.m || cur.r) ? T('day_state_part', 'Parcial') : T('day_state_none', 'Sem registro');
       return (
         <div className="text-center">
-          <span className="k block text-gold text-base mb-1">Registro de {fdmy(ds)}{ds === today() ? ' · Hoje' : ''}</span>
-          <p className="fnote mb-3 text-left">Estado atual: <b className="text-gold">{state}</b> · Ajuste os pilares deste dia abaixo:</p>
+          <span className="k block text-gold text-base mb-1">
+            {T('day_log_title', 'Registro de ')}{fdmy(ds)}{ds === today() ? T('day_today', ' · Hoje') : ''}
+          </span>
+          <p className="fnote mb-3 text-left">
+            {T('day_cur_state', 'Estado atual: ')}<b className="text-gold">{state}</b>{T('day_adj_sub', ' · Ajuste os pilares deste dia abaixo:')}
+          </p>
           {req.map((k) => {
             const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
             const fTypes = String(cur.fail || '').split('+').filter(Boolean);
-            const label = k === 'p' ? 'Zero Pornografia' : k === 'm' ? 'Autodomínio Inabalável' : 'Retenção Seminal Mantida';
+            const label = k === 'p' ? T('day_p_porn', 'Zero Pornografia') : k === 'm' ? T('day_p_mast', 'Autodomínio Inabalável') : T('day_p_ejac', 'Retenção Seminal Mantida');
             return (
               <Chk key={k} className="mb-2" on={!!cur[k]} failed={!cur[k] && fTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cur[k], ds)}>
                 {label}
@@ -196,12 +200,22 @@ export default function StatsView() {
             );
           })}
           <div className="my-3 grid grid-cols-2 gap-2">
-            <button className="btn-gold" onClick={() => { req.forEach((k, i) => setTimeout(() => setCI(k, true, ds), i * 10)); toast('Marcado como vitória total'); }}>Marcar Vitória</button>
-            <button className="btn-dark" onClick={() => { update((s) => { delete (s.checkins[ds] || {}).ok; delete s.checkins[ds]?.fail; }); AF.click(); toast('Marcado como parcial'); }}>Marcar Parcial</button>
-            <button className="btn-red" onClick={() => { update((s) => { s.checkins[ds] = s.checkins[ds] || { p: false, m: false, r: false }; delete s.checkins[ds].ok; s.checkins[ds].fail = 'porn'; }); AF.tone(110, 0.35, 'sine', 0.18, 0, 55); toast('Marcado como queda'); }}>Registrar Queda</button>
-            <button className="btn-dark" onClick={() => { update((s) => { delete s.checkins[ds]; }); toast('Registro limpo'); }}>Limpar Dia</button>
+            <button className="btn-gold" onClick={() => { req.forEach((k, i) => setTimeout(() => setCI(k, true, ds), i * 10)); toast(T('day_toast_win', 'Marcado como vitória total')); }}>
+              {T('day_btn_win', 'Marcar Vitória')}
+            </button>
+            <button className="btn-dark" onClick={() => { update((s) => { delete (s.checkins[ds] || {}).ok; delete s.checkins[ds]?.fail; }); AF.click(); toast(T('day_toast_part', 'Marcado como parcial')); }}>
+              {T('day_btn_part', 'Marcar Parcial')}
+            </button>
+            <button className="btn-red" onClick={() => { update((s) => { s.checkins[ds] = s.checkins[ds] || { p: false, m: false, r: false }; delete s.checkins[ds].ok; s.checkins[ds].fail = 'porn'; }); AF.tone(110, 0.35, 'sine', 0.18, 0, 55); toast(T('day_toast_fall', 'Marcado como queda')); }}>
+              {T('day_btn_fall', 'Registrar Queda')}
+            </button>
+            <button className="btn-dark" onClick={() => { update((s) => { delete s.checkins[ds]; }); toast(T('day_toast_clear', 'Registro limpo')); }}>
+              {T('day_btn_clear', 'Limpar Dia')}
+            </button>
           </div>
-          <button className="btn-dark btn-big w-full mt-2" onClick={closeModal}>Fechar</button>
+          <button className="btn-dark btn-big w-full mt-2" onClick={closeModal}>
+            {T('day_btn_close', 'Fechar')}
+          </button>
         </div>
       );
     };
@@ -404,7 +418,7 @@ export default function StatsView() {
             <div className="flex items-center justify-between mb-3">
               <K style={{ margin: 0 }}>{T('cons_k', '🔨 CONSISTÊNCIA DA FORJA — MÊS ATUAL')}</K>
               <span className="text-[10px] font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/25">
-                {elapsed} {elapsed === 1 ? 'dia corrido' : 'dias corridos'}
+                {elapsed} {elapsed === 1 ? T('day_elapsed_one', 'dia corrido') : T('day_elapsed_other', 'dias corridos')}
               </span>
             </div>
 
@@ -435,26 +449,32 @@ export default function StatsView() {
           {/* Resumo Tático Mensal: Preenche perfeitamente a parte inferior, eliminando qualquer espaço vago */}
           <div className="mt-3 pt-3 border-t border-line/60">
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted block mb-2">
-              RESUMO DE DISCIPLINA NO MÊS
+              {T('cons_summary_title', 'RESUMO DE DISCIPLINA NO MÊS')}
             </span>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2 rounded bg-surface2 border border-line">
                 <b className="block font-display text-lg text-gold leading-none">
                   {consist.reduce((acc, cur) => acc + cur.cnt, 0)}
                 </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">Concluídos</small>
+                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">
+                  {T('cons_done_lbl', 'Concluídos')}
+                </small>
               </div>
               <div className="p-2 rounded bg-surface2 border border-line">
                 <b className="block font-display text-lg text-gold leading-none">
                   {consist.length ? Math.round(consist.reduce((acc, cur) => acc + cur.pct, 0) / consist.length) : 0}%
                 </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">Adesão Média</small>
+                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">
+                  {T('cons_avg_lbl', 'Adesão Média')}
+                </small>
               </div>
               <div className="p-2 rounded bg-surface2 border border-line truncate">
                 <b className="block font-display text-lg text-gold leading-none truncate">
                   {consist.length ? [...consist].sort((a, b) => b.pct - a.pct)[0]?.h.icon : '—'}
                 </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 truncate">Líder</small>
+                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 truncate">
+                  {T('cons_leader_lbl', 'Líder')}
+                </small>
               </div>
             </div>
           </div>
@@ -517,10 +537,10 @@ export default function StatsView() {
           <div className="flex items-center justify-between mb-3">
             <K className="mb-0 flex items-center gap-2">
               <CalendarDays size={16} className="text-gold" />
-              <span>LINHA DO TEMPO & DIAS DE COMBATE</span>
+              <span>{T('tl_title', 'LINHA DO TEMPO & DIAS DE COMBATE')}</span>
             </K>
             <span className="text-xs font-mono font-bold text-gold px-2.5 py-0.5 rounded bg-gold/10 border border-gold/30">
-              Taxa: {timelineData.rate}%
+              {T('tl_rate', 'Taxa: ')}{timelineData.rate}%
             </span>
           </div>
 
@@ -540,7 +560,7 @@ export default function StatsView() {
                   setTimelineRange(n);
                 }}
               >
-                {n} dias
+                {n} {T('tl_days_btn', 'dias')}
               </button>
             ))}
           </div>
@@ -548,19 +568,19 @@ export default function StatsView() {
           {/* Badges de Desempenho Tático */}
           <div className="mb-3.5 flex flex-wrap gap-1.5">
             <span className="chip cursor-default text-[11px] font-bold text-gold border-gold/40">
-              🏆 {timelineData.wins} Vitórias
+              🏆 {timelineData.wins} {T('tl_badge_wins', 'Vitórias')}
             </span>
             <span className="chip-dim cursor-default border-danger/50 text-danger text-[11px] font-bold">
-              💥 {timelineData.falls} Quedas
+              💥 {timelineData.falls} {T('tl_badge_falls', 'Quedas')}
             </span>
             <span className="chip-dim cursor-default text-[11px]">
-              ◐ {timelineData.part} Parciais
+              ◐ {timelineData.part} {T('tl_badge_part', 'Parciais')}
             </span>
             <span className="chip-dim cursor-default text-[11px] text-[#EDE5D5]">
-              ⚡ {timelineData.rate}% Consistência
+              ⚡ {timelineData.rate}% {T('tl_badge_cons', 'Consistência')}
             </span>
             <span className="chip-dim cursor-default border-ok/45 text-ok text-[11px] font-bold">
-              🛡️ {L.sosWins(S)} S.O.S Vencidos
+              🛡️ {L.sosWins(S)} {T('tl_badge_sos', 'S.O.S Vencidos')}
             </span>
           </div>
 
@@ -569,7 +589,7 @@ export default function StatsView() {
             {timelineData.cells.map((c) => (
               <button
                 key={c.ds}
-                title={`${c.ds} · ${c.lab} (Clique para editar este dia)`}
+                title={`${c.ds} · ${c.lab} ${T('tl_cell_edit_tip', '(Clique para editar este dia)')}`}
                 className={`tlc ${c.cls} cursor-pointer hover:scale-125 transition-transform`}
                 onClick={() => dayEditor(c.ds)}
               />
@@ -580,19 +600,19 @@ export default function StatsView() {
         {/* Legenda de Cores */}
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted pt-3 border-t border-line/50">
           <span className="flex items-center gap-1.5">
-            <b className="tlc w inline-block" style={{ animation: 'none' }} /> Vitória (3/3 pilares)
+            <b className="tlc w inline-block" style={{ animation: 'none' }} /> {T('tl_leg_win', 'Vitória (3/3 pilares)')}
           </span>
           <span className="flex items-center gap-1.5">
-            <b className="tlc p inline-block" style={{ animation: 'none' }} /> Parcial
+            <b className="tlc p inline-block" style={{ animation: 'none' }} /> {T('tl_leg_part', 'Parcial')}
           </span>
           <span className="flex items-center gap-1.5">
-            <b className="tlc f inline-block" style={{ animation: 'none' }} /> Queda
+            <b className="tlc f inline-block" style={{ animation: 'none' }} /> {T('tl_leg_fall', 'Queda')}
           </span>
           <span className="flex items-center gap-1.5">
-            <b className="inline-block h-[13px] w-[13px] rounded bg-[#202026] border border-line/40" /> Sem registro
+            <b className="inline-block h-[13px] w-[13px] rounded bg-[#202026] border border-line/40" /> {T('tl_leg_none', 'Sem registro')}
           </span>
           <span className="w-full text-[10px] text-gold/80 mt-1">
-            💡 Toque em qualquer dia para inspecionar, corrigir pilares ou registrar histórico retroativo.
+            {T('tl_hint', '💡 Toque em qualquer dia para inspecionar, corrigir pilares ou registrar histórico retroativo.')}
           </span>
         </div>
       </Card>
@@ -632,12 +652,12 @@ export default function StatsView() {
               </>
             ) : (
               <div className="p-3 my-2 rounded bg-surface2 border border-line text-xs text-muted leading-relaxed">
-                Nenhum impulso crítico registrado ainda. Acione o botão S.O.S em momentos de urgência para mapear com precisão cirúrgica seus horários de maior vulnerabilidade.
+                {T('risk_empty_desc', 'Nenhum impulso crítico registrado ainda. Acione o botão S.O.S em momentos de urgência para mapear com precisão cirúrgica seus horários de maior vulnerabilidade.')}
               </div>
             )}
           </div>
           <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-            {us.total ? `${us.total} ${T('risk_note', 'impulsos registrados. Mantenha telas longe do quarto nessa janela.')}` : 'Defesa preventiva ativa: mantenha o celular fora do quarto após as 22h.'}
+            {us.total ? `${us.total} ${T('risk_note', 'impulsos registrados. Mantenha telas longe do quarto nessa janela.')}` : T('risk_note_default', 'Defesa preventiva ativa: mantenha o celular fora do quarto após as 22h.')}
           </p>
         </Card>
 
@@ -647,10 +667,10 @@ export default function StatsView() {
             <div className="flex items-center justify-between mb-2">
               <K style={{ margin: 0 }} className="flex items-center gap-1.5">
                 <ShieldCheck size={14} className="text-gold" />
-                <span>INTERVENÇÕES S.O.S VENCIDAS</span>
+                <span>{T('sos_won_title', 'INTERVENÇÕES S.O.S VENCIDAS')}</span>
               </K>
               <span className="text-xs font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/30">
-                {L.sosWins(S)} Vencidas
+                {L.sosWins(S)} {T('sos_won_badge', 'Vencidas')}
               </span>
             </div>
             {sosHist.length ? (
@@ -672,12 +692,12 @@ export default function StatsView() {
               </div>
             ) : (
               <div className="p-3 rounded bg-surface2 border border-line text-xs text-muted leading-relaxed">
-                {T('sos_e1', 'Nenhuma intervenção S.O.S registrada ainda.')} Em momentos de urgência, use o botão de emergência flutuante para resfriar a mente e salvar seu streak.
+                {T('sos_empty_full', 'Nenhuma intervenção S.O.S registrada ainda. Em momentos de urgência, use o botão de emergência flutuante para resfriar a mente e salvar seu streak.')}
               </div>
             )}
           </div>
           <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-            Cada vitória no S.O.S recalibra os receptores de dopamina pré-frontais.
+            {T('sos_footer_note', 'Cada vitória no S.O.S recalibra os receptores de dopamina pré-frontais.')}
           </p>
         </Card>
       </div>
@@ -687,7 +707,7 @@ export default function StatsView() {
         <div>
           <K className="text-danger flex items-center gap-1.5 text-xs font-bold font-mono uppercase mb-2">
             <ShieldAlert size={14} />
-            {triggerRank.length > 0 ? 'RANKING DE GATILHOS (AUDITORIA)' : 'BLINDAGEM CONTRA GATILHOS'}
+            {triggerRank.length > 0 ? T('trg_rank_title', 'RANKING DE GATILHOS (AUDITORIA)') : T('trg_shield_title', 'BLINDAGEM CONTRA GATILHOS')}
           </K>
           {triggerRank.length > 0 ? (
             <div className="flex flex-col gap-2">
@@ -715,19 +735,19 @@ export default function StatsView() {
             <div className="space-y-2 text-xs">
               <div className="p-2.5 rounded bg-surface2 border border-line flex items-center gap-2">
                 <span className="text-ok font-bold text-sm">✓</span>
-                <span className="text-ink">Nenhuma queda recente registrada. Defesas intactas!</span>
+                <span className="text-ink">{T('trg_empty_safe', 'Nenhuma queda recente registrada. Defesas intactas!')}</span>
               </div>
               <div className="p-2 rounded bg-surface2/60 border border-line/50 text-[11px] text-muted space-y-1">
-                <div className="font-bold text-gold2">Top Gatilhos Críticos a Vigiar:</div>
-                <div>• Redes Sociais no escuro da madrugada</div>
-                <div>• Estresse acumulado e cansaço sem treino</div>
-                <div>• Tédio e isolamento com computador aberto</div>
+                <div className="font-bold text-gold2">{T('trg_empty_top', 'Top Gatilhos Críticos a Vigiar:')}</div>
+                <div>{T('trg_empty_1', '• Redes Sociais no escuro da madrugada')}</div>
+                <div>{T('trg_empty_2', '• Estresse acumulado e cansaço sem treino')}</div>
+                <div>{T('trg_empty_3', '• Tédio e isolamento com computador aberto')}</div>
               </div>
             </div>
           )}
         </div>
         <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-          Identificar o gatilho antecipadamente desativa a cascata impulsiva no cérebro.
+          {T('trg_footer_note', 'Identificar o gatilho antecipadamente desativa a cascata impulsiva no cérebro.')}
         </p>
       </Card>
     </div>
@@ -739,17 +759,17 @@ export default function StatsView() {
       {/* Resumo de Honra & Conquistas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         <div className="p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Streak Atual</span>
+          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_streak', 'Streak Atual')}</span>
           <b className="block font-display text-2xl text-gold mt-1">🔥 {S.streak || 0}d</b>
         </div>
         <div className="p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Índice de Pureza</span>
+          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_purity', 'Índice de Pureza')}</span>
           <b className="block font-display text-2xl text-gold mt-1">✦ {S.purity || 100}%</b>
         </div>
         <div className="col-span-2 sm:col-span-1 p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">Status no Salão</span>
+          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_status', 'Status no Salão')}</span>
           <span className={`block font-mono text-xs font-bold mt-2 ${S.hallOptIn ? 'text-gold' : 'text-muted'}`}>
-            {S.hallOptIn ? `🛡️ ${S.hallName || 'Ativo'}` : '🔒 Privado'}
+            {S.hallOptIn ? `🛡️ ${S.hallName || T('hall_stat_active', 'Ativo')}` : `🔒 ${T('hall_stat_private', 'Privado')}`}
           </span>
         </div>
       </div>
@@ -762,7 +782,7 @@ export default function StatsView() {
               <Trophy size={12} className="mr-1 inline text-gold" /> {T('hall_k', 'SALÃO DA FAMA ANÔNIMO')}
             </K>
             <span className="text-[10px] font-mono text-muted">
-              {S.hallOptIn ? '🛡️ Participando' : 'Modo Privado'}
+              {S.hallOptIn ? `🛡️ ${T('hall_joined', 'Participando')}` : T('hall_priv_mode', 'Modo Privado')}
             </span>
           </div>
           {hall === null ? (
@@ -780,7 +800,7 @@ export default function StatsView() {
                     {i + 1}º
                   </span>
                   <span className="flex-1 truncate">
-                    {h.name} {h.name === S.hallName ? '(você)' : ''}
+                    {h.name} {h.name === S.hallName ? T('you', '(você)') : ''}
                   </span>
                   <span className="text-xs text-muted">{h.tier}</span>
                   <span className="font-mono text-gold text-xs font-bold">{h.days}d</span>
@@ -789,7 +809,7 @@ export default function StatsView() {
             </div>
           ) : (
             <div className="p-3 rounded bg-surface2 border border-line text-xs text-muted">
-              {T('hall_e1', 'Nenhum guerreiro optou pelo Salão ainda.')} Ative nas Configurações para ingressar.
+              {T('hall_empty_act', 'Nenhum guerreiro optou pelo Salão ainda. Ative nas Configurações para ingressar.')}
             </div>
           )}
         </div>
@@ -804,19 +824,19 @@ export default function StatsView() {
           <div>
             <span className="text-xs font-bold font-mono text-gold flex items-center gap-1.5 uppercase tracking-wider">
               <Share2 size={13} />
-              <span>Cartão Semanal de Honra & Vitória</span>
+              <span>{T('hall_share_title', 'Cartão Semanal de Honra & Vitória')}</span>
             </span>
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Exporte o seu resumo semanal oficial com gráficos vetoriais, dias limpos e streak para compartilhar ou salvar nas suas notas.
+              {T('hall_share_desc', 'Exporte o seu resumo semanal oficial com gráficos vetoriais, dias limpos e streak para compartilhar ou salvar nas suas notas.')}
             </p>
           </div>
           <button
             type="button"
-            className="btn-gold px-4 py-2 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap flex-none w-full sm:w-auto justify-center"
+            className="btn-gold px-4 py-2 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap flex-none w-full sm:w-auto justify-center cursor-pointer"
             onClick={shareImage}
           >
             <Share2 size={13} />
-            <span>Exportar Imagem</span>
+            <span>{T('hall_share_btn', 'Exportar Imagem')}</span>
           </button>
         </div>
       </Card>

@@ -7,7 +7,7 @@ import { cx } from '@/lib/content-i18n';
 import { lifeMode, progressDays, allH } from '@/lib/logic';
 import { ensureSw, scheduleLocalTimers } from '@/lib/notify';
 import { AF } from '@/lib/audio';
-import { hasUnreadUpdates, CURRENT_APP_VERSION } from '@/lib/changelog';
+import { hasUnreadUpdates, CURRENT_APP_VERSION, dispatchUpdateNotification, markUpdatesAsRead } from '@/lib/changelog';
 import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
 import ChangelogModal from './ChangelogModal';
@@ -24,7 +24,7 @@ const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats
 const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView };
 
 export default function Shell() {
-  const { S, tab, setTab, t, openModal, closeModal, update } = useApp();
+  const { S, tab, setTab, t, openModal, closeModal, update, toast } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const lifeLbl = (() => { const m = lifeMode(S); const LS = cx(lang, 'life', m) || LIFE_STATUS[m] || LIFE_STATUS.single; return LS.label; })();
   const go = (id) => { AF.click(); setTab(id); window.scrollTo({ top: 0 }); }
@@ -32,15 +32,37 @@ export default function Shell() {
   const View = VIEWS[tab] || QgView;
   const TabIcon = ICONS[tab] || Castle;
 
-  /* Notificação visual automática quando houver nova atualização */
+  const [hasUnread, setHasUnread] = React.useState(false);
+
+  /* Notificação visual automática e no dispositivo quando houver nova versão / atualização */
   React.useEffect(() => {
-    if (typeof window !== 'undefined' && hasUnreadUpdates()) {
-      const timer = setTimeout(() => {
-        openModal(<ChangelogModal onClose={closeModal} />, 'dialog');
-      }, 800);
-      return () => clearTimeout(timer);
+    if (typeof window !== 'undefined') {
+      const unread = hasUnreadUpdates();
+      setHasUnread(unread);
+      if (unread) {
+        // 1. Notificação do dispositivo via Service Worker / Notification API
+        dispatchUpdateNotification(lang);
+
+        // 2. Toast informativo na interface
+        toast(cx(lang, 'settings', 'notif_update_toast') || '📜 Novo Decreto da Forja disponível! Toque no topo para ler.');
+
+        // 3. Modal explicativo dos Decretos da Forja
+        const timer = setTimeout(() => {
+          openModal(
+            <ChangelogModal
+              onClose={() => {
+                closeModal();
+                setHasUnread(false);
+                markUpdatesAsRead();
+              }}
+            />,
+            'dialog'
+          );
+        }, 1200);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [openModal, closeModal]);
+  }, [lang, openModal, closeModal, toast]);
 
   /* PWA: registra o service worker + agenda lembretes locais (hábitos ⏰ e check-in 20h) */
   React.useEffect(() => {
@@ -122,12 +144,40 @@ export default function Shell() {
               <span className="chip flex-none text-[10.5px] sm:text-[11px] font-bold px-2 py-0.5">{lifeLbl}</span>
               <button
                 type="button"
-                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
-                className="flex-none flex items-center gap-1 px-2 py-1.5 rounded-lg border border-amber-600/40 bg-amber-950/40 text-amber-300 text-[10.5px] sm:text-[11px] font-mono font-bold hover:bg-amber-900/60 hover:border-amber-500/60 transition-colors"
-                title="Decretos da Forja (Notas da Atualização)"
+                onClick={() => {
+                  AF.click();
+                  setHasUnread(false);
+                  openModal(
+                    <ChangelogModal
+                      onClose={() => {
+                        closeModal();
+                        setHasUnread(false);
+                        markUpdatesAsRead();
+                      }}
+                    />,
+                    'dialog'
+                  );
+                }}
+                className={`relative flex-none flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg border text-[10.5px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                  hasUnread
+                    ? 'border-amber-400 bg-amber-950/80 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                    : 'border-amber-600/40 bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 hover:border-amber-500/60'
+                }`}
+                title={cx(lang, 'settings', 'fb_decrees_title') || 'Decretos da Forja (Notas da Atualização)'}
               >
-                <Scroll size={12} className="text-amber-400" />
+                <Scroll size={12} className="text-amber-400 flex-none" />
                 <span>{CURRENT_APP_VERSION}</span>
+                {hasUnread && (
+                  <span className="flex items-center gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                    </span>
+                    <span className="text-[9px] bg-amber-400/20 text-amber-300 px-1 py-0.2 rounded border border-amber-400/40 uppercase font-extrabold tracking-wider hidden sm:inline">
+                      {lang === 'en' ? 'NEW' : lang === 'es' ? 'NUEVA' : 'NOVA'}
+                    </span>
+                  </span>
+                )}
               </button>
               <button
                 className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95"

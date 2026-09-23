@@ -7,54 +7,54 @@ import { DOSSIER, DOSSIER_TABLE } from '@/lib/data';
 import { AF } from '@/lib/audio';
 import { cx, cxDossier, cxTable } from '@/lib/content-i18n';
 
-const ENEMY_CATEGORIES = [
-  { id: 'dossier', label: 'Dossiês Científicos', icon: FileText },
-  { id: 'table', label: 'Quadro Clínico', icon: Table },
-  { id: 'timeline', label: 'Cronograma Neural', icon: Clock },
-];
-
-const DOSSIER_TAGS = {
-  deip: { tag: 'UROLOGIA & EREÇÃO', color: 'text-danger border-danger/30 bg-danger/10' },
-  brain: { tag: 'NEUROBIOLOGIA & DOPAMINA', color: 'text-gold border-gold/30 bg-gold/10' },
-  grip: { tag: 'SISTEMA NERVOSO PERIFÉRICO', color: 'text-[#E5A93C] border-[#E5A93C]/30 bg-[#E5A93C]/10' },
-  pelvic: { tag: 'FISIOTERAPIA & ASSOALHO PÉLVICO', color: 'text-danger border-danger/30 bg-danger/10' },
-  escalation: { tag: 'TOLERÂNCIA & COMPORTAMENTO', color: 'text-purple-400 border-purple-400/30 bg-purple-400/10' },
-  social: { tag: 'VÍNCULOS & AUTOESTIMA', color: 'text-sky-400 border-sky-400/30 bg-sky-400/10' },
-};
-
-const RECOVERY_TIMELINE = [
-  {
-    period: '0 a 14 Dias',
-    title: 'Desinflamação & Choque Químico',
-    desc: 'Queda do cortisol, redução do estresse neural e corte do looping de pornografia. A abstinência atinge o pico de fissura.',
-    icon: '⚡',
-  },
-  {
-    period: '15 a 30 Dias',
-    title: 'Restauração da Sensibilidade',
-    desc: 'Receptores periféricos começam a se regenerar (reversão do Death Grip). A ansiedade social e a névoa mental diminuem.',
-    icon: '🌿',
-  },
-  {
-    period: '31 a 90 Dias',
-    title: 'Reconexão Pré-Frontal & Cura da DEIP',
-    desc: 'O cérebro repara a via frontoestriatal. Retorno das ereções matinais espontâneas e atração por pessoas reais.',
-    icon: '🛡️',
-  },
-  {
-    period: '90+ Dias',
-    title: 'Neuroplasticidade Consolidada',
-    desc: 'Densidade de receptores D2 restaurada ao estado de fábrica. Força de vontade inabalável, foco laser e autocontrole pleno.',
-    icon: '👑',
-  },
-];
-
 export default function EnemyView() {
   const { S } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const T = (id, fb) => cx(lang, 'enemy', id) || fb;
   const doss = cxDossier(lang, DOSSIER);
   const rows = cxTable(lang, DOSSIER_TABLE);
+
+  const ENEMY_CATEGORIES = [
+    { id: 'dossier', label: T('cat_dossier', 'Dossiês Científicos'), icon: FileText },
+    { id: 'table', label: T('cat_table', 'Quadro Clínico'), icon: Table },
+    { id: 'timeline', label: T('cat_timeline', 'Cronograma Neural'), icon: Clock },
+  ];
+
+  const DOSSIER_TAGS = {
+    deip: { tag: T('tag_deip', 'UROLOGIA & EREÇÃO'), color: 'text-danger border-danger/30 bg-danger/10' },
+    brain: { tag: T('tag_brain', 'NEUROBIOLOGIA & DOPAMINA'), color: 'text-gold border-gold/30 bg-gold/10' },
+    grip: { tag: T('tag_grip', 'SISTEMA NERVOSO PERIFÉRICO'), color: 'text-[#E5A93C] border-[#E5A93C]/30 bg-[#E5A93C]/10' },
+    pelvic: { tag: T('tag_pelvic', 'FISIOTERAPIA & ASSOALHO PÉLVICO'), color: 'text-danger border-danger/30 bg-danger/10' },
+    escalation: { tag: T('tag_escalation', 'TOLERÂNCIA & COMPORTAMENTO'), color: 'text-purple-400 border-purple-400/30 bg-purple-400/10' },
+    social: { tag: T('tag_social', 'VÍNCULOS & AUTOESTIMA'), color: 'text-sky-400 border-sky-400/30 bg-sky-400/10' },
+  };
+
+  const RECOVERY_TIMELINE = [
+    {
+      period: T('rec_p1_period', '0 a 14 Dias'),
+      title: T('rec_p1_title', 'Desinflamação & Choque Químico'),
+      desc: T('rec_p1_desc', 'Queda do cortisol, redução do estresse neural e corte do looping de pornografia. A abstinência atinge o pico de fissura.'),
+      icon: '⚡',
+    },
+    {
+      period: T('rec_p2_period', '15 a 30 Dias'),
+      title: T('rec_p2_title', 'Restauração da Sensibilidade'),
+      desc: T('rec_p2_desc', 'Receptores periféricos começam a se regenerar (reversão do Death Grip). A ansiedade social e a névoa mental diminuem.'),
+      icon: '🌿',
+    },
+    {
+      period: T('rec_p3_period', '31 a 90 Dias'),
+      title: T('rec_p3_title', 'Reconexão Pré-Frontal & Cura da DEIP'),
+      desc: T('rec_p3_desc', 'O cérebro repara a via frontoestriatal. Retorno das ereções matinais espontâneas e atração por pessoas reais.'),
+      icon: '🛡️',
+    },
+    {
+      period: T('rec_p4_period', '90+ Dias'),
+      title: T('rec_p4_title', 'Neuroplasticidade Consolidada'),
+      desc: T('rec_p4_desc', 'Densidade de receptores D2 restaurada ao estado de fábrica. Força de vontade inabalável, foco laser e autocontrole pleno.'),
+      icon: '👑',
+    },
+  ];
 
   const [activeCategory, setActiveCategory] = useState('dossier');
   
@@ -105,14 +105,14 @@ export default function EnemyView() {
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-danger">
                 <ShieldAlert size={14} />
-                <span>NEUROBIOLOGIA & MEDICINA MODERNA</span>
+                <span>{T('k_neuro', 'NEUROBIOLOGIA & MEDICINA MODERNA')}</span>
               </div>
               <button
                 type="button"
                 onClick={toggleAll}
-                className="text-[11px] font-mono text-gold2 hover:text-gold transition-colors underline"
+                className="text-[11px] font-mono text-gold2 hover:text-gold transition-colors underline cursor-pointer"
               >
-                {Object.values(open).some((v) => !v) ? 'Expandir Todos os Dossiês' : 'Recolher Todos'}
+                {Object.values(open).some((v) => !v) ? T('btn_expand_all', 'Expandir Todos os Dossiês') : T('btn_collapse_all', 'Recolher Todos')}
               </button>
             </div>
 
@@ -128,25 +128,25 @@ export default function EnemyView() {
               <div className="p-2.5 rounded bg-surface2 border border-line">
                 <b className="block font-display text-xl text-danger leading-none">78%</b>
                 <small className="text-[9.5px] font-bold uppercase tracking-wider text-muted block mt-1 leading-tight">
-                  Incidência DEIP em usuários compulsivos
+                  {T('kpi_pied', 'Incidência DEIP em usuários compulsivos')}
                 </small>
               </div>
               <div className="p-2.5 rounded bg-surface2 border border-line">
                 <b className="block font-display text-xl text-gold leading-none">-15%</b>
                 <small className="text-[9.5px] font-bold uppercase tracking-wider text-muted block mt-1 leading-tight">
-                  Volume no Estriado (Max Planck)
+                  {T('kpi_volume', 'Volume no Estriado (Max Planck)')}
                 </small>
               </div>
               <div className="p-2.5 rounded bg-surface2 border border-line">
                 <b className="block font-display text-xl text-[#E5A93C] leading-none">3×</b>
                 <small className="text-[9.5px] font-bold uppercase tracking-wider text-muted block mt-1 leading-tight">
-                  Aumento no Limiar Dopaminérgico
+                  {T('kpi_threshold', 'Aumento no Limiar Dopaminérgico')}
                 </small>
               </div>
               <div className="p-2.5 rounded bg-surface2 border border-line">
                 <b className="block font-display text-xl text-ok leading-none">100%</b>
                 <small className="text-[9.5px] font-bold uppercase tracking-wider text-muted block mt-1 leading-tight">
-                  Reversível com a Retenção & Forja
+                  {T('kpi_reversible', 'Reversível com a Retenção & Forja')}
                 </small>
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function EnemyView() {
                 <Card key={d.id} className="border-danger/25 p-0 overflow-hidden flex flex-col justify-between">
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 p-3.5 text-left bg-surface hover:bg-surface2/60 transition-colors"
+                    className="flex w-full items-center justify-between gap-3 p-3.5 text-left bg-surface hover:bg-surface2/60 transition-colors cursor-pointer"
                     onClick={() => {
                       AF.click();
                       setOpen((o) => ({ ...o, [d.id]: !o[d.id] }));
@@ -223,7 +223,7 @@ export default function EnemyView() {
                   <span>{T('tbl_k', 'TABELA RESUMO — 6 ÁREAS AFETADAS')}</span>
                 </K>
                 <span className="text-[10px] font-mono text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
-                  MAPA DE DANOS & SINTOMAS
+                  {T('k_damage_map', 'MAPA DE DANOS & SINTOMAS')}
                 </span>
               </div>
               <div className="overflow-x-auto">
@@ -262,10 +262,10 @@ export default function EnemyView() {
               <div className="flex items-center justify-between mb-3">
                 <K style={{ margin: 0 }} className="flex items-center gap-1.5">
                   <Clock size={14} className="text-gold" />
-                  <span>CRONOGRAMA DE RECUPERAÇÃO NEURAL (0 A 90+ DIAS)</span>
+                  <span>{T('k_recovery', 'CRONOGRAMA DE RECUPERAÇÃO NEURAL (0 A 90+ DIAS)')}</span>
                 </K>
                 <span className="text-[10px] font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/25">
-                  RESET D2
+                  {T('badge_reset', 'RESET D2')}
                 </span>
               </div>
 
@@ -290,7 +290,7 @@ export default function EnemyView() {
             </div>
 
             <p className="fnote mt-4 pt-2.5 border-t border-line/60">
-              O cérebro tem plasticidade infinita. Cada dia de retenção reconstrói receptores e devolve seu império.
+              {T('recovery_footer', 'O cérebro tem plasticidade infinita. Cada dia de retenção reconstrói receptores e devolve seu império.')}
             </p>
           </Card>
         </div>
@@ -298,4 +298,5 @@ export default function EnemyView() {
     </div>
   );
 }
+
 

@@ -76,7 +76,7 @@ export default function SettingsView() {
       setAdminFeedbacksList(data.feedbacks || []);
       setShowAdminFeedbacks(true);
     } catch (e) {
-      toast('⚠ Erro ao buscar feedbacks do servidor.');
+      toast(T('admin_fetch_err', '⚠ Erro ao buscar feedbacks do servidor.'));
     } finally {
       setAdminFeedbacksLoading(false);
     }
@@ -243,7 +243,8 @@ export default function SettingsView() {
     update((s) => { s.settings.theme = themeId; });
     document.documentElement.dataset.theme = themeId;
     AF.click();
-    toast('🎨 ' + (THEMES.find((t) => t.id === themeId)?.name || 'Tema Atualizado'));
+    const tObj = THEMES.find((t) => t.id === themeId);
+    toast('🎨 ' + (tObj ? T(tObj.nameKey, tObj.fallbackName) : T('theme_updated', 'Tema Atualizado')));
   };
 
   const subLabels = SUB_LBL_FALLBACK[lang] || SUB_LBL_FALLBACK.pt;
@@ -418,13 +419,13 @@ export default function SettingsView() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <b className="text-xs text-amber-200">Decretos da Forja (Notas da Atualização)</b>
+                    <b className="text-xs text-amber-200">{T('decrees_banner_title', 'Decretos da Forja (Notas da Atualização)')}</b>
                     <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
                       {CURRENT_APP_VERSION}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted truncate">
-                    Veja o que mudou nesta versão e acompanhe as melhorias da forja.
+                    {T('decrees_banner_sub', 'Veja o que mudou nesta versão e acompanhe as melhorias da forja.')}
                   </p>
                 </div>
               </div>
@@ -433,7 +434,7 @@ export default function SettingsView() {
                 onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
                 className="flex-none px-3 py-1.5 rounded-lg border border-amber-500/50 bg-amber-950/80 text-amber-300 text-xs font-bold hover:bg-amber-900 transition-colors cursor-pointer"
               >
-                Ver Novidades
+                {T('decrees_banner_btn', 'Ver Novidades')}
               </button>
             </div>
           </div>
@@ -453,7 +454,7 @@ export default function SettingsView() {
                   type="button"
                   onClick={fetchAdminFeedbacks}
                   className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20 hover:bg-gold/25 transition-colors cursor-pointer flex items-center gap-1"
-                  title="Painel do Comando - Ver todos os feedbacks recebidos"
+                  title={T('admin_btn_title', 'Painel do Comando - Ver todos os feedbacks recebidos')}
                 >
                   <span>{T('fb_badge', 'CANAL DIRETO')}</span>
                   <span className="text-[11px]">👁️</span>
@@ -520,7 +521,7 @@ export default function SettingsView() {
                   className="w-full rounded-lg border border-line bg-surface2 p-3 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none resize-none leading-relaxed"
                 />
                 <div className="flex justify-between items-center text-[10px] font-mono text-muted mt-1 px-1">
-                  <span>{lang === 'en' ? 'Min 5 characters' : lang === 'es' ? 'Mínimo 5 caracteres' : 'Mínimo 5 caracteres'}</span>
+                  <span>{T('fb_min_char', 'Mínimo 5 caracteres')}</span>
                   <span>{feedbackMsg.length}/1000</span>
                 </div>
               </div>
@@ -579,7 +580,7 @@ export default function SettingsView() {
             <Card>
               <div className="flex items-center justify-between mb-2">
                 <K><CheckCircle2 size={13} className="mr-1 inline text-emerald-400" /> {T('fb_history_title', 'SEUS ENVIOS')}</K>
-                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} {lang === 'en' ? 'record(s)' : lang === 'es' ? 'registro(s)' : 'registro(s)'}</span>
+                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} {T('fb_records_unit', 'registro(s)')}</span>
               </div>
               {feedbackHistory.length === 0 ? (
                 <Empty className="py-4 text-[11px]">
@@ -594,7 +595,7 @@ export default function SettingsView() {
                           {item.category === 'bug' ? '🐛 Bug' : item.category === 'suggestion' ? '💡 Sugestão' : item.category === 'praise' ? '⭐ Elogio' : '⚔️ Usabilidade'}
                         </span>
                         <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-500/30">
-                          {item.status || 'Registrado'}
+                          {item.status || T('fb_status_registered', 'Registrado')}
                         </span>
                       </div>
                       <p className="text-muted text-[11px] line-clamp-2 italic">
@@ -619,8 +620,8 @@ export default function SettingsView() {
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🛡️</span>
                   <div>
-                    <h3 className="font-display font-bold text-base text-gold">PAINEL DO COMANDO · FEEDBACKS RECEBIDOS</h3>
-                    <p className="text-[11px] text-muted font-mono">Feedbacks forjados pelos guerreiros no servidor ({adminFeedbacksList.length} total)</p>
+                    <h3 className="font-display font-bold text-base text-gold">{T('admin_panel_title', 'PAINEL DO COMANDO · FEEDBACKS RECEBIDOS')}</h3>
+                    <p className="text-[11px] text-muted font-mono">{T('admin_panel_sub', 'Feedbacks forjados pelos guerreiros no servidor')} ({adminFeedbacksList.length} total)</p>
                   </div>
                 </div>
                 <button
@@ -634,9 +635,9 @@ export default function SettingsView() {
 
               <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1">
                 {adminFeedbacksLoading ? (
-                  <div className="text-center py-8 text-xs font-mono text-muted animate-pulse">Carregando registros da Forja...</div>
+                  <div className="text-center py-8 text-xs font-mono text-muted animate-pulse">{T('admin_loading', 'Carregando registros da Forja...')}</div>
                 ) : adminFeedbacksList.length === 0 ? (
-                  <div className="text-center py-8 text-xs font-mono text-muted">Nenhum feedback recebido no servidor até o momento.</div>
+                  <div className="text-center py-8 text-xs font-mono text-muted">{T('admin_empty', 'Nenhum feedback recebido no servidor até o momento.')}</div>
                 ) : (
                   adminFeedbacksList.map((fb, idx) => (
                     <div key={fb.id || idx} className="p-3 rounded-xl border border-line bg-surface2/60 space-y-1.5 text-xs">
@@ -653,7 +654,7 @@ export default function SettingsView() {
                       </p>
                       {fb.contact && (
                         <div className="text-[10.5px] font-mono text-emerald-400 flex items-center gap-1">
-                          <span>📧 Contato do Guerreiro:</span>
+                          <span>{T('admin_contact_prefix', '📧 Contato do Guerreiro:')}</span>
                           <strong className="text-emerald-300">{fb.contact}</strong>
                         </div>
                       )}
@@ -663,13 +664,13 @@ export default function SettingsView() {
               </div>
 
               <div className="pt-3 border-t border-line flex items-center justify-between text-[11px] font-mono text-muted">
-                <span>Dica: Para receber direto no celular, configure FEEDBACK_WEBHOOK_URL.</span>
+                <span>{T('admin_tip', 'Dica: Para receber direto no celular, configure FEEDBACK_WEBHOOK_URL.')}</span>
                 <button
                   type="button"
                   onClick={() => setShowAdminFeedbacks(false)}
                   className="px-4 py-1.5 rounded-lg border border-line bg-surface2 text-ink font-bold hover:border-gold/40"
                 >
-                  Fechar
+                  {T('admin_close', 'Fechar')}
                 </button>
               </div>
             </div>
@@ -887,7 +888,7 @@ export default function SettingsView() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <K><Download size={13} className="mr-1 inline text-gold" /> {T('sec_backup', 'BACKUP EM ARQUIVO')}</K>
-                <span className="text-[10px] font-mono text-muted">FORMATO .JSON</span>
+                <span className="text-[10px] font-mono text-muted">{T('backup_format', 'FORMATO .JSON')}</span>
               </div>
               <p className="text-xs text-muted mb-2.5 leading-relaxed">
                 {T('backup_desc', 'Exporte uma cópia completa dos seus dados criptografados para backup físico ou migração de aparelho.')}
@@ -960,7 +961,7 @@ export default function SettingsView() {
                       <button
                         className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5"
                         onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), (T('del_phrase_prefix', 'Remover "') + p + T('del_phrase_suffix', '" do Código?')), () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
-                        title="Excluir frase"
+                        title={T('del_phrase_btn', 'Excluir frase')}
                       >
                         <X size={13} />
                       </button>
