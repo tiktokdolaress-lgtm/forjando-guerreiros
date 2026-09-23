@@ -120,30 +120,56 @@ const I18N = {
   toastTaskUnlinked: { pt: 'Tarefa desvinculada do projeto', en: 'Task unlinked from project', es: 'Tarea desvinculada del proyecto' },
   delTaskTitle: { pt: 'EXCLUIR OPERAÇÃO?', en: 'DELETE OPERATION?', es: '¿ELIMINAR OPERACIÓN?' },
   delTaskMsg: { pt: 'Tem certeza que deseja cancelar e excluir permanentemente a operação', en: 'Are you sure you want to permanently cancel and delete the operation', es: '¿Estás seguro de que deseas cancelar y eliminar permanentemente la operación' },
+  delTaskConfirmMsg: { pt: 'Tem certeza que deseja cancelar e excluir permanentemente a operação', en: 'Are you sure you want to permanently cancel and delete the operation', es: '¿Estás seguro de que deseas cancelar y eliminar permanentemente la operación' },
   btnYesDelete: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
+  btnDeleteConfirm: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
+  btnDeleteTask: { pt: 'Excluir Operação', en: 'Delete Operation', es: 'Eliminar Operación' },
   unarchiveProjTitle: { pt: 'DESARQUIVAR PROJETO?', en: 'UNARCHIVE PROJECT?', es: '¿DESARCHIVAR PROYECTO?' },
   unarchiveProjMsg: { pt: 'Deseja restaurar o projeto', en: 'Do you want to restore the project', es: '¿Deseas restaurar el proyecto' },
+  unarchiveProjConfirmMsg: { pt: 'Deseja restaurar e reativar o projeto', en: 'Do you want to restore and reactivate the project', es: '¿Deseas restaurar y reactivar el proyecto' },
   unarchiveProjToActive: { pt: 'para os projetos ativos?', en: 'to active projects?', es: 'a los proyectos activos?' },
   btnRestoreProj: { pt: 'Restaurar Projeto', en: 'Restore Project', es: 'Restaurar Proyecto' },
-  toastProjUnarchived: { pt: 'Projeto desarquivado!', en: 'Project unarchived!', es: '¡Proyecto desarchivado!' },
+  btnUnarchiveConfirm: { pt: 'Desarquivar Projeto', en: 'Unarchive Project', es: 'Desarchivar Proyecto' },
+  toastProjUnarchived: { pt: 'Projeto desarquivado!', en: 'Project unarchived!', es: '¡Projeto desarchivado!' },
   archiveProjTitle: { pt: 'ARQUIVAR PROJETO?', en: 'ARCHIVE PROJECT?', es: '¿ARCHIVAR PROYECTO?' },
+  archiveProjChoiceTitle: { pt: 'ARQUIVAR PROJETO ESTRATÉGICO', en: 'ARCHIVE STRATEGIC PROJECT', es: 'ARCHIVAR PROYECTO ESTRATÉGICO' },
+  archiveProjChoiceDesc: {
+    pt: (title, count) => `Você está prestes a arquivar "${title}". Existem ${count} tarefa(s) vinculada(s). Como deseja proceder com essas tarefas?`,
+    en: (title, count) => `You are about to archive "${title}". There are ${count} linked task(s). How do you want to proceed with these tasks?`,
+    es: (title, count) => `Estás a punto de archivar "${title}". Hay ${count} tarea(s) vinculada(s). ¿Cómo deseas proceder con esas tareas?`,
+  },
   archiveProjMsg1: { pt: 'Você está arquivando o projeto', en: 'You are archiving project', es: 'Estás archivando el proyecto' },
   archiveProjMsg2: { pt: 'tarefa(s) vinculada(s). Como deseja proceder com essas tarefas?', en: 'linked task(s). How do you want to proceed with these tasks?', es: 'tarea(s) vinculada(s). ¿Cómo deseas proceder con esas tareas?' },
   btnArchiveBoth: { pt: '📦 Arquivar Projeto E Tarefas Vinculadas', en: '📦 Archive Project AND Linked Tasks', es: '📦 Archivar Proyecto Y Tareas Vinculadas' },
+  btnArchiveProjAndTasks: { pt: '📦 Arquivar Projeto E Tarefas Vinculadas', en: '📦 Archive Project AND Linked Tasks', es: '📦 Archivar Proyecto Y Tareas Vinculadas' },
   btnArchiveOnlyProj: { pt: '🔓 Arquivar Só Projeto (Manter Tarefas Ativas/Avulsas)', en: '🔓 Archive Only Project (Keep Tasks Active/Standalone)', es: '🔓 Archivar Solo Proyecto (Mantener Tareas Activas/Sueltas)' },
+  btnArchiveProjOnly: { pt: '🔓 Arquivar Só Projeto (Manter Tarefas Ativas/Avulsas)', en: '🔓 Archive Only Project (Keep Tasks Active/Standalone)', es: '🔓 Archivar Solo Proyecto (Mantener Tareas Activas/Sueltas)' },
   toastProjTasksArchived: { pt: '📦 Projeto e tarefas arquivados!', en: '📦 Project and tasks archived!', es: '¡📦 Proyecto y tareas archivados!' },
   toastProjOnlyArchived: { pt: '📦 Projeto arquivado (tarefas tornaram-se avulsas)!', en: '📦 Project archived (tasks became standalone)!', es: '¡📦 Proyecto archivado (tareas quedaron sueltas)!' },
+  toastProjArchivedOnly: { pt: '📦 Projeto arquivado (tarefas tornaram-se avulsas)!', en: '📦 Project archived (tasks became standalone)!', es: '¡📦 Proyecto archivado (tareas quedaron sueltas)!' },
   delProjTitle: { pt: 'EXCLUIR PROJETO DEFINITIVAMENTE?', en: 'DELETE PROJECT PERMANENTLY?', es: '¿ELIMINAR PROYECTO DEFINITIVAMENTE?' },
+  delProjChoiceTitle: { pt: 'EXCLUIR PROJETO DEFINITIVAMENTE', en: 'DELETE PROJECT PERMANENTLY', es: 'ELIMINAR PROYECTO DEFINITIVAMENTE' },
+  delProjChoiceDesc: {
+    pt: (title, count) => `Você está prestes a excluir "${title}". Existem ${count} tarefa(s) vinculada(s). O que deseja fazer com as tarefas?`,
+    en: (title, count) => `You are about to delete "${title}". There are ${count} linked task(s). What do you want to do with the tasks?`,
+    es: (title, count) => `Estás a punto de eliminar "${title}". Hay ${count} tarea(s) vinculada(s). ¿Qué deseas hacer con las tareas?`,
+  },
   delProjMsg1: { pt: 'Você está prestes a apagar', en: 'You are about to delete', es: 'Estás a punto de borrar' },
   delProjMsg2: { pt: 'O que deseja fazer com as tarefas?', en: 'What do you want to do with the tasks?', es: '¿Qué deseas hacer con las tareas?' },
   btnDelBoth: { pt: '🗑️ Excluir Projeto E Todas as Suas Tarefas', en: '🗑️ Delete Project AND All Its Tasks', es: '🗑️ Eliminar Proyecto Y Todas Sus Tareas' },
+  btnDelProjAndTasks: { pt: '🗑️ Excluir Projeto E Todas as Suas Tarefas', en: '🗑️ Delete Project AND All Its Tasks', es: '🗑️ Eliminar Proyecto Y Todas Sus Tareas' },
   btnDelOnlyProj: { pt: '🛡️ Excluir Apenas Projeto (Preservar Tarefas como Avulsas)', en: '🛡️ Delete Only Project (Keep Tasks Standalone)', es: '🛡️ Eliminar Solo Proyecto (Preservar Tareas Sueltas)' },
+  btnDelProjOnly: { pt: '🛡️ Excluir Apenas Projeto (Preservar Tarefas como Avulsas)', en: '🛡️ Delete Only Project (Keep Tasks Standalone)', es: '🛡️ Eliminar Solo Proyecto (Preservar Tareas Sueltas)' },
   toastProjDeleted: { pt: 'Projeto e tarefas excluídos!', en: 'Project and tasks deleted!', es: '¡Proyecto y tareas eliminados!' },
+  toastProjTasksDeleted: { pt: 'Projeto e tarefas excluídos!', en: 'Project and tasks deleted!', es: '¡Proyecto y tareas eliminados!' },
   toastProjDeletedTasksSaved: { pt: 'Projeto excluído! Tarefas salvas como avulsas.', en: 'Project deleted! Tasks saved as standalone.', es: '¡Proyecto eliminado! Tareas guardadas como sueltas.' },
+  toastProjDeletedOnly: { pt: 'Projeto excluído! Tarefas salvas como avulsas.', en: 'Project deleted! Tasks saved as standalone.', es: '¡Proyecto eliminado! Tareas guardadas como sueltas.' },
   reopenProjTitle: { pt: 'REABRIR PROJETO?', en: 'REOPEN PROJECT?', es: '¿REABRIR PROYECTO?' },
   completeProjTitle: { pt: 'CONCLUIR PROJETO?', en: 'COMPLETE PROJECT?', es: '¿CONCLUIR PROYECTO?' },
   reopenProjMsg: { pt: 'Deseja marcar o projeto de volta como Em Andamento?', en: 'Do you want to mark this project back as In Progress?', es: '¿Deseas marcar este proyecto de vuelta como En Curso?' },
+  reopenProjConfirmMsg: { pt: 'Deseja marcar o projeto de volta como Em Andamento?', en: 'Do you want to mark this project back as In Progress?', es: '¿Deseas marcar este proyecto de vuelta como En Curso?' },
   completeProjMsg: { pt: 'Parabéns guerreiro! Confirmar conclusão do projeto estratégico', en: 'Congratulations warrior! Confirm completion of strategic project', es: '¡Felicidades guerrero! Confirmar conclusión del proyecto estratégico' },
+  completeProjConfirmMsg: { pt: 'Parabéns guerreiro! Confirmar conclusão do projeto estratégico', en: 'Congratulations warrior! Confirm completion of strategic project', es: '¡Felicidades guerrero! Confirmar conclusión del proyecto estratégico' },
   btnReopen: { pt: 'Reabrir', en: 'Reopen', es: 'Reabrir' },
   btnCompleteMission: { pt: 'Concluir Missão', en: 'Complete Mission', es: 'Concluir Misión' },
   toastProjReopened: { pt: 'Projeto reaberto', en: 'Project reopened', es: 'Proyecto reabierto' },
@@ -502,6 +528,19 @@ export default function OpsView() {
             >
               {taskToEdit ? tx.btnSaveChanges[curLang] : tx.btnCreateOperation[curLang]}
             </button>
+            {taskToEdit && (
+              <button
+                type="button"
+                className="py-2 px-3 rounded border border-danger/40 bg-danger/10 hover:bg-danger/20 text-danger text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                onClick={() => {
+                  closeModal();
+                  requestDeleteTask(taskToEdit);
+                }}
+              >
+                <Trash2 size={13} />
+                <span>{tx.btnDeleteTask[curLang]}</span>
+              </button>
+            )}
             <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
               {tx.btnCancel[curLang]}
             </button>
@@ -1413,16 +1452,22 @@ export default function OpsView() {
                       <button
                         type="button"
                         title={tx.editTaskTitle[curLang]}
-                        onClick={() => openTaskModal(tItem)}
-                        className="text-muted hover:text-gold p-1 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openTaskModal(tItem);
+                        }}
+                        className="text-muted hover:text-gold p-1.5 rounded hover:bg-gold/10 transition-colors cursor-pointer"
                       >
                         <Edit3 size={13} />
                       </button>
                       <button
                         type="button"
                         title={tx.delTaskTitle[curLang]}
-                        onClick={() => requestDeleteTask(tItem)}
-                        className="text-muted hover:text-danger p-1 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestDeleteTask(tItem);
+                        }}
+                        className="text-muted hover:text-danger p-1.5 rounded hover:bg-danger/10 transition-colors cursor-pointer"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -1687,11 +1732,27 @@ export default function OpsView() {
                                     )}
                                     <button
                                       type="button"
+                                      title={tx.editTaskTitle[curLang]}
+                                      onClick={() => openTaskModal(pt)}
+                                      className="text-muted/60 hover:text-gold p-0.5 transition-colors cursor-pointer"
+                                    >
+                                      <Edit3 size={11} />
+                                    </button>
+                                    <button
+                                      type="button"
                                       title={tx.unlinkFromProj[curLang]}
                                       onClick={() => unlinkTask(pt.id)}
-                                      className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
+                                      className="text-muted/60 hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
                                     >
                                       <Unlink size={11} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      title={tx.delTaskTitle[curLang]}
+                                      onClick={() => requestDeleteTask(pt)}
+                                      className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
+                                    >
+                                      <Trash2 size={11} />
                                     </button>
                                   </div>
                                 </div>
@@ -1892,20 +1953,30 @@ export default function OpsView() {
                     className="p-2.5 rounded border border-line/50 bg-surface2/40 flex items-center justify-between gap-2"
                   >
                     <span className="text-xs text-muted truncate">{tItem.txt}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        update((s) => {
-                          const target = (s.tasks || []).find((x) => String(x.id) === String(tItem.id));
-                          if (target) target.archived = false;
-                        });
-                        AF.click();
-                        toast(tx.toastTaskRestored[curLang]);
-                      }}
-                      className="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold flex-none"
-                    >
-                      {tx.btnRestore[curLang]}
-                    </button>
+                    <div className="flex items-center gap-1.5 flex-none">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          update((s) => {
+                            const target = (s.tasks || []).find((x) => String(x.id) === String(tItem.id));
+                            if (target) target.archived = false;
+                          });
+                          AF.click();
+                          toast(tx.toastTaskRestored[curLang]);
+                        }}
+                        className="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold cursor-pointer"
+                      >
+                        {tx.btnRestore[curLang]}
+                      </button>
+                      <button
+                        type="button"
+                        title={tx.delTaskTitle[curLang]}
+                        onClick={() => requestDeleteTask(tItem)}
+                        className="text-muted hover:text-danger p-1 rounded hover:bg-danger/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

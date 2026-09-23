@@ -41,10 +41,12 @@ const I18N = {
   none: { pt: 'Nenhum', en: 'None', es: 'Ninguno' },
   moodDist: { pt: 'DISTRIBUIÇÃO DE ESTADOS DE ESPÍRITO', en: 'STATE OF MIND DISTRIBUTION', es: 'DISTRIBUCIÓN DE ESTADOS DE ÁNIMO' },
   delTitle: { pt: 'Excluir Registro', en: 'Delete Entry', es: 'Eliminar Registro' },
+  delConfirmBtn: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
+  delCancelBtn: { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
 };
 
 export default function JournalView() {
-  const { S, update, toast } = useApp();
+  const { S, update, toast, openModal, closeModal } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = I18N;
@@ -139,16 +141,43 @@ export default function JournalView() {
   };
 
   const deleteEntry = (id) => {
-    if (!window.confirm(tx.delPrompt[curLang])) return;
-    update((s) => {
-      if (Array.isArray(s.journal)) {
-        s.journal = s.journal.filter((x) => String(x.id) !== String(id));
-      } else if (s.journal && typeof s.journal === 'object') {
-        delete s.journal[id];
-      }
-    });
-    AF.click();
-    toast(tx.delToast[curLang]);
+    const ConfirmModal = () => (
+      <div className="text-center p-1">
+        <div className="w-12 h-12 rounded-full border border-danger/40 bg-danger/10 flex items-center justify-center mx-auto mb-3 text-danger">
+          <Trash2 size={24} />
+        </div>
+        <h3 className="font-display text-xl tracking-wide text-danger mb-1.5">{tx.delTitle[curLang]}</h3>
+        <p className="text-xs text-muted leading-relaxed mb-4">{tx.delPrompt[curLang]}</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="flex-1 py-2 rounded text-xs font-bold font-mono bg-danger text-white hover:bg-danger/90 transition-colors cursor-pointer"
+            onClick={() => {
+              closeModal();
+              update((s) => {
+                if (Array.isArray(s.journal)) {
+                  s.journal = s.journal.filter((x) => String(x.id) !== String(id));
+                } else if (s.journal && typeof s.journal === 'object') {
+                  delete s.journal[id];
+                }
+              });
+              AF.click();
+              toast(tx.delToast[curLang]);
+            }}
+          >
+            {tx.delConfirmBtn[curLang]}
+          </button>
+          <button
+            type="button"
+            className="btn-dark py-2 px-4 text-xs font-bold font-mono cursor-pointer"
+            onClick={closeModal}
+          >
+            {tx.delCancelBtn[curLang]}
+          </button>
+        </div>
+      </div>
+    );
+    openModal(<ConfirmModal />);
   };
 
   return (

@@ -419,17 +419,53 @@ export default function ForgeView() {
     toast(isArch ? LBL.toastHabitRestored[curLang] : LBL.toastHabitArchived[curLang]);
   };
 
-  /* Excluir Hábito Personalizado */
+  /* Excluir Hábito Personalizado com Confirmação In-App */
   const deleteCustomHabit = (id) => {
-    if (!window.confirm(LBL.confirmDeleteHabit[curLang])) return;
-    update((s) => {
-      s.customHabits = (s.customHabits || []).filter((x) => String(x.id) !== String(id));
-      s.forge.active = (s.forge.active || []).filter((x) => String(x) !== String(id));
-      s.forge.archived = (s.forge.archived || []).filter((x) => String(x) !== String(id));
-      if (s.forge.times) delete s.forge.times[id];
-    });
-    AF.click();
-    toast(LBL.toastHabitDeleted[curLang]);
+    const habit = (S.customHabits || []).find((h) => String(h.id) === String(id));
+    const habitName = habit ? habit.n : '';
+
+    const ConfirmModal = () => (
+      <div className="text-center p-1">
+        <div className="w-12 h-12 rounded-full border border-danger/40 bg-danger/10 flex items-center justify-center mx-auto mb-3 text-danger">
+          <Trash2 size={24} />
+        </div>
+        <h3 className="font-display text-xl tracking-wide text-danger mb-1.5">
+          {curLang === 'en' ? 'DELETE CUSTOM HABIT?' : curLang === 'es' ? '¿ELIMINAR HÁBITO PERSONALIZADO?' : 'EXCLUIR HÁBITO PERSONALIZADO?'}
+        </h3>
+        <p className="text-xs text-muted leading-relaxed mb-4">
+          {LBL.confirmDeleteHabit[curLang]}
+          {habitName ? ` ("${habitName}")` : ''}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="flex-1 py-2 rounded text-xs font-bold font-mono bg-danger text-white hover:bg-danger/90 transition-colors cursor-pointer"
+            onClick={() => {
+              closeModal();
+              update((s) => {
+                s.customHabits = (s.customHabits || []).filter((x) => String(x.id) !== String(id));
+                s.forge = s.forge || {};
+                s.forge.active = (s.forge.active || []).filter((x) => String(x) !== String(id));
+                s.forge.archived = (s.forge.archived || []).filter((x) => String(x) !== String(id));
+                if (s.forge.times) delete s.forge.times[id];
+              });
+              AF.click();
+              toast(LBL.toastHabitDeleted[curLang]);
+            }}
+          >
+            {curLang === 'en' ? 'Yes, Delete' : curLang === 'es' ? 'Sí, Eliminar' : 'Sim, Excluir'}
+          </button>
+          <button
+            type="button"
+            className="btn-dark py-2 px-4 text-xs font-bold font-mono cursor-pointer"
+            onClick={closeModal}
+          >
+            {curLang === 'en' ? 'Cancel' : curLang === 'es' ? 'Cancelar' : 'Cancelar'}
+          </button>
+        </div>
+      </div>
+    );
+    openModal(<ConfirmModal />);
   };
 
   /* Modal de Edição de Hábito Personalizado */
@@ -494,7 +530,18 @@ export default function ForgeView() {
             >
               {LBL.saveChanges[curLang]}
             </button>
-            <button className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
+            <button
+              type="button"
+              className="py-2 px-3 rounded border border-danger/40 bg-danger/10 hover:bg-danger/20 text-danger text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
+              onClick={() => {
+                closeModal();
+                deleteCustomHabit(h.id);
+              }}
+            >
+              <Trash2 size={13} />
+              <span>{LBL.deleteHabit[curLang]}</span>
+            </button>
+            <button type="button" className="btn-dark py-2 px-4 text-xs font-bold cursor-pointer" onClick={closeModal}>
               {LBL.cancelBtn[curLang]}
             </button>
           </div>
