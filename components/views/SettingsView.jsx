@@ -15,7 +15,7 @@ import * as cloud from '@/lib/supabase';
 import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
 import { today, LSKEY } from '@/lib/utils';
-import { pushSupported, askPermission, subscribePush, unsubscribePush } from '@/lib/notify';
+import { pushSupported, askPermission, subscribePush, unsubscribePush, localNotify } from '@/lib/notify';
 import ChangelogModal from '../ChangelogModal';
 import { CURRENT_APP_VERSION } from '@/lib/changelog';
 
@@ -731,24 +731,30 @@ export default function SettingsView() {
                 </span>
               </div>
 
-              {perm !== 'granted' ? (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted leading-relaxed">
-                    {T('notif_intro', 'Receba o lembrete noturno de check-in e alertas dos hábitos mesmo com o app fechado.')}
-                  </p>
+              {/* Painel Duplo de Notificações */}
+              <div className="space-y-2">
+                <div className="p-2.5 rounded bg-surface2/80 border border-gold/20 text-xs text-muted leading-relaxed">
+                  <span className="font-bold text-gold block mb-0.5 text-[11px]">
+                    ⚡ {T('notif_dual_title', 'Motor de Alerta Duplo (Dentro e Fora)')}
+                  </span>
+                  {T('notif_dual_body', 'Fora: Notificações na tela de bloqueio e barra de status do celular ou PC. Dentro: Banners visuais e acorde sonoro tático para você não perder nenhum compromisso.')}
+                </div>
+
+                {perm !== 'granted' && (
                   <button className="btn-gold w-full text-xs py-2" disabled={notifBusy} onClick={enableNotif}>
                     <Bell size={13} /> {T('notif_on', 'AUTORIZAR NOTIFICAÇÕES NO DISPOSITIVO')}
                   </button>
-                </div>
-              ) : (
+                )}
+
                 <div className="space-y-1.5">
                   <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
                     <div>
                       <b className="text-xs text-ink">{T('notif_daily_t', 'Lembrete noturno')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_daily_d', 'Push às ~19h se não fez check-in')}</small>
+                      <small className="block text-[10px] text-muted">{T('notif_daily_d', 'Push às ~20h se não fez check-in')}</small>
                     </div>
                     <Toggle on={st.notifDaily !== false} onChange={() => update((s) => { s.settings.notifDaily = s.settings.notifDaily === false; })} />
                   </div>
+
                   <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
                     <div>
                       <b className="text-xs text-ink">{T('notif_hab_t', 'Horários dos hábitos')}</b>
@@ -756,11 +762,57 @@ export default function SettingsView() {
                     </div>
                     <Toggle on={st.notifHabits !== false} onChange={() => update((s) => { s.settings.notifHabits = s.settings.notifHabits === false; })} />
                   </div>
-                  <button className="btn-dark w-full text-[11px] py-1 text-muted hover:text-ink mt-1" onClick={disableNotif}>
-                    <BellOff size={12} /> {T('notif_off', 'Desativar neste dispositivo')}
+
+                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
+                    <div>
+                      <b className="text-xs text-ink">{T('notif_tasks_t', 'Tarefas e Operações')}</b>
+                      <small className="block text-[10px] text-muted">{T('notif_tasks_d', 'Alertas no horário agendado de cada tarefa')}</small>
+                    </div>
+                    <Toggle on={st.notifTasks !== false} onChange={() => update((s) => { s.settings.notifTasks = s.settings.notifTasks === false; })} />
+                  </div>
+
+                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
+                    <div>
+                      <b className="text-xs text-ink">{T('notif_proj_t', 'Projetos Estratégicos')}</b>
+                      <small className="block text-[10px] text-muted">{T('notif_proj_d', 'Alertas de janela de foco diária e prazo final')}</small>
+                    </div>
+                    <Toggle on={st.notifProjects !== false} onChange={() => update((s) => { s.settings.notifProjects = s.settings.notifProjects === false; })} />
+                  </div>
+
+                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
+                    <div>
+                      <b className="text-xs text-ink">{T('notif_sound_t', 'Sinal sonoro interno')}</b>
+                      <small className="block text-[10px] text-muted">{T('notif_sound_d', 'Toca um acorde heróico ao disparar o horário')}</small>
+                    </div>
+                    <Toggle on={st.notifSound !== false} onChange={() => update((s) => { s.settings.notifSound = s.settings.notifSound === false; })} />
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-dark w-full text-xs py-2 mt-1 flex items-center justify-center gap-1.5 border-gold/30 text-gold hover:border-gold"
+                    onClick={async () => {
+                      if (st.notifSound !== false) {
+                        AF.alert();
+                      }
+                      toast(T('notif_test_toast', '⚡ Teste de alerta tático executado! Notificações interna e externa ativas.'));
+                      await localNotify(
+                        '⚔️ Teste de Alerta · Forjando Guerreiros',
+                        'Lembrete duplo (fora e dentro do app) funcionando perfeitamente!',
+                        'fg-test-alert'
+                      );
+                    }}
+                  >
+                    <Bell size={13} />
+                    <span>{T('notif_test_btn', 'TESTAR ALERTAS (DENTRO E FORA)')}</span>
                   </button>
+
+                  {perm === 'granted' && (
+                    <button className="btn-dark w-full text-[11px] py-1 text-muted hover:text-ink mt-1" onClick={disableNotif}>
+                      <BellOff size={12} /> {T('notif_off', 'Desativar neste dispositivo')}
+                    </button>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </Card>
 

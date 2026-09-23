@@ -61,12 +61,19 @@ export default function Shell() {
     }
   }, [lang, openModal, closeModal, toast]);
 
-  /* PWA: registra o service worker + agenda lembretes locais (hábitos ⏰ e check-in 20h) */
+  /* PWA: registra o service worker + agenda lembretes duplos (fora via OS e dentro via som e toast) */
   React.useEffect(() => {
     ensureSw();
-    const clean = scheduleLocalTimers(S, allH(S), true);
+    const clean = scheduleLocalTimers(S, allH(S), true, {
+      onInAppNotify: (item) => {
+        if (S?.settings?.notifSound !== false) {
+          AF.alert();
+        }
+        toast(`${item.icon} ${item.title} — ${item.body}`, 7500);
+      },
+    });
     return clean;
-  }, [S]);
+  }, [S, toast]);
 
   return (
     <div className="relative z-[2] min-h-dvh w-full max-w-full overflow-x-hidden lg:grid lg:grid-cols-[242px_minmax(0,1fr)]">
