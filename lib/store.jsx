@@ -168,6 +168,21 @@ export function AppProvider({ children }) {
         }
         const em = typeof window !== 'undefined' ? localStorage.getItem('fg_local_session') : null;
         if (em) { await enterApp({ local: true, email: em }); return; }
+
+        // Se houver dados locais de guerreiro (onboarded ou PIN ativo):
+        if (typeof window !== 'undefined') {
+          const rawLocal = localStorage.getItem(LSKEY);
+          if (rawLocal) {
+            try {
+              const parsed = JSON.parse(rawLocal);
+              if (parsed && (parsed.onboarded || (parsed.settings && parsed.settings.pin) || parsed.retStart || parsed.streak)) {
+                await enterApp({ local: true, email: parsed.email || 'guerreiro@local' });
+                return;
+              }
+            } catch (e) {}
+          }
+        }
+
         setPhase('auth');
       } catch (e) {
         authRef.current = { email: '', userId: 'local:fail' };

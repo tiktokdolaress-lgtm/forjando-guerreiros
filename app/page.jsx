@@ -4,6 +4,7 @@ import { ShieldCheck, Flame, Siren, BookOpen, ChartNoAxesColumn, RefreshCw, Swor
 import PriceTag from '@/components/landing/PriceTag';
 import Faq from '@/components/landing/Faq';
 import LangPick from '@/components/LangPick';
+import AutoRedirect from '@/components/landing/AutoRedirect';
 import { cx } from '@/lib/content-i18n';
 import { serverLang } from '@/lib/i18n-server';
 
@@ -67,6 +68,41 @@ export default function Landing() {
 
   return (
     <main className="min-h-dvh bg-bg text-ink">
+      {/* Redirecionamento instantâneo se o guerreiro já possui conta ou sessão ativa no celular/PC */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                if (window.location.search.indexOf('landing=true') !== -1) return;
+                var hasLocal = localStorage.getItem('fg_local_session');
+                var rawFg = localStorage.getItem('forjando_guerreiros_v1');
+                var hasFg = false;
+                if (rawFg) {
+                  try {
+                    var parsed = JSON.parse(rawFg);
+                    if (parsed && (parsed.onboarded || (parsed.settings && parsed.settings.pin) || parsed.retStart || parsed.streak)) {
+                      hasFg = true;
+                    }
+                  } catch(e) {}
+                }
+                var hasSb = false;
+                var hasAnyFg = false;
+                for (var i = 0; i < localStorage.length; i++) {
+                  var k = localStorage.key(i) || '';
+                  if (k.indexOf('sb-') === 0 && k.indexOf('-auth-token') !== -1) hasSb = true;
+                  if (k.indexOf('forjando_guerreiros_v1_') === 0) hasAnyFg = true;
+                }
+                if (hasLocal || hasSb || hasFg || hasAnyFg) {
+                  window.location.replace('/app');
+                }
+              } catch(e) {}
+            })();
+          `,
+        }}
+      />
+      <AutoRedirect />
+
       {/* NAV */}
       <header className="sticky top-0 z-40 border-b border-gold/15 bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
