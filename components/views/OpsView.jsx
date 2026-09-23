@@ -40,7 +40,7 @@ const I18N = {
   filterActive: { pt: 'Ativos', en: 'Active', es: 'Activos' },
   filterArchived: { pt: 'Arquivados', en: 'Archived', es: 'Archivados' },
   progress: { pt: 'Progresso do Dia', en: 'Today\'s Progress', es: 'Progreso del Día' },
-  noTasks: { pt: 'Nenhuma operação nesta categoria.', en: 'No operations in this category.', es: 'Ninguna operação nesta categoria.' },
+  noTasks: { pt: 'Nenhuma operação nesta categoria.', en: 'No operations in this category.', es: 'Ninguna operación en esta categoría.' },
   noProjects: { pt: 'Nenhum projeto nesta categoria.', en: 'No projects in this category.', es: 'Ningún proyecto en esta categoría.' },
   postponeModalTitle: { pt: 'ADIAR OPERAÇÃO', en: 'POSTPONE OPERATION', es: 'POSPONER OPERACIÓN' },
   postponeModalDesc: { pt: 'Para quando você deseja postergar esta missão?', en: 'When do you want to postpone this mission to?', es: '¿Para cuándo deseas posponer esta misión?' },
@@ -61,6 +61,130 @@ const I18N = {
   toastPostponed: { pt: '⏳ Operação adiada!', en: '⏳ Operation postponed!', es: '⏳ ¡Operación pospuesta!' },
   toastPostponeRemoved: { pt: '✓ Adiamento removido!', en: '✓ Postponement removed!', es: '✓ ¡Aplazamiento removido!' },
   btnPostponeAction: { pt: 'Adiar', en: 'Postpone', es: 'Posponer' },
+  taskModalEdit: { pt: 'EDITAR OPERAÇÃO', en: 'EDIT OPERATION', es: 'EDITAR OPERACIÓN' },
+  taskModalNew: { pt: 'CRIAR NOVA OPERAÇÃO', en: 'CREATE NEW OPERATION', es: 'CREAR NUEVA OPERACIÓN' },
+  lblMissionDesc: { pt: 'Missão / Descrição:', en: 'Mission / Description:', es: 'Misión / Descripción:' },
+  phMission: { pt: 'Ex: Treino de pernas, Fazer Barba, Ler 10 págs...', en: 'E.g.: Leg workout, Shave, Read 10 pages...', es: 'Ej.: Entrenamiento de piernas, Afeitarse, Leer 10 págs...' },
+  lblPriority: { pt: 'Prioridade:', en: 'Priority:', es: 'Prioridad:' },
+  priHigh: { pt: '🔴 Alta (Guerra)', en: '🔴 High (War)', es: '🔴 Alta (Guerra)' },
+  priMedium: { pt: '🟡 Média', en: '🟡 Medium', es: '🟡 Media' },
+  priLow: { pt: '⚪ Baixa', en: '⚪ Low', es: '⚪ Baja' },
+  lblFrequency: { pt: 'Frequência:', en: 'Frequency:', es: 'Frecuencia:' },
+  repOnce: { pt: 'Única', en: 'One-time', es: 'Única' },
+  repDaily: { pt: 'Diária', en: 'Daily', es: 'Diaria' },
+  repWorkdays: { pt: 'Dias Úteis (Seg a Sex)', en: 'Weekdays (Mon to Fri)', es: 'Días Laborables (Lun a Vie)' },
+  repWeekend: { pt: 'Fins de Semana (Sáb/Dom)', en: 'Weekends (Sat/Sun)', es: 'Fines de Semana (Sáb/Dom)' },
+  repWeekly: { pt: 'Semanal (1x por semana)', en: 'Weekly (1x per week)', es: 'Semanal (1x por semana)' },
+  repCustom: { pt: 'Personalizada (Escolher dias)', en: 'Custom (Choose days)', es: 'Personalizada (Elegir días)' },
+  chooseWeeklyDay: { pt: 'Escolha o dia da semana que repete:', en: 'Choose the day of the week it repeats:', es: 'Elige el día de la semana que se repite:' },
+  repeatsEvery: { pt: 'Repete todo(a)', en: 'Repeats every', es: 'Se repite cada' },
+  chooseCustomDays: { pt: 'Escolha os dias em que repete:', en: 'Choose the days it repeats:', es: 'Elige los días en que se repite:' },
+  lblDays: { pt: 'Dias:', en: 'Days:', es: 'Días:' },
+  noDaysSelected: { pt: 'Nenhum dia selecionado', en: 'No days selected', es: 'Ningún día seleccionado' },
+  lblTimeOpt: { pt: 'Horário (Opcional):', en: 'Time (Optional):', es: 'Horario (Opcional):' },
+  lblLinkProject: { pt: 'Vincular a Projeto:', en: 'Link to Project:', es: 'Vincular a Proyecto:' },
+  optNoProject: { pt: '(Nenhum / Avulso)', en: '(None / Standalone)', es: '(Ninguno / Suelto)' },
+  btnSaveChanges: { pt: 'Salvar Alterações', en: 'Save Changes', es: 'Guardar Cambios' },
+  btnCreateOperation: { pt: 'Criar Operação', en: 'Create Operation', es: 'Crear Operación' },
+  btnCancel: { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
+  toastEnterDesc: { pt: 'Digite a descrição da operação', en: 'Enter operation description', es: 'Ingresa la descripción de la operación' },
+  toastTaskUpdated: { pt: 'Operação atualizada!', en: 'Operation updated!', es: '¡Operación actualizada!' },
+  toastTaskCreated: { pt: '✅ Operação criada!', en: '✅ Operation created!', es: '¡✅ Operación creada!' },
+  toastTaskDeleted: { pt: 'Operação excluída', en: 'Operation deleted', es: 'Operación eliminada' },
+  projModalEdit: { pt: 'EDITAR PROJETO', en: 'EDIT PROJECT', es: 'EDITAR PROYECTO' },
+  projModalNew: { pt: 'NOVO PROJETO ESTRATÉGICO', en: 'NEW STRATEGIC PROJECT', es: 'NUEVO PROYECTO ESTRATÉGICO' },
+  lblProjTitle: { pt: 'Título da Missão / Projeto:', en: 'Mission / Project Title:', es: 'Título de la Misión / Proyecto:' },
+  phProjTitle: { pt: 'Ex: Lançamento do Negócio, Cuidar do Jardim...', en: 'E.g.: Business Launch, Garden Project...', es: 'Ej.: Lanzamiento del Negocio, Cuidar el Jardín...' },
+  lblProjDesc: { pt: 'Objetivo / Descrição:', en: 'Goal / Description:', es: 'Objetivo / Descripción:' },
+  phProjDesc: { pt: 'Qual o resultado esperado e por que este projeto é crucial?', en: 'What is the expected result and why is this project crucial?', es: '¿Cuál es el resultado esperado y por qué este proyecto es crucial?' },
+  lblProjSchedule: { pt: '📅 Cronograma: Início, Duração e Término', en: '📅 Schedule: Start, Duration, and End', es: '📅 Cronograma: Inicio, Duración y Fin' },
+  lblStartDate: { pt: 'Data de Início:', en: 'Start Date:', es: 'Fecha de Inicio:' },
+  lblDurationDays: { pt: 'Duração (Dias):', en: 'Duration (Days):', es: 'Duración (Días):' },
+  lblEndDate: { pt: 'Término / Encerramento:', en: 'End / Deadline:', es: 'Fin / Cierre:' },
+  lblFocusWindowStart: { pt: 'Janela Diária — Início:', en: 'Daily Focus Window — Start:', es: 'Ventana Diaria — Inicio:' },
+  lblFocusWindowEnd: { pt: 'Janela Diária — Fim:', en: 'Daily Focus Window — End:', es: 'Ventana Diaria — Fin:' },
+  lblQuickActions: { pt: 'Ações Rápidas de Tarefas:', en: 'Quick Task Actions:', es: 'Acciones Rápidas de Tareas:' },
+  btnNewTaskInProj: { pt: '+ Nova Tarefa Neste Projeto', en: '+ New Task in this Project', es: '+ Nueva Tarea en este Proyecto' },
+  btnLinkExistingTask: { pt: 'Vincular Tarefa Existente', en: 'Link Existing Task', es: 'Vincular Tarea Existente' },
+  btnSaveProj: { pt: 'Salvar Alterações', en: 'Save Changes', es: 'Guardar Cambios' },
+  btnCreateProj: { pt: 'Criar Projeto', en: 'Create Project', es: 'Crear Proyecto' },
+  toastEnterProjTitle: { pt: 'Digite o nome do projeto', en: 'Enter project name', es: 'Ingresa el nombre del proyecto' },
+  toastProjUpdated: { pt: 'Projeto atualizado!', en: 'Project updated!', es: '¡Proyecto actualizado!' },
+  toastProjCreated: { pt: '✅ Projeto criado com sucesso!', en: '✅ Project created successfully!', es: '¡✅ Proyecto creado con éxito!' },
+  linkTaskTitle: { pt: 'VINCULAR TAREFA EXISTENTE', en: 'LINK EXISTING TASK', es: 'VINCULAR TAREA EXISTENTE' },
+  linkTaskSub: { pt: 'Selecione uma tarefa para incluir no projeto', en: 'Select a task to include in project', es: 'Selecciona una tarea para incluir en el proyecto' },
+  linkBtn: { pt: 'Vincular', en: 'Link', es: 'Vincular' },
+  linkAllLinked: { pt: 'Todas as suas tarefas já estão vinculadas a este projeto ou não há tarefas criadas.', en: 'All your tasks are already linked to this project or there are no tasks created.', es: 'Todas tus tareas ya están vinculadas a este proyecto o no hay tareas creadas.' },
+  btnClose: { pt: 'Fechar', en: 'Close', es: 'Cerrar' },
+  toastTaskLinked: { pt: 'Tarefa vinculada ao projeto!', en: 'Task linked to project!', es: '¡Tarea vinculada al proyecto!' },
+  toastTaskUnlinked: { pt: 'Tarefa desvinculada do projeto', en: 'Task unlinked from project', es: 'Tarea desvinculada del proyecto' },
+  delTaskTitle: { pt: 'EXCLUIR OPERAÇÃO?', en: 'DELETE OPERATION?', es: '¿ELIMINAR OPERACIÓN?' },
+  delTaskMsg: { pt: 'Tem certeza que deseja cancelar e excluir permanentemente a operação', en: 'Are you sure you want to permanently cancel and delete the operation', es: '¿Estás seguro de que deseas cancelar y eliminar permanentemente la operación' },
+  btnYesDelete: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
+  unarchiveProjTitle: { pt: 'DESARQUIVAR PROJETO?', en: 'UNARCHIVE PROJECT?', es: '¿DESARCHIVAR PROYECTO?' },
+  unarchiveProjMsg: { pt: 'Deseja restaurar o projeto', en: 'Do you want to restore the project', es: '¿Deseas restaurar el proyecto' },
+  unarchiveProjToActive: { pt: 'para os projetos ativos?', en: 'to active projects?', es: 'a los proyectos activos?' },
+  btnRestoreProj: { pt: 'Restaurar Projeto', en: 'Restore Project', es: 'Restaurar Proyecto' },
+  toastProjUnarchived: { pt: 'Projeto desarquivado!', en: 'Project unarchived!', es: '¡Proyecto desarchivado!' },
+  archiveProjTitle: { pt: 'ARQUIVAR PROJETO?', en: 'ARCHIVE PROJECT?', es: '¿ARCHIVAR PROYECTO?' },
+  archiveProjMsg1: { pt: 'Você está arquivando o projeto', en: 'You are archiving project', es: 'Estás archivando el proyecto' },
+  archiveProjMsg2: { pt: 'tarefa(s) vinculada(s). Como deseja proceder com essas tarefas?', en: 'linked task(s). How do you want to proceed with these tasks?', es: 'tarea(s) vinculada(s). ¿Cómo deseas proceder con esas tareas?' },
+  btnArchiveBoth: { pt: '📦 Arquivar Projeto E Tarefas Vinculadas', en: '📦 Archive Project AND Linked Tasks', es: '📦 Archivar Proyecto Y Tareas Vinculadas' },
+  btnArchiveOnlyProj: { pt: '🔓 Arquivar Só Projeto (Manter Tarefas Ativas/Avulsas)', en: '🔓 Archive Only Project (Keep Tasks Active/Standalone)', es: '🔓 Archivar Solo Proyecto (Mantener Tareas Activas/Sueltas)' },
+  toastProjTasksArchived: { pt: '📦 Projeto e tarefas arquivados!', en: '📦 Project and tasks archived!', es: '¡📦 Proyecto y tareas archivados!' },
+  toastProjOnlyArchived: { pt: '📦 Projeto arquivado (tarefas tornaram-se avulsas)!', en: '📦 Project archived (tasks became standalone)!', es: '¡📦 Proyecto archivado (tareas quedaron sueltas)!' },
+  delProjTitle: { pt: 'EXCLUIR PROJETO DEFINITIVAMENTE?', en: 'DELETE PROJECT PERMANENTLY?', es: '¿ELIMINAR PROYECTO DEFINITIVAMENTE?' },
+  delProjMsg1: { pt: 'Você está prestes a apagar', en: 'You are about to delete', es: 'Estás a punto de borrar' },
+  delProjMsg2: { pt: 'O que deseja fazer com as tarefas?', en: 'What do you want to do with the tasks?', es: '¿Qué deseas hacer con las tareas?' },
+  btnDelBoth: { pt: '🗑️ Excluir Projeto E Todas as Suas Tarefas', en: '🗑️ Delete Project AND All Its Tasks', es: '🗑️ Eliminar Proyecto Y Todas Sus Tareas' },
+  btnDelOnlyProj: { pt: '🛡️ Excluir Apenas Projeto (Preservar Tarefas como Avulsas)', en: '🛡️ Delete Only Project (Keep Tasks Standalone)', es: '🛡️ Eliminar Solo Proyecto (Preservar Tareas Sueltas)' },
+  toastProjDeleted: { pt: 'Projeto e tarefas excluídos!', en: 'Project and tasks deleted!', es: '¡Proyecto y tareas eliminados!' },
+  toastProjDeletedTasksSaved: { pt: 'Projeto excluído! Tarefas salvas como avulsas.', en: 'Project deleted! Tasks saved as standalone.', es: '¡Proyecto eliminado! Tareas guardadas como sueltas.' },
+  reopenProjTitle: { pt: 'REABRIR PROJETO?', en: 'REOPEN PROJECT?', es: '¿REABRIR PROYECTO?' },
+  completeProjTitle: { pt: 'CONCLUIR PROJETO?', en: 'COMPLETE PROJECT?', es: '¿CONCLUIR PROYECTO?' },
+  reopenProjMsg: { pt: 'Deseja marcar o projeto de volta como Em Andamento?', en: 'Do you want to mark this project back as In Progress?', es: '¿Deseas marcar este proyecto de vuelta como En Curso?' },
+  completeProjMsg: { pt: 'Parabéns guerreiro! Confirmar conclusão do projeto estratégico', en: 'Congratulations warrior! Confirm completion of strategic project', es: '¡Felicidades guerrero! Confirmar conclusión del proyecto estratégico' },
+  btnReopen: { pt: 'Reabrir', en: 'Reopen', es: 'Reabrir' },
+  btnCompleteMission: { pt: 'Concluir Missão', en: 'Complete Mission', es: 'Concluir Misión' },
+  toastProjReopened: { pt: 'Projeto reaberto', en: 'Project reopened', es: 'Proyecto reabierto' },
+  toastProjCompleted: { pt: '🏆 Projeto Concluído com Honra!', en: '🏆 Project Completed with Honor!', es: '¡🏆 Proyecto Concluido con Honor!' },
+  statusCompleted: { pt: '✓ CONCLUÍDO', en: '✓ COMPLETED', es: '✓ COMPLETADO' },
+  statusInProgress: { pt: 'EM ANDAMENTO', en: 'IN PROGRESS', es: 'EN CURSO' },
+  lblTotalProgress: { pt: 'PROGRESSO TOTAL', en: 'TOTAL PROGRESS', es: 'PROGRESO TOTAL' },
+  lblLinkedTasks: { pt: 'TAREFAS VINCULADAS', en: 'LINKED TASKS', es: 'TAREAS VINCULADAS' },
+  btnNewInline: { pt: 'Nova', en: 'New', es: 'Nueva' },
+  btnLinkInline: { pt: 'Vincular', en: 'Link', es: 'Vincular' },
+  noLinkedTasks: { pt: 'Nenhuma tarefa vinculada ainda.', en: 'No linked tasks yet.', es: 'Ninguna tarea vinculada aún.' },
+  lblSteps: { pt: 'ETAPAS', en: 'STEPS', es: 'ETAPAS' },
+  phAddStep: { pt: '+ Adicionar etapa...', en: '+ Add step...', es: '+ Añadir etapa...' },
+  btnAdd: { pt: 'Adicionar', en: 'Add', es: 'Añadir' },
+  wordDays: { pt: 'dias', en: 'days', es: 'días' },
+  wordDay: { pt: 'Dia', en: 'Day', es: 'Día' },
+  wordDeadline: { pt: 'Prazo:', en: 'Deadline:', es: 'Plazo:' },
+  noDeadline: { pt: 'Sem prazo definido', en: 'No deadline set', es: 'Sin plazo definido' },
+  wordTasks: { pt: 'tarefas', en: 'tasks', es: 'tareas' },
+  btnCreateFirstProject: { pt: '+ CRIAR PRIMEIRO PROJETO', en: '+ CREATE FIRST PROJECT', es: '+ CREAR PRIMER PROYECTO' },
+  cardNewOp: { pt: '+ Nova Operação', en: '+ New Operation', es: '+ Nueva Operación' },
+  cardNewProject: { pt: 'Novo Projeto Estratégico', en: 'New Strategic Project', es: 'Nuevo Proyecto Estratégico' },
+  cardNewProjectSub: { pt: 'Crie uma nova frente tática com marcos e tarefas dedicadas.', en: 'Create a new tactical front with milestones and dedicated tasks.', es: 'Crea un nuevo frente táctico con hitos y tareas dedicadas.' },
+  archivedProjectsTitle: { pt: '🏛️ PROJETOS ARQUIVADOS', en: '🏛️ ARCHIVED PROJECTS', es: '🏛️ PROYECTOS ARCHIVADOS' },
+  noArchivedProjects: { pt: 'Nenhum projeto arquivado.', en: 'No archived projects.', es: 'Ningún proyecto archivado.' },
+  badgeArchived: { pt: 'Arquivado', en: 'Archived', es: 'Archivado' },
+  lblLinkedTasksCount: { pt: 'Tarefas vinculadas:', en: 'Linked tasks:', es: 'Tareas vinculadas:' },
+  btnUnarchive: { pt: 'Desarquivar', en: 'Unarchive', es: 'Desarchivar' },
+  archivedTasksTitle: { pt: '🎯 TAREFAS ARQUIVADAS', en: '🎯 ARCHIVED TASKS', es: '🎯 TAREAS ARCHIVADAS' },
+  btnRestore: { pt: 'Restaurar', en: 'Restore', es: 'Restaurar' },
+  toastTaskRestored: { pt: 'Tarefa restaurada!', en: 'Task restored!', es: '¡Tarea restaurada!' },
+  projFilterActive: { pt: 'Ativos', en: 'Active', es: 'Activos' },
+  projFilterDone: { pt: 'Concluídos', en: 'Completed', es: 'Completados' },
+  projFilterArchived: { pt: 'Arquivados 📦', en: 'Archived 📦', es: 'Archivados 📦' },
+  btnConfirmGeneric: { pt: 'Confirmar', en: 'Confirm', es: 'Confirmar' },
+  editTaskTitle: { pt: 'Editar Operação', en: 'Edit Operation', es: 'Editar Operación' },
+  editProjTitle: { pt: 'Editar Projeto', en: 'Edit Project', es: 'Editar Proyecto' },
+  archiveProjAction: { pt: 'Arquivar Projeto', en: 'Archive Project', es: 'Archivar Proyecto' },
+  unarchiveProjAction: { pt: 'Desarquivar Projeto', en: 'Unarchive Project', es: 'Desarchivar Proyecto' },
+  delProjAction: { pt: 'Excluir Projeto', en: 'Delete Project', es: 'Eliminar Proyecto' },
+  unlinkFromProj: { pt: 'Desvincular do Projeto', en: 'Unlink from Project', es: 'Desvincular del Proyecto' },
 };
 
 export default function OpsView() {
@@ -91,7 +215,8 @@ export default function OpsView() {
   const pct = todayTasks.length ? Math.round((completedToday / todayTasks.length) * 100) : 0;
 
   /* MODAL: Confirmação Genérica */
-  const confirmAction = ({ title, message, onConfirm, confirmText = 'Confirmar', danger = false }) => {
+  const confirmAction = ({ title, message, onConfirm, confirmText = null, danger = false }) => {
+    const defaultConfirmText = tx.btnConfirmGeneric[curLang];
     const ConfirmModal = () => (
       <div className="text-center p-1">
         <div className="w-12 h-12 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center mx-auto mb-3 text-gold">
@@ -110,14 +235,14 @@ export default function OpsView() {
               onConfirm();
             }}
           >
-            {confirmText}
+            {confirmText || defaultConfirmText}
           </button>
           <button
             type="button"
             className="btn-dark py-2 px-4 text-xs font-bold font-mono"
             onClick={closeModal}
           >
-            Cancelar
+            {tx.btnCancel[curLang]}
           </button>
         </div>
       </div>
@@ -128,18 +253,22 @@ export default function OpsView() {
   /* Helper para label de repetição */
   const formatRepLabel = (t) => {
     if (!t.rep || t.rep === 'unica') return null;
-    if (t.rep === 'diaria') return '🔁 Diária';
-    if (t.rep === 'dias_uteis' || t.rep === 'semana') return '🔁 Seg–Sex';
-    if (t.rep === 'fds') return '🔁 Sáb–Dom';
+    if (t.rep === 'diaria') return curLang === 'en' ? '🔁 Daily' : curLang === 'es' ? '🔁 Diaria' : '🔁 Diária';
+    if (t.rep === 'dias_uteis' || t.rep === 'semana') return curLang === 'en' ? '🔁 Mon–Fri' : curLang === 'es' ? '🔁 Lun–Vie' : '🔁 Seg–Sex';
+    if (t.rep === 'fds') return curLang === 'en' ? '🔁 Sat–Sun' : curLang === 'es' ? '🔁 Sáb–Dom' : '🔁 Sáb–Dom';
+    const dayNames = curLang === 'en'
+      ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      : curLang === 'es'
+      ? ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+      : ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     if (t.rep === 'semanal') {
-      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const dName = dayNames[t.repDay == null ? 1 : Number(t.repDay)] || 'Seg';
-      return `🔁 Semanal (${dName})`;
+      const dName = dayNames[t.repDay == null ? 1 : Number(t.repDay)] || dayNames[1];
+      return `🔁 ${curLang === 'en' ? 'Weekly' : 'Semanal'} (${dName})`;
     }
     if (t.rep === 'custom') {
-      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
       const days = (t.repDays || []).slice().sort((a, b) => a - b).map((i) => dayNames[i]).join(', ');
-      return `🗓️ ${days || 'Personalizada'}`;
+      const customLabel = curLang === 'en' ? 'Custom' : 'Personalizada';
+      return `🗓️ ${days || customLabel}`;
     }
     return `🔁 ${t.rep}`;
   };
@@ -155,7 +284,23 @@ export default function OpsView() {
       const [time, setTime] = useState(taskToEdit ? (taskToEdit.time || '') : '');
       const [projectId, setProjectId] = useState(taskToEdit ? (taskToEdit.projectId || '') : defaultProjectId);
 
-      const dayList = [
+      const dayList = curLang === 'en' ? [
+        { id: 0, l: 'Sun', f: 'Sunday' },
+        { id: 1, l: 'Mon', f: 'Monday' },
+        { id: 2, l: 'Tue', f: 'Tuesday' },
+        { id: 3, l: 'Wed', f: 'Wednesday' },
+        { id: 4, l: 'Thu', f: 'Thursday' },
+        { id: 5, l: 'Fri', f: 'Friday' },
+        { id: 6, l: 'Sat', f: 'Saturday' },
+      ] : curLang === 'es' ? [
+        { id: 0, l: 'Dom', f: 'Domingo' },
+        { id: 1, l: 'Lun', f: 'Lunes' },
+        { id: 2, l: 'Mar', f: 'Martes' },
+        { id: 3, l: 'Mié', f: 'Miércoles' },
+        { id: 4, l: 'Jue', f: 'Jueves' },
+        { id: 5, l: 'Vie', f: 'Viernes' },
+        { id: 6, l: 'Sáb', f: 'Sábado' },
+      ] : [
         { id: 0, l: 'Dom', f: 'Domingo' },
         { id: 1, l: 'Seg', f: 'Segunda-feira' },
         { id: 2, l: 'Ter', f: 'Terça-feira' },
@@ -169,16 +314,16 @@ export default function OpsView() {
         <div className="text-left">
           <div className="pb-2 mb-3 border-b border-line">
             <h3 className="font-display text-xl tracking-wide text-gold">
-              {taskToEdit ? 'EDITAR OPERAÇÃO' : 'CRIAR NOVA OPERAÇÃO'}
+              {taskToEdit ? tx.taskModalEdit[curLang] : tx.taskModalNew[curLang]}
             </h3>
           </div>
 
           <div className="flex flex-col gap-3">
             <div>
-              <span className="lbl mb-1 block">Missão / Descrição:</span>
+              <span className="lbl mb-1 block">{tx.lblMissionDesc[curLang]}</span>
               <input
                 type="text"
-                placeholder="Ex: Treino de pernas, Fazer Barba, Ler 10 págs..."
+                placeholder={tx.phMission[curLang]}
                 className="field w-full text-xs sm:text-sm"
                 value={txt}
                 onChange={(e) => setTxt(e.target.value)}
@@ -187,31 +332,31 @@ export default function OpsView() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="lbl mb-1 block">Prioridade:</span>
+                <span className="lbl mb-1 block">{tx.lblPriority[curLang]}</span>
                 <select
                   className="field w-full text-xs font-semibold"
                   value={pri}
                   onChange={(e) => setPri(e.target.value)}
                 >
-                  <option value="alta" className="text-danger font-bold">🔴 Alta (Guerra)</option>
-                  <option value="media" className="text-gold font-bold">🟡 Média</option>
-                  <option value="baixa" className="text-muted font-bold">⚪ Baixa</option>
+                  <option value="alta" className="text-danger font-bold">{tx.priHigh[curLang]}</option>
+                  <option value="media" className="text-gold font-bold">{tx.priMedium[curLang]}</option>
+                  <option value="baixa" className="text-muted font-bold">{tx.priLow[curLang]}</option>
                 </select>
               </div>
 
               <div>
-                <span className="lbl mb-1 block">Frequência:</span>
+                <span className="lbl mb-1 block">{tx.lblFrequency[curLang]}</span>
                 <select
                   className="field w-full text-xs font-semibold"
                   value={rep}
                   onChange={(e) => setRep(e.target.value)}
                 >
-                  <option value="unica">Única</option>
-                  <option value="diaria">Diária</option>
-                  <option value="dias_uteis">Dias Úteis (Seg a Sex)</option>
-                  <option value="fds">Fins de Semana (Sáb/Dom)</option>
-                  <option value="semanal">Semanal (1x por semana)</option>
-                  <option value="custom">Personalizada (Escolher dias)</option>
+                  <option value="unica">{tx.repOnce[curLang]}</option>
+                  <option value="diaria">{tx.repDaily[curLang]}</option>
+                  <option value="dias_uteis">{tx.repWorkdays[curLang]}</option>
+                  <option value="fds">{tx.repWeekend[curLang]}</option>
+                  <option value="semanal">{tx.repWeekly[curLang]}</option>
+                  <option value="custom">{tx.repCustom[curLang]}</option>
                 </select>
               </div>
             </div>
@@ -219,7 +364,7 @@ export default function OpsView() {
             {/* SELEÇÃO DO DIA DA SEMANA QUANDO FOR SEMANAL */}
             {rep === 'semanal' && (
               <div className="p-2.5 rounded bg-surface2 border border-gold/40 animate-fadeIn">
-                <span className="lbl mb-1.5 block text-gold font-bold">Escolha o dia da semana que repete:</span>
+                <span className="lbl mb-1.5 block text-gold font-bold">{tx.chooseWeeklyDay[curLang]}</span>
                 <div className="grid grid-cols-7 gap-1">
                   {dayList.map((d) => (
                     <button
@@ -238,7 +383,7 @@ export default function OpsView() {
                   ))}
                 </div>
                 <p className="text-[11px] text-muted mt-1.5 font-mono">
-                  Repete todo(a) <b className="text-gold uppercase">{dayList[repDay]?.f}</b>.
+                  {tx.repeatsEvery[curLang]} <b className="text-gold uppercase">{dayList[repDay]?.f}</b>.
                 </p>
               </div>
             )}
@@ -246,7 +391,7 @@ export default function OpsView() {
             {/* SELEÇÃO DE MÚLTIPLOS DIAS QUANDO FOR PERSONALIZADA */}
             {rep === 'custom' && (
               <div className="p-2.5 rounded bg-surface2 border border-gold/40 animate-fadeIn">
-                <span className="lbl mb-1.5 block text-gold font-bold">Escolha os dias em que repete:</span>
+                <span className="lbl mb-1.5 block text-gold font-bold">{tx.chooseCustomDays[curLang]}</span>
                 <div className="grid grid-cols-7 gap-1">
                   {dayList.map((d) => {
                     const isSel = repDays.includes(d.id);
@@ -274,7 +419,7 @@ export default function OpsView() {
                   })}
                 </div>
                 <p className="text-[11px] text-muted mt-1.5 font-mono">
-                  Dias:{' '}
+                  {tx.lblDays[curLang]}{' '}
                   <b className="text-gold">
                     {repDays.length > 0
                       ? repDays
@@ -282,7 +427,7 @@ export default function OpsView() {
                           .sort((a, b) => a - b)
                           .map((i) => dayList[i]?.l)
                           .join(', ')
-                      : 'Nenhum dia selecionado'}
+                      : tx.noDaysSelected[curLang]}
                   </b>
                 </p>
               </div>
@@ -290,7 +435,7 @@ export default function OpsView() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="lbl mb-1 block">Horário (Opcional):</span>
+                <span className="lbl mb-1 block">{tx.lblTimeOpt[curLang]}</span>
                 <input
                   type="time"
                   className="field w-full text-xs font-mono"
@@ -300,13 +445,13 @@ export default function OpsView() {
               </div>
 
               <div>
-                <span className="lbl mb-1 block">Vincular a Projeto:</span>
+                <span className="lbl mb-1 block">{tx.lblLinkProject[curLang]}</span>
                 <select
                   className="field w-full text-xs font-semibold"
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                 >
-                  <option value="">(Nenhum / Avulso)</option>
+                  <option value="">{tx.optNoProject[curLang]}</option>
                   {projects.filter((p) => !p.archived).map((p) => (
                     <option key={p.id} value={p.id}>{p.title}</option>
                   ))}
@@ -320,7 +465,7 @@ export default function OpsView() {
               type="button"
               className="btn-gold flex-1 py-2 text-xs font-bold"
               onClick={() => {
-                if (!txt.trim()) return toast('Digite a descrição da operação');
+                if (!txt.trim()) return toast(tx.toastEnterDesc[curLang]);
                 update((s) => {
                   s.tasks = s.tasks || [];
                   if (taskToEdit) {
@@ -352,13 +497,13 @@ export default function OpsView() {
                 });
                 closeModal();
                 AF.click();
-                toast(taskToEdit ? 'Operação atualizada!' : '✅ Operação criada!');
+                toast(taskToEdit ? tx.toastTaskUpdated[curLang] : tx.toastTaskCreated[curLang]);
               }}
             >
-              {taskToEdit ? 'Salvar Alterações' : 'Criar Operação'}
+              {taskToEdit ? tx.btnSaveChanges[curLang] : tx.btnCreateOperation[curLang]}
             </button>
             <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
-              Cancelar
+              {tx.btnCancel[curLang]}
             </button>
           </div>
         </div>
@@ -374,8 +519,8 @@ export default function OpsView() {
     const LinkModalContent = () => (
       <div className="text-left">
         <div className="pb-2 mb-3 border-b border-line">
-          <h3 className="font-display text-xl tracking-wide text-gold">VINCULAR TAREFA EXISTENTE</h3>
-          <p className="text-xs text-muted">Selecione uma tarefa para incluir no projeto "{proj.title}":</p>
+          <h3 className="font-display text-xl tracking-wide text-gold">{tx.linkTaskTitle[curLang]}</h3>
+          <p className="text-xs text-muted">{tx.linkTaskSub[curLang]} "{proj.title}":</p>
         </div>
 
         {unlinkedTasks.length > 0 ? (
@@ -400,25 +545,25 @@ export default function OpsView() {
                     });
                     closeModal();
                     AF.click();
-                    toast('Tarefa vinculada ao projeto!');
+                    toast(tx.toastTaskLinked[curLang]);
                   }}
                   className="btn-gold py-1 px-2.5 text-[11px] font-bold flex items-center gap-1"
                 >
                   <Link2 size={11} />
-                  <span>Vincular</span>
+                  <span>{tx.linkBtn[curLang]}</span>
                 </button>
               </div>
             ))}
           </div>
         ) : (
           <div className="py-6 text-center text-xs text-muted">
-            Todas as suas tarefas já estão vinculadas a este projeto ou não há tarefas criadas.
+            {tx.linkAllLinked[curLang]}
           </div>
         )}
 
         <div className="mt-4 text-right">
           <button type="button" className="btn-dark py-1.5 px-4 text-xs font-bold" onClick={closeModal}>
-            Fechar
+            {tx.btnClose[curLang]}
           </button>
         </div>
       </div>
@@ -463,16 +608,16 @@ export default function OpsView() {
         <div className="text-left">
           <div className="pb-2 mb-3 border-b border-line">
             <h3 className="font-display text-xl tracking-wide text-gold">
-              {projToEdit ? 'EDITAR PROJETO' : 'NOVO PROJETO ESTRATÉGICO'}
+              {projToEdit ? tx.projModalEdit[curLang] : tx.projModalNew[curLang]}
             </h3>
           </div>
 
           <div className="flex flex-col gap-3">
             <div>
-              <span className="lbl mb-1 block">Título da Missão / Projeto:</span>
+              <span className="lbl mb-1 block">{tx.lblProjTitle[curLang]}</span>
               <input
                 type="text"
-                placeholder="Ex: Lançamento do Negócio, Cuidar do Jardim..."
+                placeholder={tx.phProjTitle[curLang]}
                 className="field w-full text-xs sm:text-sm"
                 value={pTitle}
                 onChange={(e) => setPTitle(e.target.value)}
@@ -480,10 +625,10 @@ export default function OpsView() {
             </div>
 
             <div>
-              <span className="lbl mb-1 block">Objetivo / Descrição:</span>
+              <span className="lbl mb-1 block">{tx.lblProjDesc[curLang]}</span>
               <textarea
                 rows={2}
-                placeholder="Qual o resultado esperado e por que este projeto é crucial?"
+                placeholder={tx.phProjDesc[curLang]}
                 className="field w-full text-xs resize-none"
                 value={pDesc}
                 onChange={(e) => setPDesc(e.target.value)}
@@ -493,12 +638,12 @@ export default function OpsView() {
             {/* CRONOGRAMA COMPLETO: INÍCIO, DURAÇÃO EM DIAS E TÉRMINO */}
             <div className="rounded border border-gold/40 bg-surface2/90 p-2.5">
               <span className="text-[11px] font-mono uppercase tracking-wider text-gold font-bold block mb-2">
-                📅 Cronograma: Início, Duração e Término
+                {tx.lblProjSchedule[curLang]}
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <span className="lbl mb-1 block">Data de Início:</span>
+                  <span className="lbl mb-1 block">{tx.lblStartDate[curLang]}</span>
                   <input
                     type="date"
                     className="field w-full text-xs font-mono"
@@ -512,7 +657,7 @@ export default function OpsView() {
                 </div>
 
                 <div>
-                  <span className="lbl mb-1 block">Duração (Dias):</span>
+                  <span className="lbl mb-1 block">{tx.lblDurationDays[curLang]}</span>
                   <input
                     type="number"
                     min="1"
@@ -529,7 +674,7 @@ export default function OpsView() {
                 </div>
 
                 <div>
-                  <span className="lbl mb-1 block">Término / Encerramento:</span>
+                  <span className="lbl mb-1 block">{tx.lblEndDate[curLang]}</span>
                   <input
                     type="date"
                     className="field w-full text-xs font-mono"
@@ -547,7 +692,7 @@ export default function OpsView() {
             {/* JANELA DIÁRIA DE FOCO (OPCIONAL) */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="lbl mb-1 block">Janela Diária — Início:</span>
+                <span className="lbl mb-1 block">{tx.lblFocusWindowStart[curLang]}</span>
                 <input
                   type="time"
                   className="field w-full text-xs font-mono"
@@ -557,7 +702,7 @@ export default function OpsView() {
               </div>
 
               <div>
-                <span className="lbl mb-1 block">Janela Diária — Fim:</span>
+                <span className="lbl mb-1 block">{tx.lblFocusWindowEnd[curLang]}</span>
                 <input
                   type="time"
                   className="field w-full text-xs font-mono"
@@ -570,7 +715,7 @@ export default function OpsView() {
             {/* Se estiver editando, oferece botões rápidos de tarefas */}
             {projToEdit && (
               <div className="pt-2 border-t border-line/60">
-                <span className="lbl mb-1.5 block">Ações Rápidas de Tarefas:</span>
+                <span className="lbl mb-1.5 block">{tx.lblQuickActions[curLang]}</span>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -581,7 +726,7 @@ export default function OpsView() {
                     className="btn-dark py-1.5 px-2.5 text-xs font-bold flex-1 flex items-center justify-center gap-1 border-gold/40 text-gold"
                   >
                     <Plus size={12} />
-                    <span>+ Nova Tarefa Neste Projeto</span>
+                    <span>{tx.btnNewTaskInProj[curLang]}</span>
                   </button>
                   <button
                     type="button"
@@ -592,7 +737,7 @@ export default function OpsView() {
                     className="btn-dark py-1.5 px-2.5 text-xs font-bold flex-1 flex items-center justify-center gap-1"
                   >
                     <Link2 size={12} />
-                    <span>Vincular Tarefa Existente</span>
+                    <span>{tx.btnLinkExistingTask[curLang]}</span>
                   </button>
                 </div>
               </div>
@@ -604,7 +749,7 @@ export default function OpsView() {
               type="button"
               className="btn-gold flex-1 py-2 text-xs font-bold"
               onClick={() => {
-                if (!pTitle.trim()) return toast('Digite o nome do projeto');
+                if (!pTitle.trim()) return toast(tx.toastEnterProjTitle[curLang]);
                 update((s) => {
                   s.projects = s.projects || [];
                   if (projToEdit) {
@@ -637,13 +782,13 @@ export default function OpsView() {
                 });
                 closeModal();
                 AF.click();
-                toast(projToEdit ? 'Projeto atualizado!' : '✅ Projeto criado com sucesso!');
+                toast(projToEdit ? tx.toastProjUpdated[curLang] : tx.toastProjCreated[curLang]);
               }}
             >
-              {projToEdit ? 'Salvar Alterações' : 'Criar Projeto'}
+              {projToEdit ? tx.btnSaveProj[curLang] : tx.btnCreateProj[curLang]}
             </button>
             <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
-              Cancelar
+              {tx.btnCancel[curLang]}
             </button>
           </div>
         </div>
@@ -811,16 +956,16 @@ export default function OpsView() {
   /* Excluir Tarefa com Confirmação */
   const requestDeleteTask = (task) => {
     confirmAction({
-      title: 'EXCLUIR OPERAÇÃO?',
-      message: `Tem certeza que deseja cancelar e excluir permanentemente a operação "${task.txt}"?`,
+      title: tx.delTaskTitle[curLang],
+      message: `${tx.delTaskConfirmMsg[curLang]} "${task.txt}"?`,
       danger: true,
-      confirmText: 'Sim, Excluir',
+      confirmText: tx.btnDeleteConfirm[curLang],
       onConfirm: () => {
         update((s) => {
           s.tasks = (s.tasks || []).filter((x) => String(x.id) !== String(task.id));
         });
         AF.click();
-        toast('Operação excluída');
+        toast(tx.toastTaskDeleted[curLang]);
       },
     });
   };
@@ -834,9 +979,9 @@ export default function OpsView() {
     if (isArch) {
       // Desarquivar
       confirmAction({
-        title: 'DESARQUIVAR PROJETO?',
-        message: `Deseja restaurar o projeto "${proj.title}" para os projetos ativos?`,
-        confirmText: 'Restaurar Projeto',
+        title: tx.unarchiveProjTitle[curLang],
+        message: `${tx.unarchiveProjConfirmMsg[curLang]} "${proj.title}"?`,
+        confirmText: tx.btnUnarchiveConfirm[curLang],
         onConfirm: () => {
           update((s) => {
             const p = (s.projects || []).find((x) => String(x.id) === String(proj.id));
@@ -848,7 +993,7 @@ export default function OpsView() {
             });
           });
           AF.click();
-          toast('Projeto desarquivado!');
+          toast(tx.toastProjUnarchived[curLang]);
         },
       });
       return;
@@ -860,10 +1005,9 @@ export default function OpsView() {
         <div className="w-12 h-12 rounded-full border border-gold/40 bg-gold/10 flex items-center justify-center mx-auto mb-3 text-gold">
           <Archive size={24} />
         </div>
-        <h3 className="font-display text-xl tracking-wide text-ink mb-1.5">ARQUIVAR PROJETO?</h3>
+        <h3 className="font-display text-xl tracking-wide text-ink mb-1.5">{tx.archiveProjChoiceTitle[curLang]}</h3>
         <p className="text-xs text-muted leading-relaxed mb-4">
-          Você está arquivando o projeto <b>"{proj.title}"</b>. Ele possui <b>{linkedTasks.length}</b> tarefa(s) vinculada(s).
-          Como deseja proceder com essas tarefas?
+          {tx.archiveProjChoiceDesc[curLang](proj.title, linkedTasks.length)}
         </p>
         <div className="flex flex-col gap-2">
           <button
@@ -881,10 +1025,10 @@ export default function OpsView() {
               });
               closeModal();
               AF.click();
-              toast('📦 Projeto e tarefas arquivados!');
+              toast(tx.toastProjTasksArchived[curLang]);
             }}
           >
-            📦 Arquivar Projeto E Tarefas Vinculadas
+            {tx.btnArchiveProjAndTasks[curLang]}
           </button>
           <button
             type="button"
@@ -903,17 +1047,17 @@ export default function OpsView() {
               });
               closeModal();
               AF.click();
-              toast('📦 Projeto arquivado (tarefas tornaram-se avulsas)!');
+              toast(tx.toastProjArchivedOnly[curLang]);
             }}
           >
-            🔓 Arquivar Só Projeto (Manter Tarefas Ativas/Avulsas)
+            {tx.btnArchiveProjOnly[curLang]}
           </button>
           <button
             type="button"
             className="btn-dark py-1.5 px-4 text-xs font-bold text-muted hover:text-ink mt-1"
             onClick={closeModal}
           >
-            Cancelar
+            {tx.btnCancel[curLang]}
           </button>
         </div>
       </div>
@@ -931,10 +1075,9 @@ export default function OpsView() {
         <div className="w-12 h-12 rounded-full border border-danger/40 bg-danger/10 flex items-center justify-center mx-auto mb-3 text-danger">
           <AlertTriangle size={24} />
         </div>
-        <h3 className="font-display text-xl tracking-wide text-danger mb-1.5">EXCLUIR PROJETO DEFINITIVAMENTE?</h3>
+        <h3 className="font-display text-xl tracking-wide text-danger mb-1.5">{tx.delProjChoiceTitle[curLang]}</h3>
         <p className="text-xs text-muted leading-relaxed mb-4">
-          Você está prestes a apagar <b>"{proj.title}"</b>. Ele possui <b>{linkedTasks.length}</b> tarefa(s) vinculada(s).
-          O que deseja fazer com as tarefas?
+          {tx.delProjChoiceDesc[curLang](proj.title, linkedTasks.length)}
         </p>
         <div className="flex flex-col gap-2">
           <button
@@ -947,10 +1090,10 @@ export default function OpsView() {
               });
               closeModal();
               AF.click();
-              toast('Projeto e tarefas excluídos!');
+              toast(tx.toastProjTasksDeleted[curLang]);
             }}
           >
-            🗑️ Excluir Projeto E Todas as Suas Tarefas
+            {tx.btnDelProjAndTasks[curLang]}
           </button>
           <button
             type="button"
@@ -967,17 +1110,17 @@ export default function OpsView() {
               });
               closeModal();
               AF.click();
-              toast('Projeto excluído! Tarefas salvas como avulsas.');
+              toast(tx.toastProjDeletedOnly[curLang]);
             }}
           >
-            🛡️ Excluir Apenas Projeto (Preservar Tarefas como Avulsas)
+            {tx.btnDelProjOnly[curLang]}
           </button>
           <button
             type="button"
             className="btn-dark py-1.5 px-4 text-xs font-bold text-muted hover:text-ink mt-1"
             onClick={closeModal}
           >
-            Cancelar
+            {tx.btnCancel[curLang]}
           </button>
         </div>
       </div>
@@ -995,25 +1138,25 @@ export default function OpsView() {
       }
     });
     AF.click();
-    toast('Tarefa desvinculada do projeto');
+    toast(tx.toastTaskUnlinked[curLang]);
   };
 
   /* Concluir / Reabrir Projeto */
   const toggleProjectStatus = (proj) => {
     const isComp = proj.status === 'concluido';
     confirmAction({
-      title: isComp ? 'REABRIR PROJETO?' : 'CONCLUIR PROJETO?',
+      title: isComp ? tx.reopenProjTitle[curLang] : tx.completeProjTitle[curLang],
       message: isComp
-        ? `Deseja marcar o projeto "${proj.title}" de volta como Em Andamento?`
-        : `Parabéns guerreiro! Confirmar conclusão do projeto estratégico "${proj.title}"?`,
-      confirmText: isComp ? 'Reabrir' : 'Concluir Missão',
+        ? `${tx.reopenProjConfirmMsg[curLang]} "${proj.title}"?`
+        : `${tx.completeProjConfirmMsg[curLang]} "${proj.title}"?`,
+      confirmText: isComp ? tx.btnReopen[curLang] : tx.btnCompleteMission[curLang],
       onConfirm: () => {
         update((s) => {
           const p = (s.projects || []).find((x) => String(x.id) === String(proj.id));
           if (p) p.status = isComp ? 'ativo' : 'concluido';
         });
         AF.click();
-        toast(isComp ? 'Projeto reaberto' : '🏆 Projeto Concluído com Honra!');
+        toast(isComp ? tx.toastProjReopened[curLang] : tx.toastProjCompleted[curLang]);
       },
     });
   };
@@ -1269,7 +1412,7 @@ export default function OpsView() {
                       )}
                       <button
                         type="button"
-                        title="Editar Operação"
+                        title={tx.editTaskTitle[curLang]}
                         onClick={() => openTaskModal(tItem)}
                         className="text-muted hover:text-gold p-1 transition-colors"
                       >
@@ -1277,7 +1420,7 @@ export default function OpsView() {
                       </button>
                       <button
                         type="button"
-                        title="Excluir Operação"
+                        title={tx.delTaskTitle[curLang]}
                         onClick={() => requestDeleteTask(tItem)}
                         className="text-muted hover:text-danger p-1 transition-colors"
                       >
@@ -1296,7 +1439,7 @@ export default function OpsView() {
                 >
                   <Plus size={14} strokeWidth={2.5} />
                   <span className="text-xs font-bold font-mono uppercase tracking-wider">
-                    + Nova Operação
+                    {tx.cardNewOp[curLang]}
                   </span>
                 </div>
               )}
@@ -1315,9 +1458,9 @@ export default function OpsView() {
           {/* Sub-filtros de Projetos com Scroll Horizontal Suave */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 max-w-full -mx-0.5 px-0.5">
             {[
-              { id: 'ativos', label: 'Ativos', count: projects.filter((p) => !p.archived && p.status !== 'concluido').length },
-              { id: 'concluidos', label: 'Concluídos', count: projects.filter((p) => !p.archived && p.status === 'concluido').length },
-              { id: 'arquivados', label: 'Arquivados 📦', count: projects.filter((p) => p.archived).length },
+              { id: 'ativos', label: tx.projFilterActive[curLang], count: projects.filter((p) => !p.archived && p.status !== 'concluido').length },
+              { id: 'concluidos', label: tx.projFilterDone[curLang], count: projects.filter((p) => !p.archived && p.status === 'concluido').length },
+              { id: 'arquivados', label: tx.projFilterArchived[curLang], count: projects.filter((p) => p.archived).length },
             ].map((pf) => (
               <button
                 key={pf.id}
@@ -1389,17 +1532,17 @@ export default function OpsView() {
                                   : 'border-line bg-surface text-muted hover:text-ink'
                               }`}
                             >
-                              {isCompleted ? '✓ CONCLUÍDO' : isProjectLate ? (
+                              {isCompleted ? tx.statusCompleted[curLang] : isProjectLate ? (
                                 <>
                                   <AlertTriangle size={11} className="text-danger flex-none" />
                                   <span>{tx.badgeProjectDelayed[curLang]}</span>
                                 </>
-                              ) : 'EM ANDAMENTO'}
+                              ) : tx.statusInProgress[curLang]}
                             </button>
                           )}
                           <button
                             type="button"
-                            title="Editar Projeto"
+                            title={tx.editProjTitle[curLang]}
                             onClick={() => openProjectModal(proj)}
                             className="text-muted hover:text-gold p-1 transition-colors"
                           >
@@ -1407,7 +1550,7 @@ export default function OpsView() {
                           </button>
                           <button
                             type="button"
-                            title={isArchived ? 'Desarquivar Projeto' : 'Arquivar Projeto'}
+                            title={isArchived ? tx.unarchiveProjAction[curLang] : tx.archiveProjAction[curLang]}
                             onClick={() => requestArchiveProject(proj)}
                             className="text-muted hover:text-gold p-1 transition-colors"
                           >
@@ -1415,7 +1558,7 @@ export default function OpsView() {
                           </button>
                           <button
                             type="button"
-                            title="Excluir Projeto"
+                            title={tx.delProjAction[curLang]}
                             onClick={() => requestDeleteProject(proj)}
                             className="text-muted hover:text-danger p-1 transition-colors"
                           >
@@ -1449,7 +1592,7 @@ export default function OpsView() {
                       {/* Barra de Progresso */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
-                          <span>PROGRESSO TOTAL</span>
+                          <span>{tx.lblTotalProgress[curLang]}</span>
                           <span className="font-bold text-gold">{projPct}%</span>
                         </div>
                         <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden border border-line/40">
@@ -1464,7 +1607,7 @@ export default function OpsView() {
                       <div className="mb-3 p-2 rounded bg-surface/60 border border-line/40">
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-[10px] font-mono text-muted uppercase font-bold">
-                            TAREFAS VINCULADAS ({projTasksDone}/{projTasks.length})
+                            {tx.lblLinkedTasks[curLang]} ({projTasksDone}/{projTasks.length})
                           </span>
                           <div className="flex items-center gap-1.5">
                             <button
@@ -1472,7 +1615,7 @@ export default function OpsView() {
                               onClick={() => openTaskModal(null, proj.id)}
                               className="text-[10px] font-mono text-gold hover:underline flex items-center gap-0.5"
                             >
-                              <Plus size={10} /> Nova
+                              <Plus size={10} /> {tx.btnNewInline[curLang]}
                             </button>
                             <span className="text-muted text-[10px]">•</span>
                             <button
@@ -1480,7 +1623,7 @@ export default function OpsView() {
                               onClick={() => openLinkTaskModal(proj)}
                               className="text-[10px] font-mono text-muted hover:text-ink flex items-center gap-0.5"
                             >
-                              <Link2 size={10} /> Vincular
+                              <Link2 size={10} /> {tx.btnLinkInline[curLang]}
                             </button>
                           </div>
                         </div>
@@ -1544,7 +1687,7 @@ export default function OpsView() {
                                     )}
                                     <button
                                       type="button"
-                                      title="Desvincular do Projeto"
+                                      title={tx.unlinkFromProj[curLang]}
                                       onClick={() => unlinkTask(pt.id)}
                                       className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
                                     >
@@ -1556,14 +1699,14 @@ export default function OpsView() {
                             })}
                           </div>
                         ) : (
-                          <p className="text-[11px] text-muted italic">Nenhuma tarefa vinculada ainda.</p>
+                          <p className="text-[11px] text-muted italic">{tx.noLinkedTasks[curLang]}</p>
                         )}
                       </div>
 
                       {/* ETAPAS / MARCOS */}
                       <div className="space-y-1.5 mb-3">
                         <span className="text-[10px] font-mono text-muted uppercase block font-bold">
-                          ETAPAS ({stepsDone}/{steps.length})
+                          {tx.lblSteps[curLang]} ({stepsDone}/{steps.length})
                         </span>
                         {steps.map((st) => (
                           <div
@@ -1591,11 +1734,11 @@ export default function OpsView() {
                         >
                           <input
                             name="stepInput"
-                            placeholder="+ Adicionar etapa..."
+                            placeholder={tx.phAddStep[curLang]}
                             className="field py-1 px-2 text-[11px] flex-1"
                           />
                           <button type="submit" className="btn-dark py-1 px-2 text-[11px] font-mono font-bold">
-                            Adicionar
+                            {tx.btnAdd[curLang]}
                           </button>
                         </form>
                       </div>
@@ -1609,16 +1752,16 @@ export default function OpsView() {
                             {fmtD(proj.start)} ➔ {fmtD(proj.deadline)}
                           </span>
                           <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold">
-                            {L.projTotal(proj)} dias {L.projCurDay(proj) > 0 ? `(Dia ${L.projCurDay(proj)})` : ''}
+                            {L.projTotal(proj)} {tx.wordDays[curLang]} {L.projCurDay(proj) > 0 ? `(${tx.wordDay[curLang]} ${L.projCurDay(proj)})` : ''}
                           </span>
                         </div>
                       ) : proj.deadline ? (
                         <span className="flex items-center gap-1 text-gold2">
                           <Calendar size={11} />
-                          Prazo: {fmtD(proj.deadline)}
+                          {tx.wordDeadline[curLang]} {fmtD(proj.deadline)}
                         </span>
                       ) : (
-                        <span>Sem prazo definido</span>
+                        <span>{tx.noDeadline[curLang]}</span>
                       )}
                       <div className="flex items-center gap-2">
                         {proj.tStart && proj.tEnd && (
@@ -1627,7 +1770,7 @@ export default function OpsView() {
                             {proj.tStart}–{proj.tEnd}
                           </span>
                         )}
-                        <span>{projTasks.length} tarefas</span>
+                        <span>{projTasks.length} {tx.wordTasks[curLang]}</span>
                       </div>
                     </div>
                   </Card>
@@ -1644,10 +1787,10 @@ export default function OpsView() {
                     <Plus size={20} strokeWidth={2.5} />
                   </div>
                   <b className="text-xs text-gold font-bold uppercase tracking-wider block">
-                    Novo Projeto Estratégico
+                    {tx.cardNewProject[curLang]}
                   </b>
                   <span className="text-[11px] text-muted mt-1 max-w-[240px]">
-                    Crie uma nova frente tática com marcos e tarefas dedicadas.
+                    {tx.cardNewProjectSub[curLang]}
                   </span>
                 </div>
               )}
@@ -1664,7 +1807,7 @@ export default function OpsView() {
                         onClick={() => openProjectModal()}
                         className="btn-gold py-1.5 px-4 text-xs font-bold mt-3"
                       >
-                        + CRIAR PRIMEIRO PROJETO
+                        {tx.btnCreateFirstProject[curLang]}
                       </button>
                     )}
                   </Empty>
@@ -1681,7 +1824,7 @@ export default function OpsView() {
           {/* Projetos Arquivados */}
           <Card className="p-4 border-line">
             <div className="flex items-center justify-between mb-3">
-              <K className="mb-0">🏛️ PROJETOS ARQUIVADOS ({projects.filter((p) => p.archived).length})</K>
+              <K className="mb-0">{tx.archivedProjectsTitle[curLang]} ({projects.filter((p) => p.archived).length})</K>
             </div>
             {projects.filter((p) => p.archived).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1696,14 +1839,14 @@ export default function OpsView() {
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h4 className="text-sm font-bold text-ink truncate">{proj.title}</h4>
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted">
-                            Arquivado
+                            {tx.badgeArchived[curLang]}
                           </span>
                         </div>
                         {proj.desc && (
                           <p className="text-xs text-muted line-clamp-2 mb-2">{proj.desc}</p>
                         )}
                         <span className="text-[11px] font-mono text-muted">
-                          Tarefas vinculadas: <b className="text-ink">{projTasks.length}</b>
+                          {tx.lblLinkedTasksCount[curLang]} <b className="text-ink">{projTasks.length}</b>
                         </span>
                       </div>
 
@@ -1714,13 +1857,13 @@ export default function OpsView() {
                           className="btn-gold py-1.5 px-3 text-xs font-bold flex items-center gap-1.5 shadow-sm"
                         >
                           <ArchiveRestore size={12} />
-                          <span>Desarquivar</span>
+                          <span>{tx.btnUnarchive[curLang]}</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => requestDeleteProject(proj)}
                           className="btn-dark py-1.5 px-2.5 text-xs text-muted hover:text-danger hover:border-danger/40 transition-colors"
-                          title="Excluir Definitivamente"
+                          title={tx.delProjAction[curLang]}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -1731,7 +1874,7 @@ export default function OpsView() {
               </div>
             ) : (
               <div className="py-6 text-center text-xs text-muted">
-                Nenhum projeto arquivado.
+                {tx.noArchivedProjects[curLang]}
               </div>
             )}
           </Card>
@@ -1740,7 +1883,7 @@ export default function OpsView() {
           {tasks.filter((t) => t.archived).length > 0 && (
             <Card className="p-4 border-line">
               <div className="flex items-center justify-between mb-3">
-                <K className="mb-0">🎯 TAREFAS ARQUIVADAS ({tasks.filter((t) => t.archived).length})</K>
+                <K className="mb-0">{tx.archivedTasksTitle[curLang]} ({tasks.filter((t) => t.archived).length})</K>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {tasks.filter((t) => t.archived).map((tItem) => (
@@ -1757,11 +1900,11 @@ export default function OpsView() {
                           if (target) target.archived = false;
                         });
                         AF.click();
-                        toast('Tarefa restaurada!');
+                        toast(tx.toastTaskRestored[curLang]);
                       }}
                       className="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold flex-none"
                     >
-                      Restaurar
+                      {tx.btnRestore[curLang]}
                     </button>
                   </div>
                 ))}

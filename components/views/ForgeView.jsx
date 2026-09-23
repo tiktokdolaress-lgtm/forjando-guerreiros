@@ -131,8 +131,14 @@ const LABELS_I18N = {
   
   // Tab Regras & Slots
   slotUnlockTiersTitle: { pt: 'PATAMARES DE DESBLOQUEIO DE SLOTS', en: 'SLOT UNLOCK TIERS', es: 'NIVELES DE DESBLOQUEO DE SLOTS' },
+  tierUnlockSlotsTitle: { pt: 'PATAMARES DE DESBLOQUEIO DE SLOTS', en: 'SLOT UNLOCK TIERS', es: 'NIVELES DE DESBLOQUEO DE SLOTS' },
   activeSlotsHeader: { pt: 'SLOTS ATIVOS', en: 'ACTIVE SLOTS', es: 'SLOTS ACTIVOS' },
   slotRulesDesc: {
+    pt: 'A retenção seminal e a disciplina forjam seu caráter. Conforme seus dias limpos aumentam, novos slots no protocolo diário são liberados.',
+    en: 'Seminal retention and discipline forge your character. As your clean days increase, new slots in the daily protocol are unlocked.',
+    es: 'La retención seminal y la disciplina forjan tu carácter. Conforme aumentan tus días limpios, se liberan nuevos slots en el protocolo diario.'
+  },
+  rulesDesc: {
     pt: 'A retenção seminal e a disciplina forjam seu caráter. Conforme seus dias limpos aumentam, novos slots no protocolo diário são liberados.',
     en: 'Seminal retention and discipline forge your character. As your clean days increase, new slots in the daily protocol are unlocked.',
     es: 'La retención seminal y la disciplina forjan tu carácter. Conforme aumentan tus días limpios, se liberan nuevos slots en el protocolo diario.'
@@ -141,10 +147,16 @@ const LABELS_I18N = {
   unlockedBadge: { pt: 'LIBERADO', en: 'UNLOCKED', es: 'DESBLOQUEADO' },
   lockedBadge: { pt: 'BLOQUEADO', en: 'LOCKED', es: 'BLOQUEADO' },
   minimumWord: { pt: 'Mínimo:', en: 'Minimum:', es: 'Mínimo:' },
+  minWord: { pt: 'Mínimo:', en: 'Minimum:', es: 'Mínimo:' },
   daysWord: { pt: 'dias', en: 'days', es: 'días' },
   unlimitedWord: { pt: 'Ilimitados (∞)', en: 'Unlimited (∞)', es: 'Ilimitados (∞)' },
   archivedHabitsTitle: { pt: 'HÁBITOS ARQUIVADOS', en: 'ARCHIVED HABITS', es: 'HÁBITOS ARCHIVADOS' },
   archivedHabitsEmpty: {
+    pt: 'Nenhum hábito arquivado. Hábitos que você arquivar da reserva ou do protocolo aparecerão aqui para restauração.',
+    en: 'No archived habits. Habits you archive from reserve or protocol will appear here for restoration.',
+    es: 'Ningún hábito archivado. Los hábitos que archives de la reserva o del protocolo aparecerán aquí para restauración.'
+  },
+  noArchivedHabitsDesc: {
     pt: 'Nenhum hábito arquivado. Hábitos que você arquivar da reserva ou do protocolo aparecerão aqui para restauração.',
     en: 'No archived habits. Habits you archive from reserve or protocol will appear here for restoration.',
     es: 'Ningún hábito archivado. Los hábitos que archives de la reserva o del protocolo aparecerán aquí para restauración.'
