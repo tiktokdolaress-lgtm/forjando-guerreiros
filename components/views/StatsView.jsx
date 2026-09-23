@@ -331,7 +331,7 @@ export default function StatsView() {
               }`}
             >
               <CatIcon size={14} className="flex-none" />
-              <span className="truncate">{cat.label}</span>
+              <span className="truncate">{T(cat.key, cat.label)}</span>
             </button>
           );
         })}
