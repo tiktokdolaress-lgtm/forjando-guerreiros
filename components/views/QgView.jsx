@@ -13,6 +13,7 @@ import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 import Warrior3DCard from '@/components/Warrior3DCard';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { getTodayCombatTimeline } from '@/lib/notify';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -911,6 +912,213 @@ export default function QgView() {
     </Card>
   );
 
+  /* MINI CARD: AGENDA OPERACIONAL DE HOJE (Tarefas, Projetos e Hábitos com Horário) */
+  const renderCombatScheduleMiniCard = () => {
+    const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
+    const totalCount = timelineItems.length;
+    const completedCount = timelineItems.filter((x) => x.done).length;
+    const pendingCount = totalCount - completedCount;
+
+    return (
+      <div className="rounded-xl border border-gold/40 bg-gradient-to-br from-[#181721] via-[#14141A] to-[#0E0E12] p-3 sm:p-3.5 shadow-md w-full max-w-full overflow-hidden transition-all">
+        {/* Cabeçalho do Mini Card */}
+        <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-line/60">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold/15 text-gold text-sm flex-none border border-gold/30">
+              ⏰
+            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#F2ECE0] truncate flex items-center gap-1.5">
+                {curLang === 'en' ? "TODAY'S COMBAT SCHEDULE" : curLang === 'es' ? 'CRONOGRAMA DE OPERACIONES' : 'AGENDA OPERACIONAL DE HOJE'}
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-ping flex-none" />
+              </span>
+              <span className="text-[9.5px] text-muted truncate">
+                {curLang === 'en'
+                  ? 'Missions, habits & projects with set time'
+                  : curLang === 'es'
+                  ? 'Misiones, hábitos y proyectos con horario'
+                  : 'Missões, hábitos e projetos com horário'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-none">
+            {totalCount > 0 ? (
+              <span className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold border ${
+                pendingCount === 0
+                  ? 'border-ok/40 bg-ok/10 text-ok'
+                  : 'border-gold/40 bg-gold/10 text-gold'
+              }`}>
+                {completedCount}/{totalCount} {curLang === 'en' ? 'DONE' : curLang === 'es' ? 'LISTOS' : 'CUMPRIDOS'}
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded text-[9.5px] font-mono font-semibold border border-line text-muted">
+                {curLang === 'en' ? 'NO SCHEDULE' : curLang === 'es' ? 'SIN HORARIOS' : 'SEM HORÁRIOS'}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Lista de Itens com Horário */}
+        {totalCount > 0 ? (
+          <div className="flex flex-col gap-1.5">
+            {timelineItems.map((item) => {
+              const isTask = item.type === 'task';
+              const isHabit = item.type === 'habit';
+
+              return (
+                <div
+                  key={item.id}
+                  className={`group flex items-center justify-between gap-2 p-2 rounded-lg border text-left text-xs transition-all ${
+                    item.done
+                      ? 'border-ok/30 bg-ok/5 opacity-70'
+                      : item.status === 'overdue'
+                      ? 'border-danger/40 bg-danger/5 hover:border-danger/60'
+                      : item.status === 'soon'
+                      ? 'border-gold/60 bg-gold/10 shadow-[0_0_12px_rgba(212,175,55,0.15)] animate-pulse'
+                      : 'border-line/70 bg-[#16161D] hover:border-gold/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    {/* Badge do Horário */}
+                    <div className="flex flex-col items-center flex-none">
+                      <span className={`px-1.5 py-0.5 rounded font-mono text-[10.5px] font-extrabold tracking-tight ${
+                        item.done
+                          ? 'text-muted bg-surface'
+                          : item.status === 'soon'
+                          ? 'bg-gold text-[#121214] font-black'
+                          : 'bg-gold/15 text-gold border border-gold/30'
+                      }`}>
+                        {item.time}
+                      </span>
+                    </div>
+
+                    {/* Ícone e Nome da Tarefa/Hábito/Projeto */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-xs flex-none">{item.icon}</span>
+                        <span className={`font-bold truncate text-[12px] sm:text-[12.5px] ${
+                          item.done ? 'line-through text-muted' : 'text-[#EDE5D5] group-hover:text-gold'
+                        }`}>
+                          {item.title}
+                        </span>
+                      </div>
+
+                      {/* Subtítulo com tipo ou projeto vinculado */}
+                      <div className="flex items-center gap-2 text-[9.5px] text-muted truncate mt-0.5">
+                        <span className="uppercase font-semibold tracking-wider text-gold/80">
+                          {isTask
+                            ? (curLang === 'en' ? 'Task' : curLang === 'es' ? 'Tarea' : 'Tarefa')
+                            : isHabit
+                            ? (curLang === 'en' ? 'Habit' : curLang === 'es' ? 'Hábito' : 'Hábito')
+                            : (curLang === 'en' ? 'Project' : curLang === 'es' ? 'Proyecto' : 'Projeto')}
+                        </span>
+                        {item.projectName && (
+                          <span className="truncate border-l border-line/60 pl-1.5 text-muted">
+                            🏛️ {item.projectName}
+                          </span>
+                        )}
+                        {item.status === 'soon' && !item.done && (
+                          <span className="text-gold font-bold font-mono">
+                            ⚡ {curLang === 'en' ? 'NOW' : curLang === 'es' ? 'AHORA' : 'AGORA'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ação: Marcar Tarefa / Hábito diretamente do Mini Card */}
+                  <div className="flex items-center flex-none pl-1">
+                    {isTask ? (
+                      <button
+                        type="button"
+                        title={item.done ? 'Desmarcar' : 'Concluir Operação'}
+                        onClick={() => {
+                          update((s) => {
+                            const tt = (s.tasks || []).find((y) => String(y.id) === String(item.originalId));
+                            if (!tt) return;
+                            if ((tt.rep || 'unica') === 'unica') {
+                              tt.done = !tt.done;
+                            } else {
+                              const dd = today();
+                              tt.doneDates = tt.doneDates || [];
+                              const idx = tt.doneDates.indexOf(dd);
+                              if (idx >= 0) tt.doneDates.splice(idx, 1);
+                              else tt.doneDates.push(dd);
+                            }
+                          });
+                          AF.click();
+                          toast(item.done ? '↩ Operação desmarcada' : '⚔️ Operação cumprida com honra!');
+                        }}
+                        className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                          item.done
+                            ? 'border-ok bg-ok text-[#121214] shadow-sm'
+                            : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                        }`}
+                      >
+                        <Check size={14} strokeWidth={item.done ? 3 : 2} />
+                      </button>
+                    ) : isHabit ? (
+                      <button
+                        type="button"
+                        title={item.done ? 'Hábito cumprido' : 'Marcar na Forja'}
+                        onClick={(e) => toggleHabitDone(item.originalId, e)}
+                        className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                          item.done
+                            ? 'border-gold bg-gold text-[#121214] shadow-sm'
+                            : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                        }`}
+                      >
+                        <Check size={14} strokeWidth={item.done ? 3 : 2} />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { AF.click(); setTab('ops'); }}
+                        className="px-2 py-1 rounded text-[10px] font-bold text-gold border border-gold/30 hover:bg-gold/10 transition-colors"
+                      >
+                        {curLang === 'en' ? 'VIEW' : curLang === 'es' ? 'VER' : 'VER'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="py-2.5 px-3 rounded-lg bg-surface2/60 border border-line/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-center sm:text-left">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-muted text-sm flex-none">🔔</span>
+              <p className="text-[11px] text-muted leading-snug">
+                {curLang === 'en'
+                  ? 'No tasks or habits with scheduled times for today. Add times to receive dual alerts!'
+                  : curLang === 'es'
+                  ? 'Sin tareas o hábitos con horario para hoy. ¡Agrega horarios para recibir alertas dobles!'
+                  : 'Nenhuma tarefa ou hábito com horário definido para hoje. Defina horários para receber alertas duplos!'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 flex-none">
+              <button
+                type="button"
+                onClick={() => { AF.click(); setTab('ops'); }}
+                className="px-2 py-1 rounded border border-gold/30 bg-gold/10 text-gold text-[10.5px] font-bold hover:bg-gold/20 transition-all cursor-pointer whitespace-nowrap"
+              >
+                + {curLang === 'en' ? 'Add Task Time' : curLang === 'es' ? 'Horario Tarea' : 'Horário em Tarefa'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { AF.click(); setTab('forge'); }}
+                className="px-2 py-1 rounded border border-line bg-surface text-muted hover:text-ink text-[10.5px] font-semibold transition-all cursor-pointer whitespace-nowrap"
+              >
+                + {curLang === 'en' ? 'Habit Time' : curLang === 'es' ? 'Horario Hábito' : 'Horário em Hábito'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   /* OPÇÃO A: Mobile Combat Dashboard "Forjando Guerreiros" (Aço, Forja, Honra & Alta Densidade) */
   const renderMobileOneScreen = () => {
     return (
@@ -1081,6 +1289,9 @@ export default function QgView() {
             <p className="fnote mt-1.5 text-center">{t('retro')}</p>
           )}
         </div>
+
+        {/* MINI CARD TÁTICO: AGENDA OPERACIONAL DE HOJE (Tarefas, Hábitos e Projetos com Horário) */}
+        {renderCombatScheduleMiniCard()}
 
         {/* 4. BOTÃO TÁTICO: MARCAR HÁBITOS (Direto para A Forja) */}
         <button
@@ -1282,6 +1493,7 @@ export default function QgView() {
               <span className="text-gold text-sm font-bold flex-none group-hover:translate-x-0.5 transition-transform">➔</span>
             </div>
           </button>
+          {renderCombatScheduleMiniCard()}
           {renderTasksToday()}
         </div>
       </div>
