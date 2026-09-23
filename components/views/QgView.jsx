@@ -174,9 +174,15 @@ function useLiveTimer(startDateStr, daysTotal) {
       let startMs = 0;
       if (typeof startDateStr === 'number') {
         startMs = startDateStr;
-      } else if (typeof startDateStr === 'string' && startDateStr.length === 10) {
-        const p = startDateStr.split('-').map(Number);
-        startMs = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).getTime();
+      } else if (typeof startDateStr === 'string') {
+        const clean = startDateStr.trim();
+        if (clean.length === 10 && clean.includes('-')) {
+          const p = clean.split('-').map(Number);
+          startMs = new Date(p[0], p[1] - 1, p[2], 0, 0, 0).getTime();
+        } else {
+          const norm = clean.includes(' ') ? clean.replace(' ', 'T') : clean;
+          startMs = new Date(norm).getTime();
+        }
       } else {
         startMs = new Date(startDateStr).getTime();
       }
@@ -192,7 +198,8 @@ function useLiveTimer(startDateStr, daysTotal) {
       const minutes = Math.floor((totalSec % 3600) / 60);
       const seconds = totalSec % 60;
 
-      const effectiveDays = Math.max(days, Number(daysTotal) || 0);
+      const hasExactTime = typeof startDateStr === 'string' && startDateStr.includes('T');
+      const effectiveDays = hasExactTime ? days : Math.max(days, Number(daysTotal) || 0);
       setTime({ days: effectiveDays, hours, minutes, seconds });
     }
 
@@ -382,61 +389,174 @@ export default function QgView() {
   const doFail = (types) => {
     if (L.modeA(S)) types = types.filter((x) => x !== 'ejac');
     if (!types.length) { toast(t('nothing')); return; }
-    let triggers = [];
-    update((s) => {
-      const dd = today();
-      s.checkins[dd] = s.checkins[dd] || { p: false, m: false, r: false };
-      const c = s.checkins[dd]; delete c.ok; c.fail = types.join('+');
-      let pen = 0;
-      if (types.includes('porn')) { pen += FAIL_PEN.porn; s.lastPorn = dd; c.p = false; }
-      if (types.includes('mast')) { pen += FAIL_PEN.mast; s.lastMast = dd; c.m = false; }
-      if (types.includes('ejac')) { pen += FAIL_PEN.ejac; s.retStart = dd; c.r = false; }
-      s.purity = Math.max(5, s.purity - pen);
-    });
     AF.tone(110, 0.5, 'sine', 0.2, 0, 55);
-    let vent = '';
+
     const Post = () => {
-      const [, force] = useState(0);
+      const now = new Date();
+      const curTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const [fallDate, setFallDate] = useState(today());
+      const [fallTime, setFallTime] = useState(curTimeStr);
+      const [triggers, setTriggers] = useState([]);
+      const [vent, setVent] = useState('');
+
+      const handleNow = () => {
+        const n = new Date();
+        setFallDate(today());
+        setFallTime(`${pad(n.getHours())}:${pad(n.getMinutes())}`);
+      };
+
+      const handleSave = () => {
+        const dd = fallDate || today();
+        const tt = fallTime || curTimeStr;
+        const fallTimestamp = `${dd}T${tt}:00`;
+
+        update((s) => {
+          s.checkins[dd] = s.checkins[dd] || { p: false, m: false, r: false };
+          const c = s.checkins[dd];
+          delete c.ok;
+          c.fail = types.join('+');
+          let pen = 0;
+          if (types.includes('porn')) { pen += FAIL_PEN.porn; s.lastPorn = fallTimestamp; c.p = false; }
+          if (types.includes('mast')) { pen += FAIL_PEN.mast; s.lastMast = fallTimestamp; c.m = false; }
+          if (types.includes('ejac')) { pen += FAIL_PEN.ejac; s.retStart = fallTimestamp; c.r = false; }
+          s.purity = Math.max(5, s.purity - pen);
+
+          if (Array.isArray(s.journal)) {
+            s.journal.unshift({
+              id: 'j_fall_' + Date.now(),
+              date: dd,
+              time: tt,
+              mood: 'guerra',
+              fall: true,
+              fallTypes: types,
+              fallTriggers: triggers,
+              vent: vent || '',
+              text: vent || (lang === 'en' ? '⚠️ Fall logged.' : lang === 'es' ? '⚠️ Caída registrada.' : '⚠️ Queda registrada.'),
+              createdAt: new Date(fallTimestamp).getTime() || Date.now(),
+            });
+          } else {
+            s.journal = s.journal || {};
+            s.journal[dd] = s.journal[dd] || { mood: '', good: '', ch: '' };
+            Object.assign(s.journal[dd], { fall: true, fallTypes: types, fallTriggers: triggers, vent: vent || s.journal[dd].vent || '' });
+          }
+        });
+
+        closeModal();
+        const okMsg = cx(lang, 'qg', 'fall_toast_ok') || (lang === 'en'
+          ? '⚠️ Fall logged. The precision stopwatch restarted from the exact time.'
+          : lang === 'es'
+          ? '⚠️ Caída registrada. El cronómetro de precisión se reinició a partir del horario exacto.'
+          : '⚠️ Queda registrada. O cronômetro de precisão foi reiniciado a partir do horário exato.');
+        toast(okMsg);
+      };
+
       return (
-        <div className="text-center">
-          <h3 className="mb-2 font-display text-2xl tracking-wide text-danger">{t('fall_t')}</h3>
-          <p className="mb-3 text-sm text-muted">{types.map((x) => fallLbl(x)).join(' + ')}</p>
-          <div className="mb-4 rounded-r border border-gold/30 bg-gold/5 p-3.5 text-left text-[13px] leading-relaxed">
+        <div className="text-center space-y-3">
+          <div>
+            <h3 className="mb-1 font-display text-2xl tracking-wide text-danger">
+              {cx(lang, 'qg', 'fall_precision_title') || t('fall_t')}
+            </h3>
+            <p className="text-xs text-muted">
+              {types.map((x) => fallLbl(x)).join(' + ')}
+            </p>
+          </div>
+
+          {/* CALIBRAÇÃO EXATA DO CRONÔMETRO NA QUEDA */}
+          <div className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-left space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-danger flex items-center gap-1">
+                ⏱️ {cx(lang, 'qg', 'fall_time_lbl') || 'Horário exato da queda (sincronia do cronômetro):'}
+              </span>
+              <button
+                type="button"
+                className="text-[11px] font-mono font-bold text-gold hover:underline cursor-pointer flex items-center gap-0.5"
+                onClick={handleNow}
+              >
+                {cx(lang, 'qg', 'fall_now_btn') || '⚡ Agora'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] font-mono text-muted uppercase block mb-1">
+                  {cx(lang, 'qg', 'fall_date_lbl') || 'Data:'}
+                </label>
+                <input
+                  type="date"
+                  className="field text-xs font-mono py-1.5"
+                  max={today()}
+                  value={fallDate}
+                  onChange={(e) => setFallDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-mono text-muted uppercase block mb-1">
+                  {curLang === 'en' ? 'Exact Time:' : curLang === 'es' ? 'Horario Exacto:' : 'Horário Exato:'}
+                </label>
+                <input
+                  type="time"
+                  className="field text-xs font-mono py-1.5"
+                  value={fallTime}
+                  onChange={(e) => setFallTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <p className="text-[10px] text-muted/90 font-mono leading-tight">
+              {cx(lang, 'qg', 'fall_timer_note') || '⏱️ O Cronômetro de Precisão do pilar caído será reiniciado segundo a segundo a partir deste horário exato.'}
+            </p>
+          </div>
+
+          <div className="rounded-r border border-gold/30 bg-gold/5 p-3 text-left text-[12.5px] leading-relaxed">
             <b className="text-gold">{t('retom')}</b><br />{t('r1')}<br />{t('r2')}<br />{t('r3')}<br />{t('r4')}<br />{t('r5')}
           </div>
-          <span className="k text-danger">{t('fall_trig')}</span>
-          <div className="mb-3 flex flex-wrap justify-center gap-1.5">
-            {TRIGGERS.map((x, i) => <button key={x} className={`tag ${triggers.includes(x) ? 'sel' : ''}`} onClick={() => { triggers = triggers.includes(x) ? triggers.filter((y) => y !== x) : [...triggers, x]; force((v) => v + 1); }}>{TR(x, i)}</button>)}
+
+          <div className="text-left">
+            <span className="k text-danger">{t('fall_trig')}</span>
+            <div className="mt-1.5 flex flex-wrap gap-1.5 justify-start">
+              {TRIGGERS.map((x, i) => (
+                <button
+                  key={x}
+                  type="button"
+                  className={`tag ${triggers.includes(x) ? 'sel' : ''}`}
+                  onClick={() => {
+                    setTriggers((prev) => prev.includes(x) ? prev.filter((y) => y !== x) : [...prev, x]);
+                  }}
+                >
+                  {TR(x, i)}
+                </button>
+              ))}
+            </div>
           </div>
-          <label className="mb-3 block text-left"><span className="lbl">{t('fall_vent')}</span>
-            <textarea className="field" maxLength={600} placeholder={t('ventph')} value={vent} onChange={(e) => (vent = e.target.value)} /></label>
-          <button className="btn-gold btn-big" onClick={() => {
-            update((s) => {
-              const dd = today();
-              if (Array.isArray(s.journal)) {
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-                s.journal.unshift({
-                  id: 'j_fall_' + Date.now(),
-                  date: dd,
-                  time: timeStr,
-                  mood: 'guerra',
-                  fall: true,
-                  fallTypes: types,
-                  fallTriggers: triggers,
-                  vent: vent || '',
-                  text: vent || '⚠️ Queda registrada.',
-                  createdAt: Date.now(),
-                });
-              } else {
-                s.journal = s.journal || {};
-                s.journal[dd] = s.journal[dd] || { mood: '', good: '', ch: '' };
-                Object.assign(s.journal[dd], { fall: true, fallTypes: types, fallTriggers: triggers, vent: vent || s.journal[dd].vent || '' });
-              }
-            });
-            closeModal(); toast(t('savedj'));
-          }}>{t('fall_save')}</button>
-          <button className="btn-dark btn-big mt-2" onClick={closeModal}>{t('fall_no')}</button>
+
+          <label className="block text-left">
+            <span className="lbl">{t('fall_vent')}</span>
+            <textarea
+              className="field text-xs"
+              rows={3}
+              maxLength={600}
+              placeholder={t('ventph')}
+              value={vent}
+              onChange={(e) => setVent(e.target.value)}
+            />
+          </label>
+
+          <div className="space-y-2 pt-1">
+            <button
+              type="button"
+              className="btn-gold btn-big w-full cursor-pointer"
+              onClick={handleSave}
+            >
+              {t('fall_save')}
+            </button>
+            <button
+              type="button"
+              className="btn-dark btn-big w-full cursor-pointer"
+              onClick={closeModal}
+            >
+              {t('fall_no')}
+            </button>
+          </div>
         </div>
       );
     };

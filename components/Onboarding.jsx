@@ -6,7 +6,7 @@ import { LIFE_STATUS, METAS, TRIGGERS, FREQS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
 import { setLangCookie } from '@/lib/i18n';
 import { AF, SFX } from '@/lib/audio';
-import { today, dstr, uid } from '@/lib/utils';
+import { today, dstr, uid, pad } from '@/lib/utils';
 import WarriorLogo from './WarriorLogo';
 
 const LBL_FALLBACK = {
@@ -81,12 +81,72 @@ export default function Onboarding() {
     }, 900);
   };
 
-  const DateCtl = ({ k, btn }) => (
-    <div className="mb-2 flex gap-2">
-      <input type="date" className="field flex-1" max={today()} value={OB[k] || ''} onChange={(e) => set(k, e.target.value)} />
-      <button type="button" className="chip flex-none" onClick={() => set(k, today())}>[ {btn} ]</button>
-    </div>
-  );
+  const DateCtl = ({ k, btn }) => {
+    const rawVal = OB[k] || '';
+    const [dPart, tPartRaw] = rawVal.includes('T') ? rawVal.split('T') : [rawVal, ''];
+    const tPart = tPartRaw ? tPartRaw.slice(0, 5) : '';
+
+    const handleDate = (d) => {
+      const now = new Date();
+      const defTime = d === today() ? `${pad(now.getHours())}:${pad(now.getMinutes())}` : '00:00';
+      const time = tPart || defTime;
+      set(k, d ? `${d}T${time}:00` : '');
+    };
+
+    const handleTime = (t) => {
+      const date = dPart || today();
+      set(k, `${date}T${t || '00:00'}:00`);
+    };
+
+    const handleNow = () => {
+      const now = new Date();
+      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      set(k, `${today()}T${time}:00`);
+    };
+
+    return (
+      <div className="mb-3 space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="date"
+            className="field flex-1"
+            max={today()}
+            value={dPart || ''}
+            onChange={(e) => handleDate(e.target.value)}
+          />
+          <button type="button" className="chip flex-none text-xs font-bold" onClick={handleNow}>
+            [ {btn} ]
+          </button>
+        </div>
+
+        <div className="rounded-lg border border-line/70 bg-surface2/60 p-2.5 space-y-1.5 text-left">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-mono font-semibold text-muted flex items-center gap-1">
+              ⏱️ {T('exactTimeLabel', 'Horário exato (cronômetro de precisão):')}
+            </span>
+            <button
+              type="button"
+              className="text-[10.5px] font-mono font-bold text-gold hover:underline cursor-pointer"
+              onClick={handleNow}
+            >
+              ⚡ {T('nowBtn', 'Agora')}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="time"
+              className="field flex-1 font-mono text-xs py-1.5"
+              value={tPart || (dPart === today() ? `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}` : '00:00')}
+              onChange={(e) => handleTime(e.target.value)}
+            />
+          </div>
+          <p className="text-[10px] text-muted/80 font-mono leading-tight">
+            {T('stopwatchInfo', '⏱️ O Cronômetro de Precisão contará segundo a segundo a partir deste momento exato.')}
+          </p>
+        </div>
+      </div>
+    );
+  };
   const Opts = ({ children }) => <div className="flex flex-col gap-2.5 text-left">{children}</div>;
   const Opt = ({ sel, onClick, children }) => (
     <button type="button" onClick={() => { AF.click(); onClick(); }} className={`rounded-r border p-3.5 text-left text-[13px] font-bold transition-colors ${sel ? 'border-gold/60 bg-gold/10 text-gold' : 'border-line bg-surface2 text-ink hover:border-gold/40'}`}>{children}</button>
@@ -120,7 +180,7 @@ export default function Onboarding() {
     <p className="obh">{T('h4', 'Seja honesto. O mapa de combate depende de dados reais.')}</p><DateCtl k="dp" btn={T('today', 'HOJE')} /></>);
   if (sid === 5) body = (<><h2 className="obq">{T('q5', 'Qual foi a última data em que você se masturbou?')}</h2>
     <p className="obh">{T('h5', 'Sem vergonha. Isto apenas calibra seus contadores.')}</p><DateCtl k="dm" btn={T('today', 'HOJE')} /></>);
-  if (sid === 6) body = (<><h2 className="obq">{T('q6', 'Qual foi a data da sua última ejaculação (início da Retenção)?')}</h2>
+  if (sid === 6) body = (<><h2 className="obq">{T('q6', 'Qual foi a data da sua última ejaculação (início da Retenção Seminal)?')}</h2>
     <p className="obh">{T('h6', 'Este é o marco zero do seu contador principal de dias.')}</p><DateCtl k="dr" btn={T('todayNow', 'HOJE — COMEÇANDO AGORA')} /></>);
   if (sid === 7) body = (<><h2 className="obq">{T('q7', 'Escolha a BANDEIRA da sua primeira conquista:')}</h2>
     <p className="obh">{T('h7', 'Sua meta de patamar. Toque para escolher — cada patente tem um som de selo próprio.')}</p>
