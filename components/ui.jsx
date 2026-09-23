@@ -58,11 +58,42 @@ export function ToastHost() {
 export function ModalHost() {
   const { modal, closeModal, S } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
+  const isCustomModal = Boolean(
+    modal && (
+      modal.cls?.includes('dialog') ||
+      modal.cls?.includes('custom') ||
+      modal.cls?.includes('no-close') ||
+      modal.cls?.includes('full')
+    )
+  );
+
   return (
-    <div className={`fixed inset-0 z-[70] grid place-items-center bg-black/70 p-4 backdrop-blur-sm transition-opacity ${modal ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
+    <div
+      className={`fixed inset-0 z-[70] grid place-items-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm transition-opacity ${
+        modal ? 'opacity-100' : 'pointer-events-none opacity-0'
+      }`}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeModal();
+      }}
+    >
       {modal && (
-        <div className={`relative max-h-[92dvh] w-full overflow-y-auto rounded-r2 border border-gold/25 bg-[#16161a] p-5 rise ${modal.cls}`} style={{ maxWidth: modal.cls.includes('wide') ? 880 : 540 }}>
-          <button className="absolute right-3 top-3 text-muted hover:text-ink" onClick={closeModal} aria-label={cx(lang, 'ui', 'close') || 'Fechar'}><X size={18} /></button>
+        <div
+          className={`relative max-h-[92dvh] w-full overflow-y-auto rounded-r2 rise ${modal.cls} ${
+            isCustomModal
+              ? 'p-0 border-0 bg-transparent shadow-none'
+              : 'border border-gold/25 bg-[#16161a] p-5'
+          }`}
+          style={{ maxWidth: modal.cls?.includes('wide') ? 880 : 540 }}
+        >
+          {!isCustomModal && (
+            <button
+              className="absolute right-3 top-3 text-muted hover:text-ink cursor-pointer"
+              onClick={closeModal}
+              aria-label={cx(lang, 'ui', 'close') || 'Fechar'}
+            >
+              <X size={18} />
+            </button>
+          )}
           {modal.node}
         </div>
       )}

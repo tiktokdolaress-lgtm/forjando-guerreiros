@@ -7,7 +7,7 @@ import { cx } from '@/lib/content-i18n';
 import { lifeMode, progressDays, allH } from '@/lib/logic';
 import { ensureSw, scheduleLocalTimers } from '@/lib/notify';
 import { AF } from '@/lib/audio';
-import { hasUnreadUpdates, CURRENT_APP_VERSION, dispatchUpdateNotification, markUpdatesAsRead } from '@/lib/changelog';
+import { hasUnreadUpdates, CURRENT_APP_VERSION, markUpdatesAsRead } from '@/lib/changelog';
 import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
 import ChangelogModal from './ChangelogModal';
@@ -34,19 +34,16 @@ export default function Shell() {
 
   const [hasUnread, setHasUnread] = React.useState(false);
 
-  /* Notificação visual automática e no dispositivo quando houver nova versão / atualização */
+  /* Notificação visual automática e estritamente interna (in-app) quando houver nova versão / atualização */
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const unread = hasUnreadUpdates();
       setHasUnread(unread);
       if (unread) {
-        // 1. Notificação do dispositivo via Service Worker / Notification API
-        dispatchUpdateNotification(lang);
-
-        // 2. Toast informativo na interface
+        // 1. Toast informativo interno na interface do app
         toast(cx(lang, 'settings', 'notif_update_toast') || '📜 Novo Decreto da Forja disponível! Toque no topo para ler.');
 
-        // 3. Modal explicativo dos Decretos da Forja
+        // 2. Modal explicativo dos Decretos da Forja (apenas dentro do app)
         const timer = setTimeout(() => {
           openModal(
             <ChangelogModal
