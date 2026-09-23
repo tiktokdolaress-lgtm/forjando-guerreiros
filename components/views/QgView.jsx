@@ -279,20 +279,26 @@ export default function QgView() {
   const pornTime = useLiveTimer(S.lastPorn || S.retStart || S.created || today(), pornFree);
   const mastTime = useLiveTimer(S.lastMast || S.retStart || S.created || today(), mastFree);
 
+  const formatTimer = (t, dFallback) => {
+    const days = Math.max(t.days, Number(dFallback) || 0);
+    const dStr = days > 0 ? `${days}d ` : '0d ';
+    return `${dStr}${String(t.hours).padStart(2, '0')}h:${String(t.minutes).padStart(2, '0')}m:${String(t.seconds).padStart(2, '0')}s`;
+  };
+
   const pillarsData = useMemo(() => ({
     ret: {
       days: d,
-      timer: `${String(liveTime.hours).padStart(2, '0')}h:${String(liveTime.minutes).padStart(2, '0')}m:${String(liveTime.seconds).padStart(2, '0')}s`,
+      timer: formatTimer(liveTime, d),
     },
     porn: {
       days: pornFree,
-      timer: `${String(pornTime.hours).padStart(2, '0')}h:${String(pornTime.minutes).padStart(2, '0')}m:${String(pornTime.seconds).padStart(2, '0')}s`,
+      timer: formatTimer(pornTime, pornFree),
     },
     mast: {
       days: mastFree,
-      timer: `${String(mastTime.hours).padStart(2, '0')}h:${String(mastTime.minutes).padStart(2, '0')}m:${String(mastTime.seconds).padStart(2, '0')}s`,
+      timer: formatTimer(mastTime, mastFree),
     },
-  }), [d, pornFree, mastFree, liveTime.hours, liveTime.minutes, liveTime.seconds, pornTime.hours, pornTime.minutes, pornTime.seconds, mastTime.hours, mastTime.minutes, mastTime.seconds]);
+  }), [d, pornFree, mastFree, liveTime, pornTime, mastTime]);
 
   /* ações */
   const setCI = (k, v, dateStr) => {
@@ -393,23 +399,14 @@ export default function QgView() {
 
     const Post = () => {
       const now = new Date();
-      const curTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-      const [fallDate, setFallDate] = useState(today());
-      const [fallTime, setFallTime] = useState(curTimeStr);
+      const dd = today();
+      const tt = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      const sec = pad(now.getSeconds());
+      const fallTimestamp = `${dd}T${tt}:${sec}`;
       const [triggers, setTriggers] = useState([]);
       const [vent, setVent] = useState('');
 
-      const handleNow = () => {
-        const n = new Date();
-        setFallDate(today());
-        setFallTime(`${pad(n.getHours())}:${pad(n.getMinutes())}`);
-      };
-
       const handleSave = () => {
-        const dd = fallDate || today();
-        const tt = fallTime || curTimeStr;
-        const fallTimestamp = `${dd}T${tt}:00`;
-
         update((s) => {
           s.checkins[dd] = s.checkins[dd] || { p: false, m: false, r: false };
           const c = s.checkins[dd];
@@ -432,7 +429,7 @@ export default function QgView() {
               fallTriggers: triggers,
               vent: vent || '',
               text: vent || (lang === 'en' ? '⚠️ Fall logged.' : lang === 'es' ? '⚠️ Caída registrada.' : '⚠️ Queda registrada.'),
-              createdAt: new Date(fallTimestamp).getTime() || Date.now(),
+              createdAt: Date.now(),
             });
           } else {
             s.journal = s.journal || {};
@@ -443,10 +440,10 @@ export default function QgView() {
 
         closeModal();
         const okMsg = cx(lang, 'qg', 'fall_toast_ok') || (lang === 'en'
-          ? '⚠️ Fall logged. The precision stopwatch restarted from the exact time.'
+          ? '⚠️ Fall logged. The precision stopwatch restarted now — rise up and rebuild!'
           : lang === 'es'
-          ? '⚠️ Caída registrada. El cronómetro de precisión se reinició a partir del horario exacto.'
-          : '⚠️ Queda registrada. O cronômetro de precisão foi reiniciado a partir do horário exato.');
+          ? '⚠️ Caída registrada. El cronómetro de precisión se reinició ahora — ¡levántate y reconstruye!'
+          : '⚠️ Queda registrada. O cronômetro de precisão foi reiniciado agora — levante-se e reconstrua!');
         toast(okMsg);
       };
 
@@ -461,49 +458,18 @@ export default function QgView() {
             </p>
           </div>
 
-          {/* CALIBRAÇÃO EXATA DO CRONÔMETRO NA QUEDA */}
-          <div className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-left space-y-2">
-            <div className="flex items-center justify-between gap-2">
+          {/* REGISTRO DO CRONÔMETRO NA QUEDA - HONESTO, EM TEMPO REAL, SEM BURLAS */}
+          <div className="rounded-xl border border-danger/40 bg-danger/10 p-3 text-left space-y-1">
+            <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-danger flex items-center gap-1">
-                ⏱️ {cx(lang, 'qg', 'fall_time_lbl') || 'Horário exato da queda (sincronia do cronômetro):'}
+                ⏱️ {cx(lang, 'qg', 'fall_time_lbl') || 'Registro em Tempo Real:'}
               </span>
-              <button
-                type="button"
-                className="text-[11px] font-mono font-bold text-gold hover:underline cursor-pointer flex items-center gap-0.5"
-                onClick={handleNow}
-              >
-                {cx(lang, 'qg', 'fall_now_btn') || '⚡ Agora'}
-              </button>
+              <span className="text-xs font-mono font-black text-danger">
+                {dd} · {tt}:{sec}
+              </span>
             </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] font-mono text-muted uppercase block mb-1">
-                  {cx(lang, 'qg', 'fall_date_lbl') || 'Data:'}
-                </label>
-                <input
-                  type="date"
-                  className="field text-xs font-mono py-1.5"
-                  max={today()}
-                  value={fallDate}
-                  onChange={(e) => setFallDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-mono text-muted uppercase block mb-1">
-                  {curLang === 'en' ? 'Exact Time:' : curLang === 'es' ? 'Horario Exacto:' : 'Horário Exato:'}
-                </label>
-                <input
-                  type="time"
-                  className="field text-xs font-mono py-1.5"
-                  value={fallTime}
-                  onChange={(e) => setFallTime(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <p className="text-[10px] text-muted/90 font-mono leading-tight">
-              {cx(lang, 'qg', 'fall_timer_note') || '⏱️ O Cronômetro de Precisão do pilar caído será reiniciado segundo a segundo a partir deste horário exato.'}
+            <p className="text-[10.5px] text-muted/90 font-mono leading-tight">
+              {cx(lang, 'qg', 'fall_timer_note') || 'Sem alterações retroativas. O cronômetro do pilar zera agora e recomeça a evolução em tempo real segundo a segundo.'}
             </p>
           </div>
 

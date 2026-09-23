@@ -4,7 +4,7 @@ import {
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
   Trophy, Palette, Check, Volume2, Shield, Database, ChevronRight, Lock,
-  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Clock
+  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Toggle, Chk, Empty } from '@/components/ui';
@@ -14,7 +14,7 @@ import { setLangCookie } from '@/lib/i18n';
 import * as cloud from '@/lib/supabase';
 import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
-import { today, LSKEY, pad } from '@/lib/utils';
+import { today, LSKEY } from '@/lib/utils';
 import { pushSupported, askPermission, subscribePush, unsubscribePush } from '@/lib/notify';
 import ChangelogModal from '../ChangelogModal';
 import { CURRENT_APP_VERSION } from '@/lib/changelog';
@@ -134,35 +134,6 @@ export default function SettingsView() {
   const fileRef = useRef(null);
   const [perm, setPerm] = useState(() => (pushSupported() ? Notification.permission : 'denied'));
   const [notifBusy, setNotifBusy] = useState(false);
-
-  // Calibração dos Pilares & Cronômetro de Precisão
-  const getPillarDateTime = (val) => {
-    if (!val) return { d: today(), t: '00:00' };
-    if (typeof val === 'string' && val.includes('T')) {
-      const [d, t] = val.split('T');
-      return { d, t: t ? t.slice(0, 5) : '00:00' };
-    }
-    return { d: String(val || today()), t: '00:00' };
-  };
-
-  const [calibRet, setCalibRet] = useState(() => getPillarDateTime(S.retStart));
-  const [calibPorn, setCalibPorn] = useState(() => getPillarDateTime(S.lastPorn));
-  const [calibMast, setCalibMast] = useState(() => getPillarDateTime(S.lastMast));
-
-  const setNowForPillar = (setter) => {
-    const now = new Date();
-    setter({ d: today(), t: `${pad(now.getHours())}:${pad(now.getMinutes())}` });
-  };
-
-  const saveCalibration = () => {
-    update((s) => {
-      s.retStart = `${calibRet.d}T${calibRet.t || '00:00'}:00`;
-      s.lastPorn = `${calibPorn.d}T${calibPorn.t || '00:00'}:00`;
-      s.lastMast = `${calibMast.d}T${calibMast.t || '00:00'}:00`;
-    });
-    AF.click();
-    toast(T('calib_saved', '⏱️ Cronômetro e marcos de combate calibrados com sucesso!'));
-  };
 
   const enableNotif = async () => {
     if (notifBusy) return;
@@ -437,123 +408,6 @@ export default function SettingsView() {
                 })}
               </div>
             </div>
-          </Card>
-
-          {/* CARD DE CALIBRAÇÃO DOS PILARES & CRONÔMETRO DE PRECISÃO */}
-          <Card className="lg:col-span-2 border-gold/40 bg-gradient-to-br from-surface via-surface2/40 to-surface">
-            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-              <K><Clock size={13} className="mr-1 inline text-gold" /> {T('calib_title', 'CALIBRAÇÃO DOS PILARES & CRONÔMETRO DE PRECISÃO')}</K>
-              <span className="text-[10px] font-mono text-gold font-bold px-2 py-0.5 rounded bg-gold/10 border border-gold/30">
-                ⏱️ {lang === 'en' ? 'PRECISION ENGINE' : lang === 'es' ? 'MOTOR DE PRECISIÓN' : 'MOTOR DE PRECISÃO'}
-              </span>
-            </div>
-            <p className="text-xs text-muted mb-3 leading-relaxed">
-              {T('calib_desc', 'Ajuste a data e horário exatos de início dos pilares. O cronômetro de precisão contará segundo a segundo a partir desta marca.')}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-              {/* PILAR 1: RETENÇÃO SEMINAL */}
-              <div className="p-2.5 rounded-xl border border-line bg-surface2/60 space-y-2">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-ink flex items-center gap-1">
-                    🔥 {T('calib_ret', 'Retenção Seminal')}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-[10px] font-mono text-gold font-bold hover:underline cursor-pointer"
-                    onClick={() => setNowForPillar(setCalibRet)}
-                  >
-                    ⚡ {T('calib_now', 'Agora')}
-                  </button>
-                </div>
-                <div>
-                  <input
-                    type="date"
-                    className="field text-xs font-mono py-1.5 w-full mb-1.5"
-                    max={today()}
-                    value={calibRet.d}
-                    onChange={(e) => setCalibRet((prev) => ({ ...prev, d: e.target.value }))}
-                  />
-                  <input
-                    type="time"
-                    className="field text-xs font-mono py-1.5 w-full"
-                    value={calibRet.t}
-                    onChange={(e) => setCalibRet((prev) => ({ ...prev, t: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* PILAR 2: SEM PORNOGRAFIA */}
-              <div className="p-2.5 rounded-xl border border-line bg-surface2/60 space-y-2">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-ink flex items-center gap-1">
-                    🛡️ {T('calib_porn', 'Sem Pornografia')}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-[10px] font-mono text-gold font-bold hover:underline cursor-pointer"
-                    onClick={() => setNowForPillar(setCalibPorn)}
-                  >
-                    ⚡ {T('calib_now', 'Agora')}
-                  </button>
-                </div>
-                <div>
-                  <input
-                    type="date"
-                    className="field text-xs font-mono py-1.5 w-full mb-1.5"
-                    max={today()}
-                    value={calibPorn.d}
-                    onChange={(e) => setCalibPorn((prev) => ({ ...prev, d: e.target.value }))}
-                  />
-                  <input
-                    type="time"
-                    className="field text-xs font-mono py-1.5 w-full"
-                    value={calibPorn.t}
-                    onChange={(e) => setCalibPorn((prev) => ({ ...prev, t: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* PILAR 3: SEM MASTURBAÇÃO */}
-              <div className="p-2.5 rounded-xl border border-line bg-surface2/60 space-y-2">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-ink flex items-center gap-1">
-                    ⚒️ {T('calib_mast', 'Sem Masturbação')}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-[10px] font-mono text-gold font-bold hover:underline cursor-pointer"
-                    onClick={() => setNowForPillar(setCalibMast)}
-                  >
-                    ⚡ {T('calib_now', 'Agora')}
-                  </button>
-                </div>
-                <div>
-                  <input
-                    type="date"
-                    className="field text-xs font-mono py-1.5 w-full mb-1.5"
-                    max={today()}
-                    value={calibMast.d}
-                    onChange={(e) => setCalibMast((prev) => ({ ...prev, d: e.target.value }))}
-                  />
-                  <input
-                    type="time"
-                    className="field text-xs font-mono py-1.5 w-full"
-                    value={calibMast.t}
-                    onChange={(e) => setCalibMast((prev) => ({ ...prev, t: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="btn-gold w-full text-xs font-bold py-2 flex items-center justify-center gap-1.5 cursor-pointer"
-              onClick={saveCalibration}
-            >
-              <Clock size={14} />
-              <span>{T('calib_save', 'SALVAR E SINCRONIZAR CRONÔMETRO')}</span>
-            </button>
           </Card>
 
           {/* BANNER NOTAS DA ATUALIZAÇÃO NO GERAL */}
