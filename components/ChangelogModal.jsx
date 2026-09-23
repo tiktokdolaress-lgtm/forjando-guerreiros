@@ -1,10 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import { Scroll, Sparkles, X, ChevronDown, ChevronUp, Check, ShieldCheck, Flame } from 'lucide-react';
-import { CURRENT_APP_VERSION, CHANGELOG_RELEASES, markUpdatesAsRead } from '@/lib/changelog';
+import { CURRENT_APP_VERSION, CHANGELOG_RELEASES, CHANGELOG_I18N, getLocalizedRelease, markUpdatesAsRead } from '@/lib/changelog';
+import { useApp } from '@/lib/store';
 import { AF } from '@/lib/audio';
 
 export default function ChangelogModal({ onClose }) {
+  const { S } = useApp();
+  const lang = (S && S.settings && S.settings.lang) || 'pt';
+  const l = (lang === 'en' || lang === 'es') ? lang : 'pt';
   const [showAll, setShowAll] = useState(false);
 
   const handleClose = () => {
@@ -15,8 +19,8 @@ export default function ChangelogModal({ onClose }) {
     }
   };
 
-  const latestRelease = CHANGELOG_RELEASES[0];
-  const previousReleases = CHANGELOG_RELEASES.slice(1);
+  const latestRelease = getLocalizedRelease(CHANGELOG_RELEASES[0], l);
+  const previousReleases = CHANGELOG_RELEASES.slice(1).map((r) => getLocalizedRelease(r, l));
 
   return (
     <div className="relative w-full max-w-xl mx-auto rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#090604] border-2 border-amber-600/60 p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.95)] text-ink overflow-hidden max-h-[85vh] flex flex-col">
@@ -32,14 +36,14 @@ export default function ChangelogModal({ onClose }) {
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-display text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 font-black">
-                DECRETOS DA FORJA
+                {CHANGELOG_I18N.headerTitle[l]}
               </span>
               <span className="rounded-full border border-gold/50 bg-gold/15 px-2 py-0.5 text-[10px] font-mono text-gold font-extrabold uppercase shadow-sm">
                 {CURRENT_APP_VERSION}
               </span>
             </div>
             <p className="text-[11px] sm:text-xs font-mono text-amber-200/70 mt-0.5">
-              Suas conquistas e dias estão intactos. Veja as melhorias ativas:
+              {CHANGELOG_I18N.headerSub[l]}
             </p>
           </div>
         </div>
@@ -66,8 +70,8 @@ export default function ChangelogModal({ onClose }) {
                   {latestRelease.title}
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
-                {latestRelease.date}
+              <span className="text-[10px] font-mono text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40 font-bold">
+                {latestRelease.badge} · {latestRelease.date}
               </span>
             </div>
 
@@ -103,7 +107,7 @@ export default function ChangelogModal({ onClose }) {
               }}
               className="w-full flex items-center justify-between py-2 px-3 rounded-lg border border-line/60 bg-surface2/40 text-xs font-mono text-muted hover:text-ink hover:border-gold/30 transition-all cursor-pointer"
             >
-              <span>📜 Histórico de Decretos Anteriores</span>
+              <span>📜 {showAll ? CHANGELOG_I18N.hidePrevious[l] : CHANGELOG_I18N.seePrevious[l]}</span>
               {showAll ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
@@ -134,7 +138,11 @@ export default function ChangelogModal({ onClose }) {
         <div className="flex items-center gap-2 p-2.5 rounded-lg border border-emerald-500/30 bg-emerald-950/20 text-emerald-300 text-[11px] font-mono">
           <ShieldCheck size={16} className="text-emerald-400 flex-none" />
           <span>
-            Atualizações não afetam sua assinatura ou registros. Seu progresso é gravado e protegido.
+            {l === 'en'
+              ? 'Updates never affect your subscription or days. All progress is safely guarded.'
+              : l === 'es'
+              ? 'Las actualizaciones nunca afectan tu suscripción o días. Todo el progreso está a salvo.'
+              : 'Atualizações não afetam sua assinatura ou registros. Seu progresso é gravado e protegido.'}
           </span>
         </div>
       </div>
@@ -147,7 +155,7 @@ export default function ChangelogModal({ onClose }) {
           className="w-full btn-gold py-2.5 sm:py-3 text-xs sm:text-sm font-bold tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg"
         >
           <Flame size={16} className="text-amber-900" />
-          <span>ENTENDIDO, AVANTE!</span>
+          <span>{CHANGELOG_I18N.btnConfirm[l]}</span>
         </button>
       </div>
     </div>

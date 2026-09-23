@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Armazenamento em memória para rápida recuperação no servidor / container
+let inMemoryFeedbacks = [];
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -22,8 +25,29 @@ export async function POST(req) {
       createdAt: new Date().toISOString(),
     };
 
-    // Registro seguro em console/logs do servidor
+    inMemoryFeedbacks.unshift(feedbackRecord);
+    if (inMemoryFeedbacks.length > 200) {
+      inMemoryFeedbacks = inMemoryFeedbacks.slice(0, 200);
+    }
+
+    // Registro seguro em console/logs do servidor Cloud Run
     console.log('[CONSELHO DE GUERRA - FEEDBACK RECEBIDO]', JSON.stringify(feedbackRecord));
+
+    // Opcional: Enviar para Webhook (Discord / Slack / Telegram) caso configurado nas variáveis de ambiente
+    const webhookUrl = process.env.FEEDBACK_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: `🛡️ **Novo Feedback - Forjando Guerreiros**\n**Tipo:** ${feedbackRecord.category.toUpperCase()}\n**Mensagem:** ${feedbackRecord.message}\n**Contato:** ${feedbackRecord.contact || 'Anônimo'}\n**Versão:** ${feedbackRecord.appVersion}\n**Data:** ${new Date().toLocaleString('pt-BR')}`,
+          }),
+        }).catch((err) => console.error('Erro ao disparar webhook de feedback:', err));
+      } catch (webhookErr) {
+        console.error('Falha silenciosa no envio do webhook:', webhookErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -35,6 +59,21 @@ export async function POST(req) {
     console.error('Erro na rota de feedback:', error);
     return NextResponse.json(
       { error: 'Falha ao processar o feedback.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req) {
+  try {
+    return NextResponse.json({
+      success: true,
+      total: inMemoryFeedbacks.length,
+      feedbacks: inMemoryFeedbacks,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Falha ao listar feedbacks.' },
       { status: 500 }
     );
   }

@@ -62,11 +62,31 @@ export default function SettingsView() {
     }
   });
 
+  // Modo Comando / Admin para consultar todos os feedbacks recebidos no servidor
+  const [showAdminFeedbacks, setShowAdminFeedbacks] = useState(false);
+  const [adminFeedbacksList, setAdminFeedbacksList] = useState([]);
+  const [adminFeedbacksLoading, setAdminFeedbacksLoading] = useState(false);
+
+  const fetchAdminFeedbacks = async () => {
+    setAdminFeedbacksLoading(true);
+    try {
+      AF.click();
+      const res = await fetch('/api/feedback');
+      const data = await res.json();
+      setAdminFeedbacksList(data.feedbacks || []);
+      setShowAdminFeedbacks(true);
+    } catch (e) {
+      toast('⚠ Erro ao buscar feedbacks do servidor.');
+    } finally {
+      setAdminFeedbacksLoading(false);
+    }
+  };
+
   const submitFeedback = async (e) => {
     if (e) e.preventDefault();
     const text = feedbackMsg.trim();
     if (!text || text.length < 5) {
-      toast('⚠ Escreva pelo menos 5 caracteres na sua mensagem.');
+      toast(T('fb_toast_min', '⚠ Escreva pelo menos 5 caracteres na sua mensagem.'));
       return;
     }
     setFeedbackSending(true);
@@ -89,8 +109,8 @@ export default function SettingsView() {
         category: feedbackCategory,
         message: text,
         contact: feedbackContact.trim(),
-        date: new Date().toLocaleDateString('pt-BR'),
-        status: 'Registrado',
+        date: new Date().toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR'),
+        status: lang === 'en' ? 'Registered' : lang === 'es' ? 'Registrado' : 'Registrado',
       };
       const updated = [newEntry, ...feedbackHistory].slice(0, 15);
       setFeedbackHistory(updated);
@@ -100,9 +120,9 @@ export default function SettingsView() {
       setFeedbackMsg('');
       setFeedbackContact('');
       try { AF.win(); } catch (err) {}
-      toast('🛡️ Feedback forjado e enviado ao comando com sucesso!');
+      toast(T('fb_toast_ok', '🛡️ Feedback forjado e enviado ao comando com sucesso!'));
     } catch (err) {
-      toast('⚠ Erro de conexão ao enviar feedback.');
+      toast(T('fb_toast_err', '⚠ Erro de conexão ao enviar feedback.'));
     } finally {
       setFeedbackSending(false);
     }
@@ -422,31 +442,38 @@ export default function SettingsView() {
 
       {/* SEÇÃO 2: SUGESTÕES, BUGS & DECRETOS DA FORJA */}
       {showFeedback && (
+        <>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
           {/* FORMULÁRIO PRINCIPAL DE FEEDBACK */}
           <Card className="lg:col-span-2 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2.5">
-                <K><MessageSquarePlus size={13} className="mr-1 inline text-gold" /> CONSELHO DE GUERRA & FEEDBACK</K>
-                <span className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20">
-                  CANAL DIRETO
-                </span>
+                <K><MessageSquarePlus size={13} className="mr-1 inline text-gold" /> {T('fb_title', 'CONSELHO DE GUERRA & FEEDBACK')}</K>
+                <button
+                  type="button"
+                  onClick={fetchAdminFeedbacks}
+                  className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20 hover:bg-gold/25 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Painel do Comando - Ver todos os feedbacks recebidos"
+                >
+                  <span>{T('fb_badge', 'CANAL DIRETO')}</span>
+                  <span className="text-[11px]">👁️</span>
+                </button>
               </div>
               <p className="text-xs text-muted mb-3 leading-relaxed">
-                Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.
+                {T('fb_sub', 'Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.')}
               </p>
 
               {/* Seletor de Tipo */}
               <div className="mb-3">
                 <label className="block text-[11px] font-mono text-ink/80 mb-1.5 font-bold uppercase">
-                  TIPO DE MENSAGEM
+                  {T('fb_type_label', 'TIPO DE MENSAGEM')}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {[
-                    { id: 'suggestion', label: 'Sugestão', icon: '💡', desc: 'Nova ideia' },
-                    { id: 'bug', label: 'Relatar Bug', icon: '🐛', desc: 'Erro no app' },
-                    { id: 'ux', label: 'Usabilidade', icon: '⚔️', desc: 'Dificuldade' },
-                    { id: 'praise', label: 'Elogio', icon: '⭐', desc: 'Testemunho' },
+                    { id: 'suggestion', label: T('fb_opt_sugg', 'Sugestão'), icon: '💡', desc: T('fb_opt_sugg_sub', 'Nova ideia') },
+                    { id: 'bug', label: T('fb_opt_bug', 'Relatar Bug'), icon: '🐛', desc: T('fb_opt_bug_sub', 'Erro no app') },
+                    { id: 'ux', label: T('fb_opt_ux', 'Usabilidade'), icon: '⚔️', desc: T('fb_opt_ux_sub', 'Dificuldade') },
+                    { id: 'praise', label: T('fb_opt_praise', 'Elogio'), icon: '⭐', desc: T('fb_opt_praise_sub', 'Testemunho') },
                   ].map((cat) => {
                     const sel = feedbackCategory === cat.id;
                     return (
@@ -474,26 +501,26 @@ export default function SettingsView() {
               {/* Campo de Mensagem */}
               <div className="mb-3">
                 <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
-                  SUA MENSAGEM / RELATO
+                  {T('fb_msg_label', 'SUA MENSAGEM / RELATO')}
                 </label>
                 <textarea
                   value={feedbackMsg}
                   onChange={(e) => setFeedbackMsg(e.target.value)}
                   placeholder={
                     feedbackCategory === 'bug'
-                      ? 'Descreva o que aconteceu, em qual tela ou aparelho, e o que deu errado...'
+                      ? T('fb_msg_ph_bug', 'Descreva o que aconteceu, em qual tela ou aparelho, e o que deu errado...')
                       : feedbackCategory === 'suggestion'
-                      ? 'Descreva a sua ideia ou recurso que tornaria o app ainda melhor...'
+                      ? T('fb_msg_ph_sugg', 'Descreva a sua ideia ou recurso que tornaria o app ainda melhor...')
                       : feedbackCategory === 'praise'
-                      ? 'Conte como o Forjando Guerreiros tem impactado sua disciplina e retenção...'
-                      : 'Conte-nos sua experiência ou dificuldade encontrada...'
+                      ? T('fb_msg_ph_praise', 'Conte como o Forjando Guerreiros tem impactado sua disciplina e retenção...')
+                      : T('fb_msg_ph_ux', 'Conte-nos sua experiência ou dificuldade encontrada...')
                   }
                   rows={4}
                   maxLength={1000}
                   className="w-full rounded-lg border border-line bg-surface2 p-3 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none resize-none leading-relaxed"
                 />
                 <div className="flex justify-between items-center text-[10px] font-mono text-muted mt-1 px-1">
-                  <span>Mínimo 5 caracteres</span>
+                  <span>{lang === 'en' ? 'Min 5 characters' : lang === 'es' ? 'Mínimo 5 caracteres' : 'Mínimo 5 caracteres'}</span>
                   <span>{feedbackMsg.length}/1000</span>
                 </div>
               </div>
@@ -501,13 +528,13 @@ export default function SettingsView() {
               {/* Contato opcional */}
               <div className="mb-3">
                 <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
-                  SEU CONTATO (OPCIONAL)
+                  {T('fb_contact_label', 'SEU CONTATO (OPCIONAL)')}
                 </label>
                 <input
                   type="text"
                   value={feedbackContact}
                   onChange={(e) => setFeedbackContact(e.target.value)}
-                  placeholder="Seu e-mail ou @ para receber retorno, se desejar..."
+                  placeholder={T('fb_contact_ph', 'Seu e-mail ou @ para receber retorno, se desejar...')}
                   className="w-full rounded-lg border border-line bg-surface2 px-3 py-2 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none"
                 />
               </div>
@@ -520,7 +547,7 @@ export default function SettingsView() {
                 className="w-full btn-gold py-2.5 text-xs font-bold uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow"
               >
                 <Send size={14} />
-                <span>{feedbackSending ? 'ENVIANDO AO COMANDO...' : 'ENVIAR AO COMANDO DA FORJA'}</span>
+                <span>{feedbackSending ? T('fb_btn_sending', 'ENVIANDO AO COMANDO...') : T('fb_btn_send', 'ENVIAR AO COMANDO DA FORJA')}</span>
               </button>
             </div>
           </Card>
@@ -530,13 +557,13 @@ export default function SettingsView() {
             {/* CARD DECRETOS DA FORJA (CHANGELOG) */}
             <Card className="border-amber-600/40 bg-gradient-to-br from-surface to-amber-950/20">
               <div className="flex items-center justify-between mb-2">
-                <K><Scroll size={13} className="mr-1 inline text-amber-400" /> DECRETOS DA FORJA</K>
+                <K><Scroll size={13} className="mr-1 inline text-amber-400" /> {T('fb_decrees_title', 'DECRETOS DA FORJA')}</K>
                 <span className="text-[10px] font-mono text-amber-400 font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/40">
                   {CURRENT_APP_VERSION}
                 </span>
               </div>
               <p className="text-xs text-muted mb-3 leading-relaxed">
-                Confira todas as melhorias e correções recém-forjadas no aplicativo. Suas assinaturas e dias permanecem 100% seguros a cada versão.
+                {T('fb_decrees_sub', 'Confira todas as melhorias e correções recém-forjadas no aplicativo. Suas assinaturas e dias permanecem 100% seguros a cada versão.')}
               </p>
               <button
                 type="button"
@@ -544,19 +571,19 @@ export default function SettingsView() {
                 className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-amber-600/50 bg-amber-950/40 text-amber-300 text-xs font-bold hover:bg-amber-900/60 transition-colors cursor-pointer"
               >
                 <Scroll size={14} className="text-amber-400" />
-                <span>VER NOTAS DA ATUALIZAÇÃO</span>
+                <span>{T('fb_decrees_btn', 'VER NOTAS DA ATUALIZAÇÃO')}</span>
               </button>
             </Card>
 
             {/* CARD HISTÓRICO DE FEEDBACKS ENVIADOS */}
             <Card>
               <div className="flex items-center justify-between mb-2">
-                <K><CheckCircle2 size={13} className="mr-1 inline text-emerald-400" /> SEUS ENVIOS</K>
-                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} registro(s)</span>
+                <K><CheckCircle2 size={13} className="mr-1 inline text-emerald-400" /> {T('fb_history_title', 'SEUS ENVIOS')}</K>
+                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} {lang === 'en' ? 'record(s)' : lang === 'es' ? 'registro(s)' : 'registro(s)'}</span>
               </div>
               {feedbackHistory.length === 0 ? (
                 <Empty className="py-4 text-[11px]">
-                  Nenhum feedback enviado ainda neste dispositivo.
+                  {T('fb_history_empty', 'Nenhum feedback enviado ainda neste dispositivo.')}
                 </Empty>
               ) : (
                 <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
@@ -583,6 +610,72 @@ export default function SettingsView() {
             </Card>
           </div>
         </div>
+
+        {/* MODAL DE CONSULTA DO COMANDO (FEEDBACKS RECEBIDOS NO SERVIDOR) */}
+        {showAdminFeedbacks && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+            <div className="relative w-full max-w-2xl bg-surface border border-gold/40 rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col text-ink">
+              <div className="flex items-center justify-between pb-3 border-b border-line">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🛡️</span>
+                  <div>
+                    <h3 className="font-display font-bold text-base text-gold">PAINEL DO COMANDO · FEEDBACKS RECEBIDOS</h3>
+                    <p className="text-[11px] text-muted font-mono">Feedbacks forjados pelos guerreiros no servidor ({adminFeedbacksList.length} total)</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdminFeedbacks(false)}
+                  className="p-1 rounded-lg border border-line text-muted hover:text-ink hover:border-gold/40"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1">
+                {adminFeedbacksLoading ? (
+                  <div className="text-center py-8 text-xs font-mono text-muted animate-pulse">Carregando registros da Forja...</div>
+                ) : adminFeedbacksList.length === 0 ? (
+                  <div className="text-center py-8 text-xs font-mono text-muted">Nenhum feedback recebido no servidor até o momento.</div>
+                ) : (
+                  adminFeedbacksList.map((fb, idx) => (
+                    <div key={fb.id || idx} className="p-3 rounded-xl border border-line bg-surface2/60 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="font-bold text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                          {fb.category === 'bug' ? '🐛 BUG' : fb.category === 'suggestion' ? '💡 SUGESTÃO' : fb.category === 'praise' ? '⭐ ELOGIO' : '⚔️ USABILIDADE'}
+                        </span>
+                        <span className="text-[10px] font-mono text-muted">
+                          {new Date(fb.createdAt).toLocaleString(lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR')} · {fb.appVersion}
+                        </span>
+                      </div>
+                      <p className="text-ink leading-relaxed font-sans text-xs bg-black/30 p-2.5 rounded-lg border border-line/40">
+                        {fb.message}
+                      </p>
+                      {fb.contact && (
+                        <div className="text-[10.5px] font-mono text-emerald-400 flex items-center gap-1">
+                          <span>📧 Contato do Guerreiro:</span>
+                          <strong className="text-emerald-300">{fb.contact}</strong>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-line flex items-center justify-between text-[11px] font-mono text-muted">
+                <span>Dica: Para receber direto no celular, configure FEEDBACK_WEBHOOK_URL.</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAdminFeedbacks(false)}
+                  className="px-4 py-1.5 rounded-lg border border-line bg-surface2 text-ink font-bold hover:border-gold/40"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        </>
       )}
 
       {/* 3. SEÇÃO SEGURANÇA & ACESSO */}
