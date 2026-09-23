@@ -1032,7 +1032,11 @@ export default function QgView() {
                     {isTask ? (
                       <button
                         type="button"
-                        title={item.done ? 'Desmarcar' : 'Concluir Operação'}
+                        title={
+                          item.done
+                            ? (curLang === 'en' ? 'Unmark task' : curLang === 'es' ? 'Desmarcar tarea' : 'Desmarcar tarefa')
+                            : (curLang === 'en' ? 'Complete operation' : curLang === 'es' ? 'Completar operación' : 'Concluir operação')
+                        }
                         onClick={() => {
                           update((s) => {
                             const tt = (s.tasks || []).find((y) => String(y.id) === String(item.originalId));
@@ -1048,7 +1052,11 @@ export default function QgView() {
                             }
                           });
                           AF.click();
-                          toast(item.done ? '↩ Operação desmarcada' : '⚔️ Operação cumprida com honra!');
+                          toast(
+                            item.done
+                              ? (curLang === 'en' ? '↩ Mission unmarked' : curLang === 'es' ? '↩ Operación desmarcada' : '↩ Operação desmarcada')
+                              : (curLang === 'en' ? '⚔️ Mission accomplished with honor!' : curLang === 'es' ? '⚔️ ¡Operación cumplida con honor!' : '⚔️ Operação cumprida com honra!')
+                          );
                         }}
                         className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                           item.done
@@ -1061,7 +1069,11 @@ export default function QgView() {
                     ) : isHabit ? (
                       <button
                         type="button"
-                        title={item.done ? 'Hábito cumprido' : 'Marcar na Forja'}
+                        title={
+                          item.done
+                            ? (curLang === 'en' ? 'Habit completed' : curLang === 'es' ? 'Hábito cumplido' : 'Hábito cumprido')
+                            : (curLang === 'en' ? 'Mark in Forge' : curLang === 'es' ? 'Marcar en la Forja' : 'Marcar na Forja')
+                        }
                         onClick={(e) => toggleHabitDone(item.originalId, e)}
                         className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
                           item.done
@@ -1309,10 +1321,18 @@ export default function QgView() {
               </span>
               <span className="text-[10px] sm:text-[10.5px] text-muted truncate">
                 {totalHabits === 0
-                  ? (curLang === 'en' ? 'Tap to configure habits in Forge' : curLang === 'es' ? 'Toca para configurar hábitos' : 'Toque para gerenciar hábitos na Forja')
+                  ? (curLang === 'en' ? 'Tap to configure habits in Forge' : curLang === 'es' ? 'Toca para configurar hábitos en la Forja' : 'Toque para gerenciar hábitos na Forja')
                   : pendingHabits > 0
-                  ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`
-                  : 'Todos os hábitos cumpridos hoje! Honra mantida.'}
+                  ? (curLang === 'en'
+                      ? `${pendingHabits} ${pendingHabits === 1 ? 'habit pending' : 'habits pending'} to mark today`
+                      : curLang === 'es'
+                      ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendiente' : 'hábitos pendientes'} para marcar hoy`
+                      : `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`)
+                  : (curLang === 'en'
+                      ? 'All habits completed today! Honor preserved.'
+                      : curLang === 'es'
+                      ? '¡Todos los hábitos cumplidos hoy! Honor preservado.'
+                      : 'Todos os hábitos cumpridos hoje! Honra mantida.')}
               </span>
             </div>
           </div>
@@ -1323,7 +1343,11 @@ export default function QgView() {
                 ? 'bg-gold text-[#121214] shadow-sm animate-pulse'
                 : 'bg-ok/20 text-ok border border-ok/40'
             }`}>
-              {totalHabits === 0 ? 'CONFIGURAR' : pendingHabits > 0 ? `${pendingHabits} A MARCAR` : '100% FORJADO'}
+              {totalHabits === 0
+                ? (curLang === 'en' ? 'CONFIGURE' : 'CONFIGURAR')
+                : pendingHabits > 0
+                ? (curLang === 'en' ? `${pendingHabits} TO MARK` : curLang === 'es' ? `${pendingHabits} POR MARCAR` : `${pendingHabits} A MARCAR`)
+                : (curLang === 'en' ? '100% FORGED' : '100% FORJADO')}
             </span>
             <span className="text-gold text-xs font-bold flex-none group-hover:translate-x-0.5 transition-transform">➔</span>
           </div>
@@ -1479,8 +1503,16 @@ export default function QgView() {
                   {totalHabits === 0
                     ? (curLang === 'en' ? 'Configure your daily habits in Forge' : curLang === 'es' ? 'Configurar hábitos en la Forja' : 'Toque para gerenciar hábitos na Forja')
                     : pendingHabits > 0
-                    ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`
-                    : 'Todos os hábitos cumpridos hoje! Honra mantida.'}
+                    ? (curLang === 'en'
+                        ? `${pendingHabits} ${pendingHabits === 1 ? 'habit pending' : 'habits pending'} to mark today`
+                        : curLang === 'es'
+                        ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendiente' : 'hábitos pendientes'} para marcar hoy`
+                        : `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`)
+                    : (curLang === 'en'
+                        ? 'All habits completed today! Honor preserved.'
+                        : curLang === 'es'
+                        ? '¡Todos los hábitos cumplidos hoy! Honor preservado.'
+                        : 'Todos os hábitos cumpridos hoje! Honra mantida.')}
                 </span>
               </div>
             </div>
@@ -1488,7 +1520,11 @@ export default function QgView() {
               <span className={`rounded-md px-2.5 py-1 text-xs font-black uppercase tracking-wider font-mono ${
                 pendingHabits > 0 ? 'bg-gold text-[#121214] shadow-sm animate-pulse' : 'bg-ok/20 text-ok border border-ok/40'
               }`}>
-                {totalHabits === 0 ? 'CONFIGURAR' : pendingHabits > 0 ? `${pendingHabits} A MARCAR` : '100% FORJADO'}
+                {totalHabits === 0
+                  ? (curLang === 'en' ? 'CONFIGURE' : 'CONFIGURAR')
+                  : pendingHabits > 0
+                  ? (curLang === 'en' ? `${pendingHabits} TO MARK` : curLang === 'es' ? `${pendingHabits} POR MARCAR` : `${pendingHabits} A MARCAR`)
+                  : (curLang === 'en' ? '100% FORGED' : '100% FORJADO')}
               </span>
               <span className="text-gold text-sm font-bold flex-none group-hover:translate-x-0.5 transition-transform">➔</span>
             </div>
