@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { Siren, ShieldCheck, Play, Square, Plus, ArrowRight } from 'lucide-react';
+import { Siren, ShieldCheck, Play, Square, Plus, ArrowRight, X } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { SOS_PHRASES, SOS_PHASES, SOS_EX, SOS_BASE } from '@/lib/data';
 import { AF, createBreath } from '@/lib/audio';
@@ -112,34 +112,27 @@ export default function SosModal() {
     : T('phase_lbl', 'FASE ') + phase + T('phase_of', ' DE 3 · ') + kit.phases[phase - 1].t;
   const shown = phase === 0 ? 1 : phase === 4 ? 4 : phase;
 
-  const crisisText = () => {
-    if (lang === 'en') {
-      return (
-        <p className="fnote mt-3 border-t border-line pt-2.5">
-          {T('crisis_en', '💚 In emotional crisis? Call/text ')}<b className="text-ok">988</b>{T('crisis_en2', ' (Suicide & Crisis Lifeline, 24/7, free). This tool does not replace professional care.')}
-        </p>
-      );
-    }
-    if (lang === 'es') {
-      return (
-        <p className="fnote mt-3 border-t border-line pt-2.5">
-          {T('crisis_es', '💚 ¿En crisis emocional? Esta herramienta no sustituye la terapia. En España llame al ')}<b className="text-ok">024</b>{T('crisis_es2', ' o busque ayuda médica local.')}
-        </p>
-      );
-    }
-    return (
-      <p className="fnote mt-3 border-t border-line pt-2.5">
-        {T('crisis1', '💚 Em crise emocional? Esta ferramenta não substitui terapia. Ligue ')}<b className="text-ok">188</b>{T('crisis2', ' (CVV, 24h, gratuito) ou acesse cvv.org.br. Emergência: SAMU 192.')}
-      </p>
-    );
-  };
-
   return (
-    <div className="-m-5">
-      {/* letreiro de frases */}
-      <div className="overflow-hidden border-b border-danger/30 bg-danger/10 py-2">
+    <div className="relative w-full rounded-2xl border border-danger/40 bg-[#16161a] text-ink overflow-hidden shadow-[0_12px_45px_rgba(255,40,40,0.22)]">
+      {/* letreiro contínuo sem saltos */}
+      <div className="relative w-full overflow-hidden border-b border-danger/30 bg-danger/10 py-2.5 select-none pointer-events-none">
         <div className="mq-track text-[11px] font-extrabold tracking-[.14em] text-danger">
-          {[...kit.phrases, ...kit.phrases].map((p, i) => <span key={i}>⚔ {p}</span>)}
+          <div className="flex shrink-0 items-center gap-10 pr-10">
+            {kit.phrases.map((p, i) => (
+              <span key={`p1-${i}`} className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap">
+                <span className="text-danger/90">⚔</span>
+                <span>{p}</span>
+              </span>
+            ))}
+          </div>
+          <div className="flex shrink-0 items-center gap-10 pr-10" aria-hidden="true">
+            {kit.phrases.map((p, i) => (
+              <span key={`p2-${i}`} className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap">
+                <span className="text-danger/90">⚔</span>
+                <span>{p}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 p-5 pb-2">
@@ -148,7 +141,17 @@ export default function SosModal() {
           <h3 className="font-display text-xl tracking-wide text-danger">{T('title', 'PROTOCOLO DE INTERVENÇÃO DE EMERGÊNCIA')}</h3>
           <p className="text-[12px] leading-relaxed text-muted">{T('desc', 'Protocolo sequencial compacto de 5 minutos: uma fase por vez, fluxo contínuo sem pausa. O cronômetro avança sozinho — ou você adianta a fase quando quiser.')}</p>
         </div>
-        <button className="btn-ghost flex-none text-[12px]" onClick={() => { haltBreath(); setPhase(4); }}><ShieldCheck size={14} /> {T('relieved', 'JÁ ALIVIEI A TENSÃO')}</button>
+        <div className="flex items-center gap-2 flex-none">
+          <button className="btn-ghost text-[12px]" onClick={() => { haltBreath(); setPhase(4); }}><ShieldCheck size={14} /> {T('relieved', 'JÁ ALIVIEI A TENSÃO')}</button>
+          <button
+            type="button"
+            className="p-1.5 rounded-lg border border-line bg-surface2 text-muted hover:text-ink hover:border-danger/40 transition-colors cursor-pointer"
+            onClick={() => { haltBreath(); closeModal(); }}
+            aria-label={cx(lang, 'ui', 'close') || 'Fechar'}
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
       <div className="p-5 pt-2">
         <div className="card mb-4 border-danger/30 bg-surface2 text-center">
@@ -218,7 +221,6 @@ export default function SosModal() {
             </>
           )}
         </div>
-        {crisisText()}
       </div>
     </div>
   );

@@ -380,12 +380,13 @@ html[data-theme='stealth'] .chip {
 }
 .stamp.hit { animation: stampIn 0.5s cubic-bezier(0.2, 1.4, 0.3, 1) both; }
 @keyframes mq {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 .mq-track {
-  @apply flex w-max gap-10 whitespace-nowrap;
-  animation: mq 22s linear infinite;
+  @apply flex w-max whitespace-nowrap;
+  animation: mq 26s linear infinite;
+  will-change: transform;
 }
 .b-orb {
   @apply relative mx-auto grid h-[120px] w-[120px] place-items-center rounded-full border-2 border-gold/40 bg-gold/10 transition-all;
