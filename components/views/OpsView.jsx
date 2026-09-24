@@ -124,6 +124,11 @@ const I18N = {
   btnYesDelete: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
   btnDeleteConfirm: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
   btnDeleteTask: { pt: 'Excluir Operação', en: 'Delete Operation', es: 'Eliminar Operación' },
+  archiveTaskTitle: { pt: 'ARQUIVAR OPERAÇÃO?', en: 'ARCHIVE OPERATION?', es: '¿ARCHIVAR OPERACIÓN?' },
+  archiveTaskConfirmMsg: { pt: 'Deseja arquivar a operação', en: 'Do you want to archive the operation', es: '¿Deseas archivar la operación' },
+  btnArchiveTask: { pt: 'Arquivar Operação', en: 'Archive Operation', es: 'Archivar Operación' },
+  btnArchiveConfirm: { pt: 'Sim, Arquivar', en: 'Yes, Archive', es: 'Sí, Archivar' },
+  toastTaskArchived: { pt: '📦 Operação arquivada!', en: '📦 Operation archived!', es: '¡📦 Operación archivada!' },
   unarchiveProjTitle: { pt: 'DESARQUIVAR PROJETO?', en: 'UNARCHIVE PROJECT?', es: '¿DESARCHIVAR PROYECTO?' },
   unarchiveProjMsg: { pt: 'Deseja restaurar o projeto', en: 'Do you want to restore the project', es: '¿Deseas restaurar el proyecto' },
   unarchiveProjConfirmMsg: { pt: 'Deseja restaurar e reativar o projeto', en: 'Do you want to restore and reactivate the project', es: '¿Deseas restaurar y reactivar el proyecto' },
@@ -529,17 +534,44 @@ export default function OpsView() {
               {taskToEdit ? tx.btnSaveChanges[curLang] : tx.btnCreateOperation[curLang]}
             </button>
             {taskToEdit && (
-              <button
-                type="button"
-                className="py-2 px-3 rounded border border-danger/40 bg-danger/10 hover:bg-danger/20 text-danger text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
-                onClick={() => {
-                  closeModal();
-                  requestDeleteTask(taskToEdit);
-                }}
-              >
-                <Trash2 size={13} />
-                <span>{tx.btnDeleteTask[curLang]}</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  title={tx.btnPostponeAction[curLang]}
+                  className="py-2 px-3 rounded border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                  onClick={() => {
+                    closeModal();
+                    openPostponeModal(taskToEdit);
+                  }}
+                >
+                  <CalendarClock size={13} />
+                  <span>{tx.btnPostponeAction[curLang]}</span>
+                </button>
+                <button
+                  type="button"
+                  title={tx.btnArchiveTask[curLang]}
+                  className="py-2 px-3 rounded border border-line bg-surface hover:bg-surface2 hover:text-amber-300 text-muted text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                  onClick={() => {
+                    closeModal();
+                    requestArchiveTask(taskToEdit);
+                  }}
+                >
+                  <Archive size={13} />
+                  <span>{tx.btnArchiveTask[curLang]}</span>
+                </button>
+                <button
+                  type="button"
+                  title={tx.btnDeleteTask[curLang]}
+                  className="py-2 px-3 rounded border border-danger/40 bg-danger/10 hover:bg-danger/20 text-danger text-xs font-bold font-mono transition-colors flex items-center gap-1 cursor-pointer"
+                  onClick={() => {
+                    closeModal();
+                    requestDeleteTask(taskToEdit);
+                  }}
+                >
+                  <Trash2 size={13} />
+                  <span>{tx.btnDeleteTask[curLang]}</span>
+                </button>
+              </>
             )}
             <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
               {tx.btnCancel[curLang]}
@@ -1009,6 +1041,26 @@ export default function OpsView() {
     });
   };
 
+  /* Arquivar Tarefa com Confirmação */
+  const requestArchiveTask = (task) => {
+    confirmAction({
+      title: tx.archiveTaskTitle[curLang],
+      message: `${tx.archiveTaskConfirmMsg[curLang]} "${task.txt}"?`,
+      danger: false,
+      confirmText: tx.btnArchiveConfirm[curLang],
+      onConfirm: () => {
+        update((s) => {
+          const target = (s.tasks || []).find((x) => String(x.id) === String(task.id));
+          if (target) {
+            target.archived = true;
+          }
+        });
+        AF.click();
+        toast(tx.toastTaskArchived[curLang]);
+      },
+    });
+  };
+
   /* ARQUIVAR PROJETO COM ESCOLHA DE TAREFAS */
   const requestArchiveProject = (proj) => {
     const isArch = proj.archived;
@@ -1434,21 +1486,22 @@ export default function OpsView() {
                     </div>
 
                     <div className="flex items-center gap-1 flex-none">
-                      {!isDone && (
-                        <button
-                          type="button"
-                          title={tx.btnPostponeAction[curLang]}
-                          onClick={() => openPostponeModal(tItem)}
-                          className={`p-1 rounded transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer ${
-                            isPostponed
-                              ? 'text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5'
-                              : 'text-muted hover:text-gold'
-                          }`}
-                        >
-                          <CalendarClock size={13} />
-                          <span className="text-[10px] hidden sm:inline">{tx.btnPostponeAction[curLang]}</span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        title={tx.btnPostponeAction[curLang]}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPostponeModal(tItem);
+                        }}
+                        className={`p-1.5 rounded transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer ${
+                          isPostponed
+                            ? 'text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5'
+                            : 'text-muted hover:text-gold hover:bg-gold/10'
+                        }`}
+                      >
+                        <CalendarClock size={13} />
+                        <span className="text-[10px] hidden md:inline">{tx.btnPostponeAction[curLang]}</span>
+                      </button>
                       <button
                         type="button"
                         title={tx.editTaskTitle[curLang]}
@@ -1459,6 +1512,17 @@ export default function OpsView() {
                         className="text-muted hover:text-gold p-1.5 rounded hover:bg-gold/10 transition-colors cursor-pointer"
                       >
                         <Edit3 size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        title={tx.btnArchiveTask[curLang]}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          requestArchiveTask(tItem);
+                        }}
+                        className="text-muted hover:text-amber-300 p-1.5 rounded hover:bg-amber-400/10 transition-colors cursor-pointer"
+                      >
+                        <Archive size={13} />
                       </button>
                       <button
                         type="button"
@@ -1720,20 +1784,24 @@ export default function OpsView() {
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1 flex-none">
-                                    {!done && (
-                                      <button
-                                        type="button"
-                                        title={tx.btnPostponeAction[curLang]}
-                                        onClick={() => openPostponeModal(pt)}
-                                        className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
-                                      >
-                                        <CalendarClock size={12} />
-                                      </button>
-                                    )}
+                                    <button
+                                      type="button"
+                                      title={tx.btnPostponeAction[curLang]}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openPostponeModal(pt);
+                                      }}
+                                      className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
+                                    >
+                                      <CalendarClock size={12} />
+                                    </button>
                                     <button
                                       type="button"
                                       title={tx.editTaskTitle[curLang]}
-                                      onClick={() => openTaskModal(pt)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openTaskModal(pt);
+                                      }}
                                       className="text-muted/60 hover:text-gold p-0.5 transition-colors cursor-pointer"
                                     >
                                       <Edit3 size={11} />
@@ -1741,15 +1809,32 @@ export default function OpsView() {
                                     <button
                                       type="button"
                                       title={tx.unlinkFromProj[curLang]}
-                                      onClick={() => unlinkTask(pt.id)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        unlinkTask(pt.id);
+                                      }}
                                       className="text-muted/60 hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
                                     >
                                       <Unlink size={11} />
                                     </button>
                                     <button
                                       type="button"
+                                      title={tx.btnArchiveTask[curLang]}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        requestArchiveTask(pt);
+                                      }}
+                                      className="text-muted/60 hover:text-amber-300 p-0.5 transition-colors cursor-pointer"
+                                    >
+                                      <Archive size={11} />
+                                    </button>
+                                    <button
+                                      type="button"
                                       title={tx.delTaskTitle[curLang]}
-                                      onClick={() => requestDeleteTask(pt)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        requestDeleteTask(pt);
+                                      }}
                                       className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
                                     >
                                       <Trash2 size={11} />
@@ -1967,6 +2052,14 @@ export default function OpsView() {
                         className="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold cursor-pointer"
                       >
                         {tx.btnRestore[curLang]}
+                      </button>
+                      <button
+                        type="button"
+                        title={tx.editTaskTitle[curLang]}
+                        onClick={() => openTaskModal(tItem)}
+                        className="text-muted hover:text-gold p-1 rounded hover:bg-gold/10 transition-colors cursor-pointer"
+                      >
+                        <Edit3 size={12} />
                       </button>
                       <button
                         type="button"
