@@ -67,7 +67,7 @@ export default function Landing() {
   ];
 
   return (
-    <main className="min-h-dvh bg-bg text-ink">
+    <main className="min-h-dvh bg-bg text-ink" suppressHydrationWarning>
       {/* Redirecionamento instantâneo se o guerreiro já possui conta ou sessão ativa no celular/PC */}
       <script
         dangerouslySetInnerHTML={{
@@ -104,9 +104,9 @@ export default function Landing() {
       <AutoRedirect />
 
       {/* NAV */}
-      <header className="sticky top-0 z-40 border-b border-gold/15 bg-bg/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5">
-          <ShieldCheck size={26} className="text-gold" strokeWidth={1.8} />
+      <header className="sticky top-0 z-40 border-b border-gold/15 bg-bg/85 backdrop-blur-md" suppressHydrationWarning>
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3.5" suppressHydrationWarning>
+          <ShieldCheck size={26} className="text-gold" strokeWidth={1.8} suppressHydrationWarning />
           <span className="font-display text-xl tracking-[.12em]">FORJANDO GUERREIROS</span>
           <div className="ml-auto flex items-center gap-3">
             <LangPick lang={lang} />
@@ -138,7 +138,7 @@ export default function Landing() {
         <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
           {PILARES.map(([Ic, t, d], i) => (
             <div key={i} className="card rise border-gold/25 text-center">
-              <Ic size={30} className="mx-auto mb-3 text-gold" strokeWidth={1.7} />
+              <Ic size={30} className="mx-auto mb-3 text-gold" strokeWidth={1.7} suppressHydrationWarning />
               <b className="block font-display text-lg tracking-[.1em] text-gold">{t}</b>
               <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{d}</p>
             </div>
@@ -153,7 +153,7 @@ export default function Landing() {
         <div className="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {RECURSOS.map(([Ic, t, d], i) => (
             <div key={i} className="card rise">
-              <Ic size={22} className="mb-2.5 text-gold" strokeWidth={1.8} />
+              <Ic size={22} className="mb-2.5 text-gold" strokeWidth={1.8} suppressHydrationWarning />
               <b className="block text-[14px]">{t}</b>
               <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{d}</p>
             </div>
@@ -197,11 +197,11 @@ export default function Landing() {
           <p className="mb-5 text-[13px] text-muted">{L('pr_free', 'grátis · depois')} <PriceTag lang={lang} /></p>
           <ul className="mb-6 space-y-2 text-left text-[12.5px] font-semibold">
             {BENEFICIOS.map((x) => (
-              <li key={x} className="flex items-center gap-2"><CheckCircle2 size={15} className="flex-none text-ok" /> {x}</li>
+              <li key={x} className="flex items-center gap-2"><CheckCircle2 size={15} className="flex-none text-ok" suppressHydrationWarning /> {x}</li>
             ))}
           </ul>
           <Link href="/app" className="btn-gold btn-big">{L('pr_cta', '⚔️ INICIAR MEU TESTE GRÁTIS')}</Link>
-          <p className="fnote"><Lock size={11} className="mr-1 inline" /> {L('pr_pay', 'Pagamento processado pela Stripe. O app nunca vê seu cartão.')}</p>
+          <p className="fnote"><Lock size={11} className="mr-1 inline" suppressHydrationWarning /> {L('pr_pay', 'Pagamento processado pela Stripe. O app nunca vê seu cartão.')}</p>
         </div>
       </section>
 

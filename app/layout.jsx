@@ -22,6 +22,8 @@ export function generateMetadata() {
     manifest: '/manifest.webmanifest',
     other: {
       google: 'notranslate',
+      'darkreader-lock': '',
+      'color-scheme': 'dark',
     },
   };
 }
@@ -31,6 +33,7 @@ export const viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: '#0D0D0E',
+  colorScheme: 'dark',
 };
 
 const HTML_LANG = { pt: 'pt-BR', en: 'en', es: 'es' };
@@ -45,6 +48,10 @@ export default function RootLayout({ children }) {
       className={`${bebas.variable} ${manrope.variable} ${mono.variable} notranslate`}
       suppressHydrationWarning
     >
+      <head>
+        <meta name="darkreader-lock" content="" />
+        <meta name="color-scheme" content="dark" />
+      </head>
       <body className="notranslate" translate="no" suppressHydrationWarning>{children}</body>
     </html>
   );
