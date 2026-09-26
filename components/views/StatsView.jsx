@@ -48,7 +48,7 @@ const STATS_CATEGORIES = [
 /* =========================================================================
    COMPONENTE: CURVA DE VITALIDADE & FORÇA (Sincronizada aos 3 Pilares)
    ========================================================================= */
-function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T, onSelectDay }) {
+function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T }) {
   const [selectedDay, setSelectedDay] = useState(null);
 
   const active = selectedDay || (curve && curve.length ? curve[curve.length - 1] : null);
@@ -290,14 +290,6 @@ function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T, onSel
               </span>
             </div>
           </div>
-
-          <button
-            type="button"
-            className="btn-ghost text-xs py-1 px-3 self-end sm:self-auto flex items-center gap-1.5 cursor-pointer text-gold hover:text-gold2 border-gold/30 hover:border-gold/60"
-            onClick={() => onSelectDay(active.ds)}
-          >
-            <span>✏️</span> {T('curve_click_edit', 'Editar registro')}
-          </button>
         </div>
       )}
     </div>
@@ -1029,7 +1021,6 @@ export default function StatsView() {
             avgVitality={timelineData.avgVitality}
             curVitality={timelineData.curVitality}
             T={T}
-            onSelectDay={dayEditor}
           />
 
           {/* Grid de Células de Dias */}
