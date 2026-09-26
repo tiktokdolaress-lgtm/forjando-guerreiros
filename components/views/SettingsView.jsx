@@ -67,7 +67,23 @@ export default function SettingsView() {
   const [feedbackHistory, setFeedbackHistory] = useState(() => {
     if (typeof window === 'undefined') return [];
     try {
-      return JSON.parse(localStorage.getItem('fg_user_feedbacks') || '[]');
+      const raw = localStorage.getItem('fg_user_feedbacks');
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map((item) => {
+        if (!item || typeof item !== 'object') return null;
+        let rText = '';
+        if (typeof item.reply === 'string') {
+          rText = item.reply;
+        } else if (item.reply && typeof item.reply === 'object') {
+          rText = String(item.reply.text || item.reply.replyText || '');
+        }
+        return {
+          ...item,
+          reply: rText ? { text: rText, date: item.reply?.date || '' } : null,
+        };
+      }).filter(Boolean);
     } catch (e) {
       return [];
     }
@@ -92,8 +108,8 @@ export default function SettingsView() {
                   (item.id && m.feedbackId === item.id) ||
                   (item.message && m.originalMessage && m.originalMessage.includes(item.message.slice(0, 20)))
               );
-              if (matchedReply) {
-                return { ...item, reply: { text: matchedReply.replyText, date: matchedReply.createdAt } };
+              if (matchedReply && matchedReply.replyText) {
+                return { ...item, reply: { text: String(matchedReply.replyText), date: String(matchedReply.createdAt || '') } };
               }
               return item;
             });
@@ -654,17 +670,25 @@ export default function SettingsView() {
                       <p className="text-muted text-[11px] line-clamp-2 italic">
                         "{item.message}"
                       </p>
-                      {item.reply && (
-                        <div className="mt-2 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] space-y-1">
-                          <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-300 font-bold">
-                            <Crown size={11} className="text-gold" />
-                            <span>Resposta do Comando Supremo (Criador):</span>
+                      {(() => {
+                        const replyContent = typeof item.reply === 'string'
+                          ? item.reply
+                          : (item.reply && typeof item.reply === 'object'
+                              ? (item.reply.text || item.reply.replyText || '')
+                              : '');
+                        if (!replyContent) return null;
+                        return (
+                          <div className="mt-2 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-300 font-bold">
+                              <Crown size={11} className="text-gold" />
+                              <span>Resposta do Comando Supremo (Criador):</span>
+                            </div>
+                            <p className="text-amber-100 font-sans italic text-xs leading-relaxed">
+                              &ldquo;{replyContent}&rdquo;
+                            </p>
                           </div>
-                          <p className="text-amber-100 font-sans italic text-xs leading-relaxed">
-                            &ldquo;{item.reply.text || item.reply}&rdquo;
-                          </p>
-                        </div>
-                      )}
+                        );
+                      })()}
                       <div className="text-[9.5px] font-mono text-muted/70 mt-1 text-right">
                         {item.date}
                       </div>
