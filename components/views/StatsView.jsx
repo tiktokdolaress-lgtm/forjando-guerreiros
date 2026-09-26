@@ -15,6 +15,8 @@ import {
   BarChart2,
   Flame,
   CalendarDays,
+  TrendingUp,
+  Calendar,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty, Chk } from '@/components/ui';
@@ -43,6 +45,265 @@ const STATS_CATEGORIES = [
   { id: 'hall', key: 'cat_hall', label: 'Salão da Fama & Honra', icon: Trophy },
 ];
 
+/* =========================================================================
+   COMPONENTE: CURVA DE VITALIDADE & FORÇA (Sincronizada aos 3 Pilares)
+   ========================================================================= */
+function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T, onSelectDay }) {
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const active = selectedDay || (curve && curve.length ? curve[curve.length - 1] : null);
+
+  if (!curve || curve.length === 0) return null;
+
+  const width = 800;
+  const height = 180;
+  const padLeft = 45;
+  const padRight = 25;
+  const padTop = 22;
+  const padBottom = 32;
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom; // 126
+
+  const pts = curve.map((pt, i) => {
+    const x = padLeft + (i / Math.max(1, curve.length - 1)) * plotW;
+    const y = padTop + ((100 - pt.vitality) / 100) * plotH;
+    return { x, y, pt, i };
+  });
+
+  // Geração da curva Bezier suave
+  let pathD = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  if (pts.length === 1) {
+    pathD += ` L ${(pts[0].x + 10).toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  } else {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i === 0 ? 0 : i - 1];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      pathD += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+  }
+
+  const bottomY = padTop + plotH; // 148
+  const areaD = `${pathD} L ${pts[pts.length - 1].x.toFixed(1)} ${bottomY} L ${pts[0].x.toFixed(1)} ${bottomY} Z`;
+
+  // Índices para rótulos de datas no eixo X
+  const dateStep = Math.max(1, Math.floor((pts.length - 1) / 5));
+  const dateIndices = [];
+  for (let i = 0; i < pts.length; i += dateStep) dateIndices.push(i);
+  if (!dateIndices.includes(pts.length - 1)) dateIndices.push(pts.length - 1);
+
+  return (
+    <div className="mb-4 rounded-xl border border-gold/30 bg-[#101014] p-3.5 sm:p-4 shadow-sm">
+      {/* Cabeçalho da Curva */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-line/40">
+        <div>
+          <div className="flex items-center gap-2">
+            <TrendingUp size={16} className="text-gold" />
+            <span className="font-display text-sm tracking-wider text-gold font-bold">
+              {T('curve_title', 'CURVA DE VITALIDADE & FORÇA')}
+            </span>
+          </div>
+          <p className="text-[11px] text-muted mt-0.5 leading-snug">
+            {T('curve_sub', 'Sincronizada aos 3 Pilares da Tríade: sobe com dias limpos e reage proporcionalmente a cada pilar.')}
+          </p>
+        </div>
+
+        {/* Métricas da curva */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="px-2 py-0.5 rounded-md bg-gold/10 border border-gold/30 text-[11px] font-mono font-bold text-gold">
+            {T('curve_cur', 'Vitalidade Atual: ')}{curVitality}%
+          </span>
+          <span className="px-2 py-0.5 rounded-md bg-surface2 border border-line text-[11px] font-mono text-muted">
+            {T('curve_peak_label', 'Pico no Período: ')}<b className="text-ok">{peakVitality}%</b>
+          </span>
+          <span className="px-2 py-0.5 rounded-md bg-surface2 border border-line text-[11px] font-mono text-muted">
+            {T('curve_avg_label', 'Média: ')}{avgVitality}%
+          </span>
+        </div>
+      </div>
+
+      {/* Gráfico SVG Responsivo */}
+      <div className="relative w-full overflow-hidden">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-44 sm:h-52 overflow-visible select-none">
+          <defs>
+            <linearGradient id="vitalityGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.32" />
+              <stop offset="65%" stopColor="#D97706" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#B45309" stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="vitalityStroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#F59E0B" />
+              <stop offset="50%" stopColor="#FCD34D" />
+              <stop offset="100%" stopColor="#F59E0B" />
+            </linearGradient>
+          </defs>
+
+          {/* Linhas horizontais de referência (100%, 50%, 0%) */}
+          <line x1={padLeft} y1={padTop} x2={width - padRight} y2={padTop} stroke="#F59E0B" strokeOpacity="0.25" strokeDasharray="3 3" />
+          <text x={padLeft - 6} y={padTop + 3.5} textAnchor="end" className="text-[9.5px] fill-gold/70 font-mono">100%</text>
+
+          <line x1={padLeft} y1={padTop + plotH / 2} x2={width - padRight} y2={padTop + plotH / 2} stroke="#3f3f46" strokeOpacity="0.4" strokeDasharray="3 3" />
+          <text x={padLeft - 6} y={padTop + plotH / 2 + 3.5} textAnchor="end" className="text-[9.5px] fill-muted font-mono">50%</text>
+
+          <line x1={padLeft} y1={bottomY} x2={width - padRight} y2={bottomY} stroke="#EF4444" strokeOpacity="0.3" strokeDasharray="3 3" />
+          <text x={padLeft - 6} y={bottomY + 3.5} textAnchor="end" className="text-[9.5px] fill-danger/70 font-mono">0%</text>
+
+          {/* Área sombreada sob a curva */}
+          <path d={areaD} fill="url(#vitalityGradient)" />
+
+          {/* Traçado da curva principal */}
+          <path d={pathD} fill="none" stroke="url(#vitalityStroke)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* Linha vertical e marcador do dia ativo */}
+          {active && (
+            (() => {
+              const activePt = pts.find((p) => p.pt.ds === active.ds);
+              if (!activePt) return null;
+              return (
+                <g>
+                  <line x1={activePt.x} y1={padTop} x2={activePt.x} y2={bottomY} stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="2 2" strokeOpacity="0.8" />
+                  <circle cx={activePt.x} cy={activePt.y} r="6" fill="#F59E0B" fillOpacity="0.3" />
+                  <circle cx={activePt.x} cy={activePt.y} r="3.5" fill="#FFF" stroke="#F59E0B" strokeWidth="2" />
+                </g>
+              );
+            })()
+          )}
+
+          {/* Pontos nos dias do período */}
+          {pts.map((p) => {
+            const isFall = p.pt.cls === 'f';
+            const isWin = p.pt.cls === 'w';
+            const isPart = p.pt.cls === 'p';
+            const showDot = pts.length <= 45 || isFall || p.pt.vitality === 100 || p.pt.vitality === 0;
+            if (!showDot) return null;
+
+            let fill = '#F59E0B';
+            let stroke = '#121217';
+            let radius = 3.5;
+
+            if (isFall) {
+              fill = '#EF4444';
+              radius = 4.5;
+            } else if (isPart) {
+              fill = '#FBBF24';
+              radius = 3.5;
+            } else if (isWin && p.pt.vitality >= 90) {
+              fill = '#10B981';
+              radius = 3.5;
+            }
+
+            return (
+              <circle
+                key={p.pt.ds}
+                cx={p.x}
+                cy={p.y}
+                r={radius}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth="1.5"
+                className="transition-transform duration-100 hover:scale-150 cursor-pointer"
+                onClick={() => setSelectedDay(p.pt)}
+              />
+            );
+          })}
+
+          {/* Rótulos de datas no eixo X */}
+          {dateIndices.map((idx) => {
+            const p = pts[idx];
+            if (!p) return null;
+            const parts = p.pt.ds.split('-');
+            const label = parts.length === 3 ? `${parts[2]}/${parts[1]}` : p.pt.ds;
+            return (
+              <text
+                key={p.pt.ds}
+                x={p.x}
+                y={height - 10}
+                textAnchor="middle"
+                className="text-[9.5px] fill-muted font-mono"
+              >
+                {label}
+              </text>
+            );
+          })}
+
+          {/* Áreas verticais de captura de toque/mouse */}
+          {pts.map((p, idx) => {
+            const prevX = idx === 0 ? padLeft : (pts[idx - 1].x + p.x) / 2;
+            const nextX = idx === pts.length - 1 ? width - padRight : (p.x + pts[idx + 1].x) / 2;
+            const colW = Math.max(8, nextX - prevX);
+            return (
+              <rect
+                key={'hit-' + p.pt.ds}
+                x={prevX}
+                y={padTop}
+                width={colW}
+                height={plotH}
+                fill="transparent"
+                className="cursor-pointer"
+                onMouseEnter={() => setSelectedDay(p.pt)}
+                onClick={() => setSelectedDay(p.pt)}
+              />
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Painel Tático do Dia Inspecionado */}
+      {active && (
+        <div className="mt-2.5 p-2.5 sm:p-3 rounded-lg bg-[#141419] border border-line/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-xs font-bold text-gold">
+                📅 {fdmy(active.ds)}
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                active.vitality >= 80 ? 'bg-ok/15 text-ok border-ok/40' :
+                active.vitality >= 40 ? 'bg-gold/15 text-gold border-gold/40' :
+                'bg-danger/15 text-danger border-danger/40'
+              }`}>
+                {active.vitality}% Vitalidade
+              </span>
+              <span className="text-[10.5px] text-[#EDE5D5] font-mono">
+                {T(active.statusKey, active.lab)}
+              </span>
+            </div>
+
+            {/* Status dos 3 Pilares no dia */}
+            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
+              <span className={`flex items-center gap-1 ${active.cc.p ? 'text-ok font-bold' : active.fTypes?.includes('porn') ? 'text-danger font-bold' : 'text-muted'}`}>
+                {active.cc.p ? '✓' : active.fTypes?.includes('porn') ? '✗' : '○'} {T('curve_p1_name', 'Zero Pornografia')}
+              </span>
+              <span className="text-muted/30">•</span>
+              <span className={`flex items-center gap-1 ${active.cc.m ? 'text-ok font-bold' : active.fTypes?.includes('mast') ? 'text-danger font-bold' : 'text-muted'}`}>
+                {active.cc.m ? '✓' : active.fTypes?.includes('mast') ? '✗' : '○'} {T('curve_p2_name', 'Autodomínio Inabalável')}
+              </span>
+              <span className="text-muted/30">•</span>
+              <span className={`flex items-center gap-1 ${active.cc.r ? 'text-ok font-bold' : active.fTypes?.includes('ejac') ? 'text-danger font-bold' : 'text-muted'}`}>
+                {active.cc.r ? '✓' : active.fTypes?.includes('ejac') ? '✗' : '○'} {T('curve_p3_name', 'Retenção Seminal')}
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn-ghost text-xs py-1 px-3 self-end sm:self-auto flex items-center gap-1.5 cursor-pointer text-gold hover:text-gold2 border-gold/30 hover:border-gold/60"
+            onClick={() => onSelectDay(active.ds)}
+          >
+            <span>✏️</span> {T('curve_click_edit', 'Editar registro')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StatsView() {
   const { S, update, openModal, closeModal, toast } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
@@ -52,6 +313,8 @@ export default function StatsView() {
   const [hmOff, setHmOff] = useState(0);
   const [hall, setHall] = useState(null);
   const [timelineRange, setTimelineRange] = useState(30);
+  const [customStart, setCustomStart] = useState(() => dstr(new Date(Date.now() - 29 * 86400000)));
+  const [customEnd, setCustomEnd] = useState(() => today());
 
   useEffect(() => {
     fetch('/api/hall')
@@ -90,22 +353,145 @@ export default function StatsView() {
       .sort((a, b) => b.count - a.count);
   }, [auditFalls, T]);
 
-  /* Linha do Tempo Analítica */
+  /* Linha do Tempo Analítica & Curva de Vitalidade */
   const timelineData = useMemo(() => {
     let cells = [], wins = 0, falls = 0, part = 0;
-    if (!S) return { cells, wins, falls, part, rate: 0 };
-    for (let i = timelineRange - 1; i >= 0; i--) {
-      const ds = dstr(new Date(Date.now() - i * 86400000));
+    if (!S) return { cells, wins, falls, part, rate: 0, curve: [], peakVitality: 0, avgVitality: 0, curVitality: 0 };
+
+    const req = L.pillars(S);
+    let daysList = [];
+
+    if (timelineRange === 'custom') {
+      let sDate = customStart || dstr(new Date(Date.now() - 29 * 86400000));
+      let eDate = customEnd || today();
+      if (sDate > eDate) {
+        const tmp = sDate;
+        sDate = eDate;
+        eDate = tmp;
+      }
+      if (eDate > today()) eDate = today();
+
+      let curD = new Date(sDate + 'T12:00:00');
+      const endD = new Date(eDate + 'T12:00:00');
+      let count = 0;
+      while (curD <= endD && count < 366) {
+        daysList.push(dstr(curD));
+        curD = new Date(curD.getTime() + 86400000);
+        count++;
+      }
+    } else {
+      const rangeNum = Number(timelineRange) || 30;
+      for (let i = rangeNum - 1; i >= 0; i--) {
+        daysList.push(dstr(new Date(Date.now() - i * 86400000)));
+      }
+    }
+
+    if (!daysList.length) {
+      daysList = [today()];
+    }
+
+    // Simulação dos 45 dias anteriores à primeira data do intervalo para a curva iniciar no nível autêntico
+    let vitality = 50;
+    const firstDayTime = new Date(daysList[0] + 'T12:00:00').getTime();
+    for (let i = 45; i >= 1; i--) {
+      const prevDs = dstr(new Date(firstDayTime - i * 86400000));
+      const cc = (S.checkins || {})[prevDs];
+      if (cc) {
+        if (cc.ok) {
+          vitality = Math.min(100, vitality + 10);
+        } else if (cc.fail) {
+          const fTypes = String(cc.fail).split('+').filter(Boolean);
+          const fellCount = Math.min(req.length, Math.max(1, fTypes.length));
+          const keptCount = Math.max(0, req.length - fellCount);
+          if (keptCount >= 2) vitality = Math.max(15, Math.round(vitality * 0.72));
+          else if (keptCount === 1) vitality = Math.max(8, Math.round(vitality * 0.35));
+          else vitality = 0;
+        } else if (cc.p || cc.m || cc.r) {
+          const keptCount = req.filter((k) => cc[k]).length;
+          if (keptCount === req.length) vitality = Math.min(100, vitality + 10);
+          else if (keptCount >= 2) vitality = Math.max(15, Math.round(vitality * 0.72));
+          else if (keptCount === 1) vitality = Math.max(8, Math.round(vitality * 0.35));
+          else vitality = 0;
+        } else {
+          vitality = Math.max(0, vitality - 3);
+        }
+      } else {
+        vitality = Math.max(0, vitality - 3);
+      }
+    }
+
+    const curve = [];
+    let vitalitySum = 0;
+    let peakVitality = 0;
+
+    daysList.forEach((ds) => {
       const cc = (S.checkins || {})[ds];
       let cls = '', lab = T('day_state_none', 'Sem registro');
-      if (cc && cc.fail) { cls = 'f'; falls++; lab = T('day_state_fall', 'Queda'); }
-      else if (cc && cc.ok) { cls = 'w'; wins++; lab = T('day_state_win', 'Vitória'); }
-      else if (cc && (cc.p || cc.m || cc.r)) { cls = 'p'; part++; lab = T('day_state_part', 'Parcial'); }
+      let kept = null;
+      let statusKey = 'curve_status_none';
+      let fTypes = [];
+
+      if (cc && cc.fail) {
+        cls = 'f';
+        falls++;
+        lab = T('day_state_fall', 'Queda');
+        fTypes = String(cc.fail).split('+').filter(Boolean);
+        const fellCount = Math.min(req.length, Math.max(1, fTypes.length));
+        kept = Math.max(0, req.length - fellCount);
+      } else if (cc && cc.ok) {
+        cls = 'w';
+        wins++;
+        lab = T('day_state_win', 'Vitória');
+        kept = req.length;
+      } else if (cc && (cc.p || cc.m || cc.r)) {
+        cls = 'p';
+        part++;
+        lab = T('day_state_part', 'Parcial');
+        kept = req.filter((k) => cc[k]).length;
+      }
+
+      const prevVit = vitality;
+      if (kept === null) {
+        vitality = Math.max(0, vitality - 3);
+        statusKey = 'curve_status_none';
+      } else if (kept >= req.length) {
+        vitality = Math.min(100, vitality + 10);
+        statusKey = 'curve_status_win';
+      } else if (kept === req.length - 1) {
+        vitality = Math.max(15, Math.round(vitality * 0.72));
+        statusKey = 'curve_status_fall1';
+      } else if (kept === 1) {
+        vitality = Math.max(8, Math.round(vitality * 0.35));
+        statusKey = 'curve_status_fall2';
+      } else {
+        vitality = 0;
+        statusKey = 'curve_status_fall3';
+      }
+
+      vitalitySum += vitality;
+      if (vitality > peakVitality) peakVitality = vitality;
+
       cells.push({ ds, cls, lab });
-    }
-    const rate = Math.round((wins / timelineRange) * 100);
-    return { cells, wins, falls, part, rate };
-  }, [S, timelineRange, T]);
+      curve.push({
+        ds,
+        vitality,
+        prevVit,
+        delta: vitality - prevVit,
+        kept,
+        cls,
+        lab,
+        statusKey,
+        cc: cc || {},
+        fTypes,
+      });
+    });
+
+    const rate = Math.round((wins / Math.max(1, daysList.length)) * 100);
+    const avgVitality = Math.round(vitalitySum / Math.max(1, daysList.length));
+    const curVitality = curve.length ? curve[curve.length - 1].vitality : 0;
+
+    return { cells, wins, falls, part, rate, curve, peakVitality, avgVitality, curVitality };
+  }, [S, timelineRange, customStart, customEnd, T]);
 
   if (!S) return null;
 
@@ -563,7 +949,59 @@ export default function StatsView() {
                 {n} {T('tl_days_btn', 'dias')}
               </button>
             ))}
+
+            <button
+              type="button"
+              className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                timelineRange === 'custom'
+                  ? 'border-gold bg-gold text-[#141414] shadow-sm'
+                  : 'border-line bg-surface text-muted hover:text-ink hover:border-gold/40'
+              }`}
+              onClick={() => {
+                AF.click();
+                setTimelineRange('custom');
+              }}
+            >
+              <Calendar size={12} />
+              <span>{T('tl_custom_btn', 'Personalizado 📅')}</span>
+            </button>
           </div>
+
+          {/* Filtro de Datas Personalizadas */}
+          {timelineRange === 'custom' && (
+            <div className="mb-3 flex flex-wrap items-center gap-2.5 p-2.5 rounded-xl bg-surface2/70 border border-line text-xs animate-in fade-in">
+              <span className="font-mono text-muted text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                <Calendar size={12} className="text-gold" /> {T('tl_custom_filter', 'Período Personalizado')}:
+              </span>
+              <div className="flex items-center gap-1.5">
+                <label className="text-muted text-[11px] font-mono">{T('tl_custom_start', 'Início')}:</label>
+                <input
+                  type="date"
+                  value={customStart}
+                  max={customEnd || today()}
+                  onChange={(e) => {
+                    setCustomStart(e.target.value);
+                    AF.click();
+                  }}
+                  className="px-2 py-1 rounded bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-muted text-[11px] font-mono">{T('tl_custom_end', 'Fim')}:</label>
+                <input
+                  type="date"
+                  value={customEnd}
+                  min={customStart}
+                  max={today()}
+                  onChange={(e) => {
+                    setCustomEnd(e.target.value);
+                    AF.click();
+                  }}
+                  className="px-2 py-1 rounded bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Badges de Desempenho Tático */}
           <div className="mb-3.5 flex flex-wrap gap-1.5">
@@ -583,6 +1021,16 @@ export default function StatsView() {
               🛡️ {L.sosWins(S)} {T('tl_badge_sos', 'S.O.S Vencidos')}
             </span>
           </div>
+
+          {/* CURVA DE VITALIDADE & FORÇA */}
+          <VitalityCurve
+            curve={timelineData.curve}
+            peakVitality={timelineData.peakVitality}
+            avgVitality={timelineData.avgVitality}
+            curVitality={timelineData.curVitality}
+            T={T}
+            onSelectDay={dayEditor}
+          />
 
           {/* Grid de Células de Dias */}
           <div className="flex flex-wrap gap-[5px] p-2.5 rounded-xl bg-[#121217] border border-line/60">
