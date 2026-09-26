@@ -1,12 +1,12 @@
 'use client';
 import React, { useState } from 'react';
-import { Volume2, VolumeX, ArrowLeft, ArrowRight, PenLine, ShieldCheck } from 'lucide-react';
+import { Volume2, VolumeX, ArrowLeft, ArrowRight, PenLine, ShieldCheck, Calendar, Clock, Zap } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { LIFE_STATUS, METAS, TRIGGERS, FREQS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
 import { setLangCookie } from '@/lib/i18n';
 import { AF, SFX } from '@/lib/audio';
-import { today, dstr, uid, pad } from '@/lib/utils';
+import { today, dstr, uid, pad, yesterday } from '@/lib/utils';
 import WarriorLogo from './WarriorLogo';
 
 const LBL_FALLBACK = {
@@ -87,10 +87,14 @@ export default function Onboarding() {
     const tPart = tPartRaw ? tPartRaw.slice(0, 5) : '';
 
     const handleDate = (d) => {
+      if (!d) {
+        set(k, '');
+        return;
+      }
       const now = new Date();
       const defTime = d === today() ? `${pad(now.getHours())}:${pad(now.getMinutes())}` : '00:00';
       const time = tPart || defTime;
-      set(k, d ? `${d}T${time}:00` : '');
+      set(k, `${d}T${time}:00`);
     };
 
     const handleTime = (t) => {
@@ -102,34 +106,209 @@ export default function Onboarding() {
       const now = new Date();
       const time = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
       set(k, `${today()}T${time}:00`);
+      AF.click();
     };
 
+    const setDaysAgo = (numDays) => {
+      const target = new Date(Date.now() - numDays * 86400000);
+      handleDate(dstr(target));
+      AF.click();
+    };
+
+    // Decomposição de dia, mês, ano para preenchimento simples e infalível
+    const parsedDate = dPart ? dPart.split('-') : [];
+    const curYear = parsedDate[0] || '';
+    const curMonth = parsedDate[1] || '';
+    const curDay = parsedDate[2] || '';
+
+    const updatePart = (type, val) => {
+      const now = new Date();
+      const y = type === 'y' ? val : (curYear || String(now.getFullYear()));
+      const m = type === 'm' ? val : (curMonth || pad(now.getMonth() + 1));
+      const d = type === 'd' ? val : (curDay || pad(now.getDate()));
+      if (y && m && d) {
+        // Validação básica do dia máximo para o mês
+        const maxD = new Date(Number(y), Number(m), 0).getDate();
+        const safeD = pad(Math.min(Number(d), maxD));
+        const finalD = `${y}-${pad(m)}-${safeD}`;
+        // Não permite data futura
+        if (finalD > today()) {
+          handleDate(today());
+        } else {
+          handleDate(finalD);
+        }
+      }
+    };
+
+    const isToday = dPart === today();
+    const isYesterday = dPart === yesterday();
+    const is3Days = dPart === dstr(new Date(Date.now() - 3 * 86400000));
+    const is7Days = dPart === dstr(new Date(Date.now() - 7 * 86400000));
+
+    const currentYearNum = new Date().getFullYear();
+    const yearsList = [];
+    for (let yr = currentYearNum; yr >= currentYearNum - 10; yr--) {
+      yearsList.push(String(yr));
+    }
+
     return (
-      <div className="mb-3 space-y-2">
-        <div className="flex gap-2">
-          <input
-            type="date"
-            className="field flex-1"
-            max={today()}
-            value={dPart || ''}
-            onChange={(e) => handleDate(e.target.value)}
-          />
-          <button type="button" className="chip flex-none text-xs font-bold" onClick={handleNow}>
-            [ {btn} ]
-          </button>
+      <div className="mb-4 space-y-3">
+        {/* Atajos de 1 toque (Muito mais rápido e simples) */}
+        <div className="space-y-1.5 text-left">
+          <span className="text-[11px] font-mono text-muted/90 font-bold block">
+            {T('quickDatesLabel', '⚡ Atajos rápidos (toque para preencher):')}
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+            <button
+              type="button"
+              onClick={handleNow}
+              className={`py-2 px-2.5 rounded-lg border text-xs font-bold font-mono transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                isToday
+                  ? 'border-gold bg-gold/20 text-gold shadow-[0_0_10px_rgba(245,175,40,0.3)]'
+                  : 'border-line bg-surface2 text-ink hover:border-gold/50'
+              }`}
+            >
+              <span>⚡</span> {T('today', 'HOJE')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDaysAgo(1)}
+              className={`py-2 px-2.5 rounded-lg border text-xs font-bold font-mono transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                isYesterday
+                  ? 'border-gold bg-gold/20 text-gold shadow-[0_0_10px_rgba(245,175,40,0.3)]'
+                  : 'border-line bg-surface2 text-ink hover:border-gold/50'
+              }`}
+            >
+              <span>⏮️</span> {T('yesterdayBtn', 'ONTEM')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDaysAgo(3)}
+              className={`py-2 px-2.5 rounded-lg border text-xs font-bold font-mono transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                is3Days
+                  ? 'border-gold bg-gold/20 text-gold shadow-[0_0_10px_rgba(245,175,40,0.3)]'
+                  : 'border-line bg-surface2 text-ink hover:border-gold/50'
+              }`}
+            >
+              <span>3</span> {T('daysAgoBtn', 'DIAS ATRÁS')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDaysAgo(7)}
+              className={`py-2 px-2.5 rounded-lg border text-xs font-bold font-mono transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                is7Days
+                  ? 'border-gold bg-gold/20 text-gold shadow-[0_0_10px_rgba(245,175,40,0.3)]'
+                  : 'border-line bg-surface2 text-ink hover:border-gold/50'
+              }`}
+            >
+              <span>7</span> {T('daysAgoBtn', 'DIAS ATRÁS')}
+            </button>
+          </div>
         </div>
 
-        <div className="rounded-lg border border-line/70 bg-surface2/60 p-2.5 space-y-1.5 text-left">
+        {/* Seletores Intuitivos de Dia / Mês / Ano (Sem teclado chato) */}
+        <div className="rounded-xl border border-line bg-surface2/80 p-3 space-y-2 text-left shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono text-ink/80 font-bold uppercase flex items-center gap-1.5">
+              <Calendar size={13} className="text-gold" />
+              <span>{T('calendarPicker', 'Data Específica')}:</span>
+            </span>
+            {dPart && (
+              <span className="text-[11px] font-mono text-gold font-bold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
+                {dPart.split('-').reverse().join('/')}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {/* Seletor de Dia */}
+            <div>
+              <label className="text-[10px] font-mono text-muted block mb-1">{T('dayLabel', 'Dia')}</label>
+              <select
+                value={curDay}
+                onChange={(e) => updatePart('d', e.target.value)}
+                className="w-full p-2.5 rounded-lg bg-surface border border-line text-ink font-mono text-xs focus:border-gold outline-none cursor-pointer"
+              >
+                <option value="">-- {T('dayLabel', 'Dia')} --</option>
+                {Array.from({ length: 31 }, (_, i) => pad(i + 1)).map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Seletor de Mês */}
+            <div>
+              <label className="text-[10px] font-mono text-muted block mb-1">{T('monthLabel', 'Mês')}</label>
+              <select
+                value={curMonth}
+                onChange={(e) => updatePart('m', e.target.value)}
+                className="w-full p-2.5 rounded-lg bg-surface border border-line text-ink font-mono text-xs focus:border-gold outline-none cursor-pointer"
+              >
+                <option value="">-- {T('monthLabel', 'Mês')} --</option>
+                {[
+                  { m: '01', pt: 'Jan', en: 'Jan', es: 'Ene' },
+                  { m: '02', pt: 'Fev', en: 'Feb', es: 'Feb' },
+                  { m: '03', pt: 'Mar', en: 'Mar', es: 'Mar' },
+                  { m: '04', pt: 'Abr', en: 'Apr', es: 'Abr' },
+                  { m: '05', pt: 'Mai', en: 'May', es: 'May' },
+                  { m: '06', pt: 'Jun', en: 'Jun', es: 'Jun' },
+                  { m: '07', pt: 'Jul', en: 'Jul', es: 'Jul' },
+                  { m: '08', pt: 'Ago', en: 'Aug', es: 'Ago' },
+                  { m: '09', pt: 'Set', en: 'Sep', es: 'Sep' },
+                  { m: '10', pt: 'Out', en: 'Oct', es: 'Oct' },
+                  { m: '11', pt: 'Nov', en: 'Nov', es: 'Nov' },
+                  { m: '12', pt: 'Dez', en: 'Dec', es: 'Dic' },
+                ].map((item) => (
+                  <option key={item.m} value={item.m}>
+                    {item.m} - {item[lang] || item.pt}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Seletor de Ano */}
+            <div>
+              <label className="text-[10px] font-mono text-muted block mb-1">{T('yearLabel', 'Ano')}</label>
+              <select
+                value={curYear}
+                onChange={(e) => updatePart('y', e.target.value)}
+                className="w-full p-2.5 rounded-lg bg-surface border border-line text-ink font-mono text-xs focus:border-gold outline-none cursor-pointer"
+              >
+                <option value="">-- {T('yearLabel', 'Ano')} --</option>
+                {yearsList.map((yr) => (
+                  <option key={yr} value={yr}>{yr}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Fallback direto com input nativo caso o usuário prefira calendário nativo do aparelho */}
+          <div className="pt-1 flex items-center justify-between text-[10.5px] font-mono text-muted border-t border-line/50">
+            <span>Ou escolha no calendário do sistema:</span>
+            <input
+              type="date"
+              max={today()}
+              value={dPart || ''}
+              onChange={(e) => handleDate(e.target.value)}
+              className="bg-surface border border-line rounded px-2 py-0.5 text-ink text-xs focus:border-gold outline-none cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {/* Cronômetro de precisão / Horário */}
+        <div className="rounded-xl border border-line/70 bg-surface2/60 p-2.5 space-y-1.5 text-left">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-mono font-semibold text-muted flex items-center gap-1">
-              ⏱️ {T('exactTimeLabel', 'Horário exato (cronômetro de precisão):')}
+              <Clock size={12} className="text-gold" />
+              <span>{T('exactTimeLabel', 'Horário exato (cronômetro de precisão):')}</span>
             </span>
             <button
               type="button"
-              className="text-[10.5px] font-mono font-bold text-gold hover:underline cursor-pointer"
+              className="text-[10.5px] font-mono font-bold text-gold hover:underline cursor-pointer flex items-center gap-1"
               onClick={handleNow}
             >
-              ⚡ {T('nowBtn', 'Agora')}
+              <Zap size={11} />
+              <span>{T('nowBtn', 'Agora')}</span>
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -228,14 +407,32 @@ export default function Onboarding() {
           ))}
         </div>
       </div>
-      <div className="mx-auto w-full max-w-[560px] flex-1 px-5 pb-4 rise" key={step}>
+      <div className="mx-auto w-full max-w-[560px] px-5 py-2 rise" key={step}>
         <span className="k">{T('stepWord', 'PASSO')} {step} / {total} · {cx(lang, 'ob', 'lbl' + sid) || curLbl}</span>
         {body}
-        {err && <p className="mt-3 text-[12.5px] font-bold text-danger shakeit">{err}</p>}
-      </div>
-      <div className="mx-auto flex w-full max-w-[604px] gap-2.5 p-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}>
-        {step > 1 && <button className="btn-dark flex-none" onClick={back}><ArrowLeft size={15} /> {T('back', 'VOLTAR')}</button>}
-        {sid !== 11 && <button className="btn-gold flex-1" onClick={next}>{T('next', 'AVANÇAR')} <ArrowRight size={15} /></button>}
+        {err && <p className="mt-2 text-[12.5px] font-bold text-danger shakeit">{err}</p>}
+
+        {/* Botões de Ação Imediatamente Próximos ao Conteúdo */}
+        <div className="mt-5 flex items-center gap-2.5 pt-2">
+          {step > 1 && (
+            <button
+              type="button"
+              className="btn-dark flex-none px-4 py-2.5 text-xs font-bold"
+              onClick={back}
+            >
+              <ArrowLeft size={14} /> {T('back', 'VOLTAR')}
+            </button>
+          )}
+          {sid !== 11 && (
+            <button
+              type="button"
+              className="btn-gold flex-1 py-3 text-sm font-extrabold shadow-md"
+              onClick={next}
+            >
+              {T('next', 'AVANÇAR')} <ArrowRight size={15} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
