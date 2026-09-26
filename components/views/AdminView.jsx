@@ -23,6 +23,9 @@ import {
   Mail,
   Calendar,
   Sparkles,
+  Send,
+  CornerDownRight,
+  Check,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { AF } from '@/lib/audio';
@@ -53,6 +56,73 @@ export default function AdminView() {
 
   // Filtros de Feedback
   const [feedbackFilter, setFeedbackFilter] = useState('all');
+
+  // Estado para Resposta Direta do Dono ao Guerreiro
+  const [replyingFbId, setReplyingFbId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [replySending, setReplySending] = useState(false);
+
+  const handleSendReply = async (fb) => {
+    if (!replyContent || replyContent.trim().length < 2) {
+      toast('⚠ Digite uma resposta com pelo menos 2 caracteres.');
+      return;
+    }
+    setReplySending(true);
+    try {
+      const res = await fetch('/api/admin/reply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-email': userEmail,
+        },
+        body: JSON.stringify({
+          feedbackId: fb.id,
+          targetEmail: fb.contact,
+          targetUserId: fb.userId,
+          originalMessage: fb.message,
+          replyText: replyContent.trim(),
+          adminEmail: userEmail,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao enviar resposta.');
+      }
+
+      // Atualiza o feedback localmente no estado para refletir na hora
+      setMetrics((prev) => {
+        if (!prev || !Array.isArray(prev.feedbacks)) return prev;
+        return {
+          ...prev,
+          feedbacks: prev.feedbacks.map((f) => {
+            if (f.id === fb.id) {
+              return {
+                ...f,
+                reply: {
+                  id: data.reply.id,
+                  text: data.reply.replyText,
+                  createdAt: data.reply.createdAt,
+                  author: data.reply.author,
+                },
+              };
+            }
+            return f;
+          }),
+        };
+      });
+
+      try { AF.victory(); } catch (e) {}
+      toast('⚔️ Decreto enviado com sucesso! O guerreiro receberá a notificação no app.');
+      setReplyingFbId(null);
+      setReplyContent('');
+    } catch (err) {
+      console.error(err);
+      toast('⚠ Erro ao enviar resposta: ' + (err.message || 'Tente novamente.'));
+    } finally {
+      setReplySending(false);
+    }
+  };
 
   const fetchMetrics = async () => {
     if (!isAdmin) return;
@@ -634,10 +704,133 @@ export default function AdminView() {
                   </p>
 
                   {fb.contact && (
-                    <div className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 pt-1">
-                      <Mail size={12} />
-                      <span>Contato informado:</span>
-                      <strong className="text-emerald-300">{fb.contact}</strong>
+                    <div className="text-[11px] font-mono text-emerald-400 flex items-center justify-between gap-1.5 pt-1">
+                      <div className="flex items-center gap-1.5">
+                        <Mail size={12} />
+                        <span>Contato informado:</span>
+                        <strong className="text-emerald-300">{fb.contact}</strong>
+                      </div>
+                      {!fb.reply && replyingFbId !== fb.id && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            AF.click();
+                            setReplyingFbId(fb.id);
+                            setReplyContent('');
+                          }}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-gold/15 hover:bg-gold/25 border border-gold/40 text-gold text-[10.5px] font-bold font-mono transition-all cursor-pointer"
+                        >
+                          <Send size={11} />
+                          <span>RESPONDER GUERREIRO</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Resposta já enviada pelo dono */}
+                  {fb.reply && (
+                    <div className="mt-2.5 p-3 rounded-lg bg-amber-950/40 border border-amber-500/50 space-y-1.5 animate-fadeIn">
+                      <div className="flex items-center justify-between text-[10.5px] font-mono text-amber-300 font-bold border-b border-amber-800/40 pb-1">
+                        <span className="flex items-center gap-1.5">
+                          <Crown size={12} className="text-gold" />
+                          <span>Sua Resposta Oficial (Decreto do Criador):</span>
+                        </span>
+                        <span className="text-[9.5px] text-muted">
+                          {new Date(fb.reply.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-amber-100 font-sans text-xs leading-relaxed">
+                        {fb.reply.text}
+                      </p>
+                      <div className="pt-1 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            AF.click();
+                            setReplyingFbId(fb.id);
+                            setReplyContent(fb.reply.text);
+                          }}
+                          className="text-[10px] text-amber-400/90 underline font-mono hover:text-amber-200"
+                        >
+                          Editar ou enviar nova resposta
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Formulário de Resposta Aberto */}
+                  {replyingFbId === fb.id && (
+                    <div className="mt-2.5 p-3.5 rounded-xl bg-surface2 border-2 border-gold/50 space-y-2.5 animate-fadeIn">
+                      <div className="flex items-center justify-between text-xs font-mono text-gold font-bold">
+                        <span className="flex items-center gap-1.5">
+                          <Crown size={13} />
+                          <span>DECRETAR RESPOSTA PARA: {fb.contact || 'GUERREIRO'}</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setReplyingFbId(null)}
+                          className="text-muted hover:text-ink text-xs"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+
+                      {/* Botões de respostas rápidas */}
+                      <div className="flex flex-wrap gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setReplyContent('⚔️ Honra máxima pela disciplina, guerreiro! Continue firme na guarda. O Comando está com você.')}
+                          className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted hover:text-gold hover:border-gold/40"
+                        >
+                          + Honra & Disciplina
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setReplyContent('🛠️ Relato de bug recebido! Nossa equipe tática já está corrigindo e subindo a atualização.')}
+                          className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted hover:text-danger hover:border-danger/40"
+                        >
+                          + Bug em Correção
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setReplyContent('💡 Excelente sugestão, guerreiro! Já incluímos no mapa de guerra para as próximas atualizações da Forja.')}
+                          className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted hover:text-sky-400 hover:border-sky-400/40"
+                        >
+                          + Sugestão Aprovada
+                        </button>
+                      </div>
+
+                      <textarea
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder="Digite o decreto de resposta que aparecerá na tela do guerreiro..."
+                        rows={3}
+                        className="w-full p-2.5 rounded-lg bg-surface border border-line text-ink font-sans text-xs placeholder:text-muted focus:border-gold focus:outline-none"
+                      />
+
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] font-mono text-muted">
+                          O guerreiro receberá notificação visual com som triunfal no app.
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setReplyingFbId(null)}
+                            className="px-3 py-1.5 rounded-lg border border-line text-muted hover:text-ink text-xs font-mono"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={replySending || !replyContent.trim()}
+                            onClick={() => handleSendReply(fb)}
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gold hover:bg-gold2 text-black font-display font-black text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+                          >
+                            <Send size={12} />
+                            <span>{replySending ? 'Enviando...' : 'ENVIAR DECRETO'}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

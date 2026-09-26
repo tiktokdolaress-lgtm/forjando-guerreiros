@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -11,6 +11,7 @@ import { hasUnreadUpdates, CURRENT_APP_VERSION, markUpdatesAsRead } from '@/lib/
 import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
 import ChangelogModal from './ChangelogModal';
+import CommandReplyModal from './CommandReplyModal';
 import QgView from './views/QgView';
 import ForgeView from './views/ForgeView';
 import OpsView from './views/OpsView';
@@ -45,6 +46,72 @@ export default function Shell() {
   const TabIcon = ICONS[tab] || Castle;
 
   const [hasUnread, setHasUnread] = React.useState(false);
+  const [commandReplies, setCommandReplies] = React.useState([]);
+  const [unreadReply, setUnreadReply] = React.useState(null);
+
+  const handleOpenCommandReply = (msg) => {
+    if (!msg) return;
+    openModal(
+      <CommandReplyModal
+        message={msg}
+        onClose={async () => {
+          closeModal();
+          setUnreadReply(null);
+          try {
+            await fetch('/api/user/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messageId: msg.id,
+                email: userEmail,
+                userId: auth?.userId || auth?.id,
+              }),
+            });
+          } catch (e) {}
+        }}
+      />,
+      'dialog'
+    );
+  };
+
+  /* Consulta decretos e respostas do Comando Supremo enviados diretamente a este guerreiro */
+  React.useEffect(() => {
+    let isMounted = true;
+    const checkMessages = async () => {
+      if (!userEmail && !auth?.userId) return;
+      try {
+        const query = new URLSearchParams();
+        if (userEmail) query.set('email', userEmail);
+        if (auth?.userId) query.set('userId', auth.userId);
+
+        const res = await fetch(`/api/user/messages?${query.toString()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (isMounted && data && Array.isArray(data.messages)) {
+          setCommandReplies(data.messages);
+          const unread = data.messages.find((m) => !m.read);
+          if (unread) {
+            setUnreadReply(unread);
+            toast('⚔️ Decreto do Comando Supremo recebido! Toque no topo para ler.');
+            const timer = setTimeout(() => {
+              if (isMounted) {
+                handleOpenCommandReply(unread);
+              }
+            }, 1500);
+            return () => clearTimeout(timer);
+          }
+        }
+      } catch (e) {}
+    };
+
+    checkMessages();
+    const interval = setInterval(checkMessages, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [userEmail, auth?.userId]);
 
   /* Notificação visual automática e estritamente interna (in-app) quando houver nova versão / atualização */
   React.useEffect(() => {
@@ -183,6 +250,30 @@ export default function Shell() {
                 >
                   <Crown size={13} className="text-amber-400 flex-none" />
                   <span className="hidden sm:inline">COMANDO</span>
+                </button>
+              )}
+              {commandReplies.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    AF.click();
+                    handleOpenCommandReply(unreadReply || commandReplies[0]);
+                  }}
+                  className={`relative flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg border text-[10.5px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer shadow-sm ${
+                    unreadReply
+                      ? 'border-amber-400 bg-amber-500/25 text-amber-200 shadow-[0_0_14px_rgba(245,158,11,0.5)] animate-pulse'
+                      : 'border-amber-600/40 bg-amber-950/40 text-amber-300 hover:bg-amber-900/60 hover:border-amber-500'
+                  }`}
+                  title="Decreto do Comando Supremo (Resposta do Criador)"
+                >
+                  <Mail size={12} className="text-amber-400 flex-none" />
+                  <span className="hidden sm:inline">DECRETO</span>
+                  {unreadReply && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                    </span>
+                  )}
                 </button>
               )}
               <span className="chip flex-none text-[10.5px] sm:text-[11px] font-bold px-2 py-0.5">{lifeLbl}</span>

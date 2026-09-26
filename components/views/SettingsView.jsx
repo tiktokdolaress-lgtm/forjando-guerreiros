@@ -62,6 +62,41 @@ export default function SettingsView() {
     }
   });
 
+  // Sincroniza respostas do Comando com o histórico local de feedbacks do guerreiro
+  useEffect(() => {
+    if (!userEmail && !auth?.userId) return;
+    const fetchMyReplies = async () => {
+      try {
+        const query = new URLSearchParams();
+        if (userEmail) query.set('email', userEmail);
+        if (auth?.userId) query.set('userId', auth.userId);
+        const res = await fetch(`/api/user/messages?${query.toString()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && Array.isArray(data.messages) && data.messages.length > 0) {
+          setFeedbackHistory((prev) => {
+            const updated = prev.map((item) => {
+              const matchedReply = data.messages.find(
+                (m) =>
+                  (item.id && m.feedbackId === item.id) ||
+                  (item.message && m.originalMessage && m.originalMessage.includes(item.message.slice(0, 20)))
+              );
+              if (matchedReply) {
+                return { ...item, reply: { text: matchedReply.replyText, date: matchedReply.createdAt } };
+              }
+              return item;
+            });
+            try {
+              localStorage.setItem('fg_user_feedbacks', JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+        }
+      } catch (e) {}
+    };
+    fetchMyReplies();
+  }, [userEmail, auth?.userId]);
+
   // Modo Comando / Admin restrito ao Dono (micheldiemeson@gmail.com / diemesonmd@gmail.com)
   const userEmail = (
     auth?.email ||
@@ -619,6 +654,17 @@ export default function SettingsView() {
                       <p className="text-muted text-[11px] line-clamp-2 italic">
                         "{item.message}"
                       </p>
+                      {item.reply && (
+                        <div className="mt-2 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] space-y-1">
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-300 font-bold">
+                            <Crown size={11} className="text-gold" />
+                            <span>Resposta do Comando Supremo (Criador):</span>
+                          </div>
+                          <p className="text-amber-100 font-sans italic text-xs leading-relaxed">
+                            &ldquo;{item.reply.text || item.reply}&rdquo;
+                          </p>
+                        </div>
+                      )}
                       <div className="text-[9.5px] font-mono text-muted/70 mt-1 text-right">
                         {item.date}
                       </div>
