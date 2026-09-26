@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -18,18 +18,30 @@ import JournalView from './views/JournalView';
 import StatsView from './views/StatsView';
 import EnemyView from './views/EnemyView';
 import SettingsView from './views/SettingsView';
+import AdminView from './views/AdminView';
 import ErrorBoundary from './ErrorBoundary';
 
-const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, enemy: Skull, settings: Settings };
-const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView };
+const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, enemy: Skull, settings: Settings, admin: Crown };
+const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView, admin: AdminView };
+
+const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
 
 export default function Shell() {
-  const { S, tab, setTab, t, openModal, closeModal, update, toast } = useApp();
+  const { S, tab, setTab, t, openModal, closeModal, update, toast, auth, authRef } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
+
+  const userEmail = (
+    auth?.email ||
+    authRef?.current?.email ||
+    (typeof window !== 'undefined' ? localStorage.getItem('fg_local_session') : '') ||
+    ''
+  ).trim().toLowerCase();
+
+  const isAdmin = ADMIN_EMAILS.includes(userEmail);
   const lifeLbl = (() => { const m = lifeMode(S); const LS = cx(lang, 'life', m) || LIFE_STATUS[m] || LIFE_STATUS.single; return LS.label; })();
   const go = (id) => { AF.click(); setTab(id); window.scrollTo({ top: 0 }); }
   const openSOS = () => { update((d) => { d.sos = (d.sos || 0) + 1; }); openModal(<SosModal />, 'full'); };
-  const View = VIEWS[tab] || QgView;
+  const View = (tab === 'admin' && !isAdmin) ? QgView : (VIEWS[tab] || QgView);
   const TabIcon = ICONS[tab] || Castle;
 
   const [hasUnread, setHasUnread] = React.useState(false);
@@ -122,6 +134,19 @@ export default function Shell() {
               </button>
             );
           })}
+          {isAdmin && (
+            <button
+              onClick={() => go('admin')}
+              className={`mt-2 flex items-center gap-3 rounded-r border px-3.5 py-2.5 text-left text-xs font-black transition-all ${
+                tab === 'admin'
+                  ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
+                  : 'border-amber-600/30 bg-amber-950/30 text-amber-400 hover:translate-x-[3px] hover:bg-amber-900/50 hover:border-amber-500'
+              }`}
+            >
+              <Crown size={16} className="text-amber-400 flex-none" />
+              <span>PAINEL DO DONO</span>
+            </button>
+          )}
         </nav>
         <div className="mt-auto rounded-r2 border border-gold/20 bg-surface p-3.5 text-center">
           <b className="block font-display text-[34px] leading-none text-gold">{progressDays(S)}</b>
@@ -140,11 +165,26 @@ export default function Shell() {
               )}
               <TabIcon size={19} className="text-gold flex-none hidden lg:block" />
               <h1 className="truncate font-display text-xl sm:text-2xl tracking-[.06em] text-ink leading-tight">
-                {t(tab)}
+                {tab === 'admin' ? 'PAINEL DO COMANDO' : t(tab)}
               </h1>
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2 flex-none">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => go('admin')}
+                  className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg border text-[10.5px] sm:text-[11px] font-mono font-black transition-all cursor-pointer shadow-sm ${
+                    tab === 'admin'
+                      ? 'border-amber-400 bg-amber-500/25 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                      : 'border-amber-500/50 bg-amber-950/70 text-amber-300 hover:bg-amber-900/80 hover:border-amber-400'
+                  }`}
+                  title="Painel do Comando Supremo (Exclusivo Dono)"
+                >
+                  <Crown size={13} className="text-amber-400 flex-none" />
+                  <span className="hidden sm:inline">COMANDO</span>
+                </button>
+              )}
               <span className="chip flex-none text-[10.5px] sm:text-[11px] font-bold px-2 py-0.5">{lifeLbl}</span>
               <button
                 type="button"

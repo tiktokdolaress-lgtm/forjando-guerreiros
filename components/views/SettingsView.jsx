@@ -4,7 +4,7 @@ import {
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
   Trophy, Palette, Check, Volume2, Shield, Database, ChevronRight, Lock,
-  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2
+  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Crown
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Toggle, Chk, Empty } from '@/components/ui';
@@ -39,7 +39,7 @@ const SETTINGS_CATEGORIES = [
 ];
 
 export default function SettingsView() {
-  const { S, update, toast, confirmBox, auth, setPhase, setAuth, authRef, sub, refreshSub, openModal, closeModal } = useApp();
+  const { S, update, toast, confirmBox, auth, setPhase, setAuth, authRef, sub, refreshSub, openModal, closeModal, setTab } = useApp();
   const st = S.settings;
   const lang = (st && st.lang) || 'pt';
   const currentTheme = st.theme || 'dark';
@@ -950,6 +950,17 @@ export default function SettingsView() {
                   <LogOut size={13} /> {T('btn_signout', 'Sair da Conta')}
                 </button>
               </div>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => { AF.click(); setTab('admin'); }}
+                  className="w-full mt-2.5 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gold/15 border border-gold/40 text-gold text-xs font-mono font-bold hover:bg-gold/25 transition-all shadow-sm"
+                >
+                  <Crown size={14} className="text-gold" />
+                  <span>ABRIR PAINEL DO COMANDO (ADMIN)</span>
+                </button>
+              )}
             </div>
           </Card>
 

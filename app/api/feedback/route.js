@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Armazenamento em memória para rápida recuperação no servidor / container
-let inMemoryFeedbacks = [];
+export let inMemoryFeedbacks = [];
 
 export async function POST(req) {
   try {
