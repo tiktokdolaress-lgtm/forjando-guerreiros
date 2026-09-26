@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
