@@ -62,16 +62,32 @@ export default function SettingsView() {
     }
   });
 
-  // Modo Comando / Admin para consultar todos os feedbacks recebidos no servidor
+  // Modo Comando / Admin restrito ao Dono (micheldiemeson@gmail.com / diemesonmd@gmail.com)
+  const userEmail = (
+    auth?.email ||
+    authRef?.current?.email ||
+    (typeof window !== 'undefined' ? localStorage.getItem('fg_local_session') : '') ||
+    ''
+  ).trim().toLowerCase();
+
+  const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
+  const isAdmin = ADMIN_EMAILS.includes(userEmail);
+
   const [showAdminFeedbacks, setShowAdminFeedbacks] = useState(false);
   const [adminFeedbacksList, setAdminFeedbacksList] = useState([]);
   const [adminFeedbacksLoading, setAdminFeedbacksLoading] = useState(false);
 
   const fetchAdminFeedbacks = async () => {
+    if (!isAdmin) return;
     setAdminFeedbacksLoading(true);
     try {
       AF.click();
-      const res = await fetch('/api/feedback');
+      const res = await fetch(`/api/feedback?admin_email=${encodeURIComponent(userEmail)}`, {
+        headers: {
+          'x-admin-email': userEmail,
+        },
+      });
+      if (!res.ok) throw new Error('Não autorizado');
       const data = await res.json();
       setAdminFeedbacksList(data.feedbacks || []);
       setShowAdminFeedbacks(true);
@@ -450,15 +466,17 @@ export default function SettingsView() {
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <K><MessageSquarePlus size={13} className="mr-1 inline text-gold" /> {T('fb_title', 'CONSELHO DE GUERRA & FEEDBACK')}</K>
-                <button
-                  type="button"
-                  onClick={fetchAdminFeedbacks}
-                  className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20 hover:bg-gold/25 transition-colors cursor-pointer flex items-center gap-1"
-                  title={T('admin_btn_title', 'Painel do Comando - Ver todos os feedbacks recebidos')}
-                >
-                  <span>{T('fb_badge', 'CANAL DIRETO')}</span>
-                  <span className="text-[11px]">👁️</span>
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={fetchAdminFeedbacks}
+                    className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/15 border border-gold/40 hover:bg-gold/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    title={T('admin_btn_title', 'Painel do Comando - Ver todos os feedbacks recebidos')}
+                  >
+                    <span className="font-bold">{T('fb_badge_admin', 'COMANDO · CANAL DIRETO')}</span>
+                    <span className="text-[11px]">👁️</span>
+                  </button>
+                )}
               </div>
               <p className="text-xs text-muted mb-3 leading-relaxed">
                 {T('fb_sub', 'Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.')}
@@ -613,7 +631,7 @@ export default function SettingsView() {
         </div>
 
         {/* MODAL DE CONSULTA DO COMANDO (FEEDBACKS RECEBIDOS NO SERVIDOR) */}
-        {showAdminFeedbacks && (
+        {showAdminFeedbacks && isAdmin && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
             <div className="relative w-full max-w-2xl bg-surface border border-gold/40 rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col text-ink">
               <div className="flex items-center justify-between pb-3 border-b border-line">

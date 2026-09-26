@@ -66,6 +66,20 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
+    const adminEmail = (
+      req.headers.get('x-admin-email') ||
+      new URL(req.url).searchParams.get('admin_email') ||
+      ''
+    ).toLowerCase().trim();
+
+    const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
+    if (!ADMIN_EMAILS.includes(adminEmail)) {
+      return NextResponse.json(
+        { error: 'Acesso restrito ao Comando da Forja.' },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       total: inMemoryFeedbacks.length,
