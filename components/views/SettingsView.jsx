@@ -48,6 +48,17 @@ export default function SettingsView() {
   // Categorias para organização minimalista
   const [activeCategory, setActiveCategory] = useState('general');
 
+  // Modo Comando / Admin restrito ao Dono (micheldiemeson@gmail.com / diemesonmd@gmail.com)
+  const userEmail = (
+    auth?.email ||
+    authRef?.current?.email ||
+    (typeof window !== 'undefined' ? localStorage.getItem('fg_local_session') : '') ||
+    ''
+  ).trim().toLowerCase();
+
+  const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
+  const isAdmin = ADMIN_EMAILS.includes(userEmail);
+
   // Estado da área de Feedbacks, Sugestões & Bugs
   const [feedbackCategory, setFeedbackCategory] = useState('suggestion');
   const [feedbackMsg, setFeedbackMsg] = useState('');
@@ -96,17 +107,6 @@ export default function SettingsView() {
     };
     fetchMyReplies();
   }, [userEmail, auth?.userId]);
-
-  // Modo Comando / Admin restrito ao Dono (micheldiemeson@gmail.com / diemesonmd@gmail.com)
-  const userEmail = (
-    auth?.email ||
-    authRef?.current?.email ||
-    (typeof window !== 'undefined' ? localStorage.getItem('fg_local_session') : '') ||
-    ''
-  ).trim().toLowerCase();
-
-  const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
-  const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
   const [showAdminFeedbacks, setShowAdminFeedbacks] = useState(false);
   const [adminFeedbacksList, setAdminFeedbacksList] = useState([]);
