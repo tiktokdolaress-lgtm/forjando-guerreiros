@@ -22,9 +22,27 @@ export async function POST(req) {
     if (error || !data || !data.user) return NextResponse.json({ error: 'Sessão inválida.' }, { status: 401 });
     const user = data.user;
 
-    /* 2) trava geográfica: Brasil → BRL, resto do mundo → USD */
+    /* 2) trava geográfica + escolha de plano (mensal ou anual) */
+    let plan = 'monthly';
+    try {
+      const body = await req.json();
+      if (body && body.plan === 'yearly') plan = 'yearly';
+    } catch (_) {}
+
     const country = req.headers.get('x-vercel-ip-country') || 'BR';
-    const priceId = country === 'BR' ? process.env.STRIPE_PRICE_ID_BRL : process.env.STRIPE_PRICE_ID_USD;
+    const isBR = country === 'BR';
+
+    let priceId = '';
+    if (isBR) {
+      priceId = plan === 'yearly'
+        ? (process.env.STRIPE_PRICE_ID_BRL_YEARLY || 'price_1UKN2DCfMjEzvyEqaU5iuEUU')
+        : (process.env.STRIPE_PRICE_ID_BRL || 'price_1UKKOLCfMjEzvyEq2WjXYE0g');
+    } else {
+      priceId = plan === 'yearly'
+        ? (process.env.STRIPE_PRICE_ID_USD_YEARLY || 'price_1UKN5wCfMjEzvyEqM4Ij367A')
+        : (process.env.STRIPE_PRICE_ID_USD || 'price_1UKKOLCfMjEzvyEqigzc8l2P');
+    }
+
     if (!priceId) return NextResponse.json({ error: 'Price ID da moeda não configurado.' }, { status: 500 });
 
     const origin = req.headers.get('origin') || process.env.SITE_URL || 'http://localhost:3000';
