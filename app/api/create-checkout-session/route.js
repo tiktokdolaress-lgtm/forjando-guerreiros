@@ -29,10 +29,11 @@ export async function POST(req) {
 
     const origin = req.headers.get('origin') || process.env.SITE_URL || 'http://localhost:3000';
 
-    /* 3) sessão de checkout: assinatura + trial de 7 dias */
+    /* 3) sessão de checkout: assinatura + trial de 7 dias + suporte a cupons */
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: user.email,
+      allow_promotion_codes: true,
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: { trial_period_days: 7, metadata: { userId: user.id } },
       metadata: { userId: user.id },
