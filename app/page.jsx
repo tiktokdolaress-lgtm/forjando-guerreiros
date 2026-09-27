@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Flame, Siren, BookOpen, ChartNoAxesColumn, RefreshCw, Sword, HeartCrack, Droplet, Castle, CheckCircle2, Lock } from 'lucide-react';
+import { ShieldCheck, Flame, Siren, BookOpen, ChartNoAxesColumn, RefreshCw, Sword, HeartCrack, Droplet, Castle, CheckCircle2, Lock, Handshake, Volume2, Sparkles } from 'lucide-react';
 import PriceTag from '@/components/landing/PriceTag';
+import PricingSection from '@/components/landing/PricingSection';
 import Faq from '@/components/landing/Faq';
 import LangPick from '@/components/LangPick';
 import AutoRedirect from '@/components/landing/AutoRedirect';
@@ -39,9 +40,12 @@ export default function Landing() {
     [Castle, L('rec1t', 'QG do Guerreiro'), L('rec1d', 'Contador de dias, pureza, patamares (Recruta → Lenda) e linha do tempo de vitórias × quedas.')],
     [Sword, L('rec2t', 'A Forja'), L('rec2d', '20 hábitos de elite + personalizados, com slots liberados por patamar e histórico de 7 dias.')],
     [Siren, L('rec3t', 'Protocolo S.O.S'), L('rec3d', '5 minutos guiados contra o impulso: choque térmico, respiração 4×4 com som e exaustão física.')],
+    [Handshake, L('rec7t', 'Pacto de Sangue & Guardião'), L('rec7d', 'Convide um irmão de armas de confiança por link criptografado. Check-ins mútuos e alertas de combate.')],
+    [Volume2, L('rec8t', 'Áudio Tático & Foco'), L('rec8d', 'Respiração quadrada 4×4 guiada com áudio sintetizado, sons de combate e feedback sonoro imersivo.')],
+    [Sparkles, L('rec9t', 'Onboarding & Calibração Ágil'), L('rec9d', 'Entrada rápida com atalhos de 1 toque (Hoje, Ontem, 3d, 7d) para calibrar contadores sem complicação.')],
     [BookOpen, L('rec4t', 'Diário de Bordo'), L('rec4d', 'Humor, vitórias, desafios, desabafos de queda e caderno de notas com busca e tags.')],
     [ChartNoAxesColumn, L('rec5t', 'Relatórios de Combate'), L('rec5d', 'Mapa de calor mensal, consistência da Forja, KPIs e histórico de intervenções vencidas.')],
-    [RefreshCw, L('rec6t', 'Sincronização em nuvem'), L('rec6d', 'Marque no celular, veja no PC. Login protegido e dados privados por usuário (RLS).')],
+    [RefreshCw, L('rec6t', 'Sincronização em Nuvem'), L('rec6d', 'Marque no celular, veja no PC. Login protegido e dados 100% privados por usuário (RLS).')],
   ];
 
   const PASSOS = [
@@ -188,22 +192,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* PREÇO */}
-      <section className="border-y border-line bg-surface2/40 px-5 py-16 text-center">
-        <h2 className="font-display text-3xl tracking-wide">{L('pr_title', 'UM PREÇO DE CAFÉ. UMA GUERRA INTEIRA.')}</h2>
-        <div className="mx-auto mt-8 max-w-md rounded-r2 border border-gold/40 bg-surface p-7 shadow-glow">
-          <p className="k2 mb-1">{L('pr_k', 'ACESSO COMPLETO')}</p>
-          <p className="font-display text-5xl text-gold">{L('pr_days', '7 dias')}</p>
-          <p className="mb-5 text-[13px] text-muted">{L('pr_free', 'grátis · depois')} <PriceTag lang={lang} /></p>
-          <ul className="mb-6 space-y-2 text-left text-[12.5px] font-semibold">
-            {BENEFICIOS.map((x) => (
-              <li key={x} className="flex items-center gap-2"><CheckCircle2 size={15} className="flex-none text-ok" suppressHydrationWarning /> {x}</li>
-            ))}
-          </ul>
-          <Link href="/app" className="btn-gold btn-big">{L('pr_cta', '⚔️ INICIAR MEU TESTE GRÁTIS')}</Link>
-          <p className="fnote"><Lock size={11} className="mr-1 inline" suppressHydrationWarning /> {L('pr_pay', 'Pagamento processado pela Stripe. O app nunca vê seu cartão.')}</p>
-        </div>
-      </section>
+      {/* PREÇO (MENSAL vs ANUAL COM DESCONTO) */}
+      <PricingSection lang={lang} />
 
       {/* FAQ */}
       <section className="px-5 py-16">
