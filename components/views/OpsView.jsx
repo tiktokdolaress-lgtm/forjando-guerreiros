@@ -245,6 +245,25 @@ const I18N = {
   projectHealthOnTrack: { pt: 'EM RITMO DE VITÓRIA', en: 'ON TRACK FOR VICTORY', es: 'EN RITMO DE VICTORIA' },
   projectHealthWarning: { pt: 'ALERTA: FORJA ESFRIANDO', en: 'WARNING: FORGE COOLING', es: 'ALERTA: FORJA ENFRIÁNDOSE' },
   toastTemplateLoaded: { pt: '⚔️ Modelo carregado com sucesso!', en: '⚔️ Template loaded successfully!', es: '¡⚔️ Plantilla cargada con éxito!' },
+  lblForgeSlotsStatus: { pt: 'Slots da Forja em uso:', en: 'Forge slots in use:', es: 'Slots de la Forja en uso:' },
+  lblMyActiveForgeHabits: { pt: '⚔️ Seus Hábitos Ativos no Protocolo Diário:', en: '⚔️ Your Active Daily Protocol Habits:', es: '⚔️ Tus Hábitos Activos en el Protocolo Diario:' },
+  lblSlotsFullNotice: {
+    pt: (slots) => `🔒 Todos os seus ${slots} slots da Forja já estão em uso. Selecione apenas entre os seus hábitos ativos para este projeto:`,
+    en: (slots) => `🔒 All your ${slots} Forge slots are already in use. Select only among your active habits for this project:`,
+    es: (slots) => `🔒 Todos tus ${slots} slots de la Forja ya están en uso. Selecciona solo entre tus hábitos activos para este proyecto:`,
+  },
+  lblFreeSlotsAvailable: {
+    pt: (free) => `Você possui ${free} slot(s) livre(s) na Forja. Você pode escolher mais hábitos abaixo:`,
+    en: (free) => `You have ${free} free slot(s) in the Forge. You may choose more habits below:`,
+    es: (free) => `Tienes ${free} slot(s) libre(s) en la Forja. Puedes elegir más hábitos abajo:`,
+  },
+  toastSlotsFullCannotAdd: {
+    pt: (slots) => `🔒 Limite de ${slots} slots atingido na Forja! Escolha apenas hábitos que você já tem ativos.`,
+    en: (slots) => `🔒 Limit of ${slots} slots reached in the Forge! Choose only habits you already have active.`,
+    es: (slots) => `🔒 ¡Límite de ${slots} slots alcanzado en la Forja! Elige solo hábitos que ya tengas activos.`,
+  },
+  tipHabitDone: { pt: 'Concluído hoje! (Toque para desmarcar)', en: 'Done today! (Tap to uncheck)', es: '¡Cumplido hoy! (Toca para desmarcar)' },
+  tipHabitPending: { pt: 'Pendente hoje (Toque para marcar como cumprido)', en: 'Pending today (Tap to mark done)', es: 'Pendiente hoy (Toca para marcar cumplido)' },
 };
 
 export default function OpsView() {
@@ -715,10 +734,41 @@ export default function OpsView() {
       const [commandments, setCommandments] = useState(initialCmds);
       const [newCmdTxt, setNewCmdTxt] = useState('');
 
+      // Hábitos do guerreiro e controle de slots da Forja
+      const allUserHabits = L.allH(S);
+      const activeForgeIds = (S?.forge?.active || []).map(String);
+      let maxSlots = 2;
+      try {
+        if (typeof L.slotLimit === 'function') {
+          maxSlots = L.slotLimit(S);
+        } else if (typeof L.maxSlots === 'function') {
+          maxSlots = L.maxSlots(L.progressDays(S));
+        }
+      } catch {
+        maxSlots = 2;
+      }
+      const activeCount = activeForgeIds.length;
+      const isSlotsFull = activeCount >= maxSlots;
+
       // Hábitos Vinculados a este Projeto
-      const initialHabitIds = source?.habitIds
-        ? source.habitIds
-        : (source?.habits ? source.habits.map((h) => h.id) : []);
+      const initialHabitIds = (() => {
+        if (projToEdit?.habitIds && Array.isArray(projToEdit.habitIds)) {
+          return projToEdit.habitIds;
+        }
+        if (templateData?.habits) {
+          const tplIds = templateData.habits.map((h) => h.id);
+          // Prioriza estritamente os hábitos que o guerreiro já tem ativos na Forja
+          const matching = tplIds.filter((id) => activeForgeIds.includes(String(id)));
+          if (matching.length > 0) return matching;
+          if (isSlotsFull) {
+            // Se os slots já estão cheios, vincula os hábitos que já estão ativos na Forja
+            return activeForgeIds.slice(0, maxSlots).map(Number);
+          }
+          return tplIds.slice(0, Math.max(1, maxSlots - activeCount));
+        }
+        // Projeto novo: sugere os hábitos ativos na Forja do usuário
+        return activeForgeIds.slice(0, maxSlots).map(Number);
+      })();
       const [linkedHabitIds, setLinkedHabitIds] = useState(initialHabitIds);
 
       // Etapas Iniciais (quando vier de template)
@@ -770,9 +820,23 @@ export default function OpsView() {
       };
 
       const toggleHabitLink = (hId) => {
-        setLinkedHabitIds((prev) =>
-          prev.includes(hId) ? prev.filter((id) => id !== hId) : [...prev, hId]
-        );
+        const idStr = String(hId);
+        const isAlreadyLinked = linkedHabitIds.some((x) => String(x) === idStr);
+        if (isAlreadyLinked) {
+          setLinkedHabitIds((prev) => prev.filter((id) => String(id) !== idStr));
+          AF.click();
+          return;
+        }
+
+        // Se NÃO está vinculado e não está nos hábitos ativos da Forja:
+        const isActiveInForge = activeForgeIds.includes(idStr);
+        if (!isActiveInForge && isSlotsFull) {
+          toast(tx.toastSlotsFullCannotAdd[curLang](maxSlots));
+          AF.tone(110, 0.35, 'sine', 0.18, 0, 55);
+          return;
+        }
+
+        setLinkedHabitIds((prev) => [...prev, hId]);
         AF.click();
       };
 
@@ -1055,35 +1119,88 @@ export default function OpsView() {
 
             {/* HÁBITOS DA FORJA ANCORADOS */}
             <div className="rounded border border-line bg-surface p-2.5">
-              <span className="text-xs font-bold text-ink block mb-0.5">
-                {tx.lblHabitsInProject[curLang]}
-              </span>
+              <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+                <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+                  <span>⚡</span> {tx.lblHabitsInProject[curLang]}
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface2 border border-line text-muted font-bold">
+                  {tx.lblForgeSlotsStatus[curLang]} <b className={isSlotsFull ? 'text-amber-400' : 'text-gold'}>{activeCount}/{maxSlots >= 99 ? '∞' : maxSlots}</b>
+                </span>
+              </div>
+
               <p className="text-[10.5px] text-muted mb-2 leading-tight">
-                {tx.lblHabitsInProjectSub[curLang]}
+                {isSlotsFull ? tx.lblSlotsFullNotice[curLang](maxSlots) : tx.lblHabitsInProjectSub[curLang]}
               </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {(activeCatObj?.habitSuggestions || []).map((h) => {
-                  const isLinked = linkedHabitIds.includes(h.id);
-                  const hName = h.name[curLang] || h.name.pt;
-                  return (
-                    <button
-                      key={h.id}
-                      type="button"
-                      onClick={() => toggleHabitLink(h.id)}
-                      className={`p-1.5 px-2 rounded border text-left text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isLinked
-                          ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
-                          : 'border-line bg-surface2 text-muted hover:text-ink hover:border-gold/30'
-                      }`}
-                    >
-                      <span>{h.icon}</span>
-                      <span className="truncate flex-1 text-[11px]">{hName}</span>
-                      {isLinked && <Check size={11} strokeWidth={3} className="shrink-0 text-gold" />}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Lista dos hábitos ATIVOS na Forja */}
+              {activeForgeIds.length > 0 ? (
+                <div>
+                  <span className="text-[10px] font-mono text-muted uppercase font-bold block mb-1">
+                    {tx.lblMyActiveForgeHabits[curLang]}
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {allUserHabits
+                      .filter((h) => activeForgeIds.includes(String(h.id)))
+                      .map((h) => {
+                        const isLinked = linkedHabitIds.some((x) => String(x) === String(h.id));
+                        const hName = h.n || h.name || h.title || '';
+                        return (
+                          <button
+                            key={h.id}
+                            type="button"
+                            onClick={() => toggleHabitLink(h.id)}
+                            className={`p-1.5 px-2 rounded border text-left text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+                              isLinked
+                                ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
+                                : 'border-line bg-surface2 text-muted hover:text-ink hover:border-gold/30'
+                            }`}
+                          >
+                            <span>{h.icon || '⚡'}</span>
+                            <span className="truncate flex-1 text-[11px]">{hName}</span>
+                            {isLinked && <Check size={11} strokeWidth={3} className="shrink-0 text-gold" />}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-[11px] text-muted font-mono py-1">
+                  Nenhum hábito ativo na Forja ainda.
+                </div>
+              )}
+
+              {/* Se os slots NÃO estiverem cheios, exibe sugestões da categoria */}
+              {!isSlotsFull && (
+                <div className="mt-2 pt-2 border-t border-line/40">
+                  <span className="text-[10px] font-mono text-muted uppercase font-bold block mb-1">
+                    {tx.lblFreeSlotsAvailable[curLang](maxSlots - activeCount)}
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {(activeCatObj?.habitSuggestions || [])
+                      .filter((h) => !activeForgeIds.includes(String(h.id)))
+                      .map((h) => {
+                        const isLinked = linkedHabitIds.some((x) => String(x) === String(h.id));
+                        const hName = h.name[curLang] || h.name.pt;
+                        return (
+                          <button
+                            key={h.id}
+                            type="button"
+                            onClick={() => toggleHabitLink(h.id)}
+                            className={`p-1.5 px-2 rounded border text-left text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+                              isLinked
+                                ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
+                                : 'border-line bg-surface2 text-muted hover:text-ink hover:border-gold/30'
+                            }`}
+                          >
+                            <span>{h.icon}</span>
+                            <span className="truncate flex-1 text-[11px]">{hName}</span>
+                            {isLinked && <Check size={11} strokeWidth={3} className="shrink-0 text-gold" />}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* JANELA DIÁRIA DE FOCO (OPCIONAL) */}

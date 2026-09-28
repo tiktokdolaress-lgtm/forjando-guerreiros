@@ -83,6 +83,17 @@ const LABELS_I18N = {
   tapToActivate: { pt: 'Toque aqui para ativar um hábito da Reserva →', en: 'Tap here to activate a habit from Reserve →', es: 'Toca aquí para activar un hábito de la Reserva →' },
   nextUnlock: { pt: 'Próximo Desbloqueio', en: 'Next Unlock', es: 'Próximo Desbloqueo' },
   slotsFull: { pt: 'Slots Esgotados', en: 'Slots Full', es: 'Slots Agotados' },
+  slotsFullBtn: { pt: 'SLOTS CHEIOS', en: 'SLOTS FULL', es: 'SLOTS LLENOS' },
+  slotsFullTooltip: {
+    pt: (s) => `Todos os ${s} slots do protocolo já estão em uso. Desative um hábito antes de escolher outro.`,
+    en: (s) => `All ${s} protocol slots are already in use. Deactivate a habit before choosing another.`,
+    es: (s) => `Todos los ${s} slots del protocolo ya están en uso. Desactiva un hábito antes de elegir otro.`
+  },
+  reserveSlotsFullNotice: {
+    pt: (s) => `🔒 Protocolo Completo: Todos os seus ${s} slots da Forja já estão em uso. Para escolher outros hábitos, libere um slot desativando um hábito ativo.`,
+    en: (s) => `🔒 Protocol Full: All your ${s} Forge slots are already in use. To choose other habits, free up a slot by deactivating an active habit.`,
+    es: (s) => `🔒 Protocolo Completo: Todos tus ${s} slots de la Forja ya están en uso. Para elegir otros hábitos, libera un slot desactivando un hábito activo.`
+  },
   nextUnlockDesc: {
     pt: (min, slots) => `Mantenha a retenção até ${min} dias para destravar ${slots >= 99 ? 'slots ilimitados' : `${slots} slots`} no protocolo.`,
     en: (min, slots) => `Maintain retention up to ${min} days to unlock ${slots >= 99 ? 'unlimited slots' : `${slots} slots`} in protocol.`,
@@ -1116,6 +1127,16 @@ export default function ForgeView() {
             })}
           </div>
 
+          {/* Banner Informativo quando todos os slots estiverem preenchidos */}
+          {activeCount >= maxSlots && maxSlots < 99 && (
+            <div className="rounded-lg border border-amber-500/35 bg-amber-500/10 p-2.5 flex items-center gap-2.5 text-xs text-amber-300">
+              <Lock size={15} className="text-amber-400 shrink-0" />
+              <span className="text-[11px] leading-snug">
+                {LBL.reserveSlotsFullNotice[curLang](maxSlots)}
+              </span>
+            </div>
+          )}
+
           {/* Grade de 3 Colunas na Reserva */}
           {filteredReserve.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full max-w-full min-w-0">
@@ -1187,11 +1208,22 @@ export default function ForgeView() {
                         {!isArchived && (
                           <button
                             type="button"
-                            title={LBL.activateInProtocol[curLang]}
+                            disabled={activeCount >= maxSlots && maxSlots < 99}
+                            title={activeCount >= maxSlots && maxSlots < 99 ? LBL.slotsFullTooltip[curLang](maxSlots) : LBL.activateInProtocol[curLang]}
                             onClick={() => toggleActive(h.id)}
-                            className="flex-none text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface text-muted hover:border-gold hover:text-gold transition-colors font-bold"
+                            className={`flex-none text-[10px] font-mono px-2 py-0.5 rounded border transition-colors font-bold ${
+                              activeCount >= maxSlots && maxSlots < 99
+                                ? 'border-line/40 bg-surface/40 text-muted/50 cursor-not-allowed opacity-60'
+                                : 'border-line bg-surface text-muted hover:border-gold hover:text-gold cursor-pointer'
+                            }`}
                           >
-                            {LBL.activateBtn[curLang]}
+                            {activeCount >= maxSlots && maxSlots < 99 ? (
+                              <span className="flex items-center gap-1">
+                                <Lock size={9} /> {LBL.slotsFullBtn[curLang]}
+                              </span>
+                            ) : (
+                              LBL.activateBtn[curLang]
+                            )}
                           </button>
                         )}
                       </div>
