@@ -1,11 +1,12 @@
 'use client';
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock } from 'lucide-react';
+import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock, Shield, Sparkles, ScrollText, CheckSquare, HeartHandshake, Zap, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
 import { today, fdmy, dstr, fmtD, daysBetween, parseD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 import * as L from '@/lib/logic';
+import { PROJECT_CATEGORIES, PREDEFINED_TEMPLATES } from '@/lib/project-templates';
 
 const OPS_CATEGORIES = [
   {
@@ -216,6 +217,34 @@ const I18N = {
   unarchiveProjAction: { pt: 'Desarquivar Projeto', en: 'Unarchive Project', es: 'Desarchivar Proyecto' },
   delProjAction: { pt: 'Excluir Projeto', en: 'Delete Project', es: 'Eliminar Proyecto' },
   unlinkFromProj: { pt: 'Desvincular do Projeto', en: 'Unlink from Project', es: 'Desvincular del Proyecto' },
+  btnExploreTemplates: { pt: '⚡ 6 Modelos Prontos da Forja', en: '⚡ 6 Forge Templates', es: '⚡ 6 Plantillas de la Forja' },
+  btnHideTemplates: { pt: 'Ocultar Modelos', en: 'Hide Templates', es: 'Ocultar Plantillas' },
+  templatesBannerTitle: { pt: 'MODELOS PRÉ-CONFIGURADOS DA FORJA (1 CLIQUE)', en: 'FORGE PRE-CONFIGURED TEMPLATES (1-CLICK)', es: 'PLANTILLAS PRECONFIGURADAS DE LA FORJA (1-CLIC)' },
+  templatesBannerDesc: { pt: 'Projetos prontos com mandamentos, hábitos e marcos táticos testados. Ative ou adapte como quiser:', en: 'Ready projects with commandments, habits, and tactical milestones. Activate or tailor as you wish:', es: 'Proyectos listos con mandamientos, hábitos e hitos tácticos probados. Activa o adapta a tu gusto:' },
+  btnUseTemplate: { pt: 'Usar Modelo ➔', en: 'Use Template ➔', es: 'Usar Plantilla ➔' },
+  lblCategoryArea: { pt: 'Área / Categoria do Projeto:', en: 'Project Area / Category:', es: 'Área / Categoría del Proyecto:' },
+  optNoCategory: { pt: 'Geral / Outro', en: 'General / Other', es: 'General / Otro' },
+  lblPillarPact: { pt: 'Pacto de Honra dos 3 Pilares:', en: '3 Pillars Honor Pact:', es: 'Pacto de Honor de los 3 Pilares:' },
+  chkLinkPillars: { pt: 'Vincular este projeto à blindagem dos 3 Pilares (Sem Pornô, Sem Masturbação, Retenção)', en: 'Link this project to 3 Pillars shield (No Porn, No Masturbation, Retention)', es: 'Vincular este proyecto al blindaje de los 3 Pilares (Sin Porno, Sin Masturbación, Retención)' },
+  badgePillarsActive: { pt: '🛡️ 3 Pilares Vinculados', en: '🛡️ 3 Pillars Linked', es: '🛡️ 3 Pilares Vinculados' },
+  badgePillarsStreak: { pt: 'dias limpos', en: 'clean days', es: 'días limpios' },
+  lblCommandments: { pt: '📜 Mandamentos & Código de Honra:', en: '📜 Commandments & Honor Code:', es: '📜 Mandamientos y Código de Honor:' },
+  lblCommandmentsSub: { pt: 'Princípios inegociáveis e nova autoimagem gravada neste projeto:', en: 'Non-negotiable principles and new self-image etched into this project:', es: 'Principios innegociables y nueva autoimagen grabada en este proyecto:' },
+  phNewCommandment: { pt: 'Novo mandamento (ex: Eu sou o prêmio / Não ligo para opinião alheia)...', en: 'New commandment (e.g. I am the prize / I don\'t care about outside opinions)...', es: 'Nuevo mandamiento (ej.: Yo soy el premio / No me importa la opinión ajena)...' },
+  btnAddCommandment: { pt: 'Adicionar Lei', en: 'Add Law', es: 'Añadir Ley' },
+  lblSuggestionsFromCategory: { pt: 'Sugestões Recomendadas para esta Área:', en: 'Recommended Suggestions for this Area:', es: 'Sugerencias Recomendadas para esta Área:' },
+  btnAddAllSuggestions: { pt: '+ Adicionar Todas', en: '+ Add All', es: '+ Añadir Todas' },
+  lblHabitsInProject: { pt: '⚡ Hábitos Vinculados a Este Projeto:', en: '⚡ Habits Linked to This Project:', es: '⚡ Hábitos Vinculados a Este Proyecto:' },
+  lblHabitsInProjectSub: { pt: 'Ao concluir esses hábitos no dia a dia, eles alimentam a força deste projeto:', en: 'Completing these daily habits directly fuels this project\'s power:', es: 'Al completar estos hábitos a diario, alimentan la fuerza de este proyecto:' },
+  btnAnchorHabit: { pt: '+ Vincular Hábito da Forja', en: '+ Link Forge Habit', es: '+ Vincular Hábito de la Forja' },
+  toastHabitLinkedToProj: { pt: '⚡ Hábito vinculado ao projeto!', en: '⚡ Habit linked to project!', es: '¡⚡ Hábito vinculado al proyecto!' },
+  toastHabitUnlinkedFromProj: { pt: 'Hábito desvinculado do projeto', en: 'Habit unlinked from project', es: 'Hábito desvinculado del proyecto' },
+  durationShortcuts: { pt: 'Atalhos de Duração:', en: 'Duration Shortcuts:', es: 'Atajos de Duración:' },
+  durationDaysWord: { pt: 'Dias', en: 'Days', es: 'Días' },
+  daysRemainingWord: { pt: 'Restam', en: 'Left', es: 'Quedan' },
+  projectHealthOnTrack: { pt: 'EM RITMO DE VITÓRIA', en: 'ON TRACK FOR VICTORY', es: 'EN RITMO DE VICTORIA' },
+  projectHealthWarning: { pt: 'ALERTA: FORJA ESFRIANDO', en: 'WARNING: FORGE COOLING', es: 'ALERTA: FORJA ENFRIÁNDOSE' },
+  toastTemplateLoaded: { pt: '⚔️ Modelo carregado com sucesso!', en: '⚔️ Template loaded successfully!', es: '¡⚔️ Plantilla cargada con éxito!' },
 };
 
 export default function OpsView() {
@@ -227,6 +256,7 @@ export default function OpsView() {
   const [activeMainTab, setActiveMainTab] = useState('tasks');
   const [filter, setFilter] = useState('today');
   const [projFilter, setProjFilter] = useState('ativos'); // 'ativos', 'concluidos', 'arquivados'
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const tasks = S.tasks || [];
   const projects = S.projects || [];
@@ -642,16 +672,26 @@ export default function OpsView() {
     openModal(<LinkModalContent />);
   };
 
-  /* MODAL: Criar / Editar Projeto (Com Início, Duração em Dias e Término) */
-  const openProjectModal = (projToEdit = null) => {
+  /* MODAL: Criar / Editar Projeto (Com Início, Duração Flexível, Categoria, 3 Pilares e Mandamentos) */
+  const openProjectModal = (projToEdit = null, templateData = null) => {
     const ProjModalContent = () => {
-      const [pTitle, setPTitle] = useState(projToEdit ? projToEdit.title : '');
-      const [pDesc, setPDesc] = useState(projToEdit ? projToEdit.desc || '' : '');
+      const source = templateData || projToEdit;
+      const initialCat = source?.category || (source?.cat ? source.cat.toLowerCase() : 'mind');
+      const [category, setCategory] = useState(initialCat);
+
+      const [pTitle, setPTitle] = useState(
+        templateData ? (templateData.title[curLang] || templateData.title.pt) : (projToEdit ? projToEdit.title : '')
+      );
+      const [pDesc, setPDesc] = useState(
+        templateData ? (templateData.desc[curLang] || templateData.desc.pt) : (projToEdit ? projToEdit.desc || '' : '')
+      );
       const [pStart, setPStart] = useState(projToEdit ? (projToEdit.start || today()) : today());
 
-      const initialDays = projToEdit && projToEdit.start && projToEdit.deadline
-        ? Math.max(1, daysBetween(projToEdit.start, projToEdit.deadline) + 1)
-        : (projToEdit?.days || 30);
+      const initialDays = templateData?.days
+        ? templateData.days
+        : (projToEdit && projToEdit.start && projToEdit.deadline
+            ? Math.max(1, daysBetween(projToEdit.start, projToEdit.deadline) + 1)
+            : (projToEdit?.days || 30));
       const [pDays, setPDays] = useState(initialDays);
 
       const initialDead = projToEdit && projToEdit.deadline
@@ -660,6 +700,36 @@ export default function OpsView() {
       const [pDeadline, setPDeadline] = useState(initialDead);
       const [tStart, setTStart] = useState(projToEdit ? (projToEdit.tStart || '') : '');
       const [tEnd, setTEnd] = useState(projToEdit ? (projToEdit.tEnd || '') : '');
+
+      // Conexão com os 3 Pilares
+      const [linkPillars, setLinkPillars] = useState(
+        source?.linkPillars !== undefined ? !!source.linkPillars : true
+      );
+
+      // Mandamentos / Leis Pessoais de Conduta
+      const initialCmds = source?.commandments
+        ? (Array.isArray(source.commandments)
+            ? source.commandments
+            : (source.commandments[curLang] || source.commandments.pt || []))
+        : [];
+      const [commandments, setCommandments] = useState(initialCmds);
+      const [newCmdTxt, setNewCmdTxt] = useState('');
+
+      // Hábitos Vinculados a este Projeto
+      const initialHabitIds = source?.habitIds
+        ? source.habitIds
+        : (source?.habits ? source.habits.map((h) => h.id) : []);
+      const [linkedHabitIds, setLinkedHabitIds] = useState(initialHabitIds);
+
+      // Etapas Iniciais (quando vier de template)
+      const initialSteps = templateData?.steps
+        ? (templateData.steps[curLang] || templateData.steps.pt || []).map((txt, idx) => ({
+            id: 'st_init_' + idx + '_' + Date.now(),
+            txt,
+            done: false,
+          }))
+        : (projToEdit?.steps || []);
+      const [projSteps, setProjSteps] = useState(initialSteps);
 
       const syncDead = (st, dy) => {
         if (st && Number(dy) >= 1) {
@@ -675,21 +745,92 @@ export default function OpsView() {
         }
       };
 
+      const applyDurationPreset = (daysCount) => {
+        setPDays(daysCount);
+        if (pStart) syncDead(pStart, daysCount);
+        AF.click();
+      };
+
+      // Categoria selecionada
+      const activeCatObj = PROJECT_CATEGORIES.find((c) => c.id === category) || PROJECT_CATEGORIES[0];
+
+      const addCommandment = (txtToAdd) => {
+        const clean = (txtToAdd || newCmdTxt).trim();
+        if (!clean) return;
+        if (!commandments.includes(clean)) {
+          setCommandments((prev) => [...prev, clean]);
+        }
+        setNewCmdTxt('');
+        AF.click();
+      };
+
+      const removeCommandment = (idx) => {
+        setCommandments((prev) => prev.filter((_, i) => i !== idx));
+        AF.click();
+      };
+
+      const toggleHabitLink = (hId) => {
+        setLinkedHabitIds((prev) =>
+          prev.includes(hId) ? prev.filter((id) => id !== hId) : [...prev, hId]
+        );
+        AF.click();
+      };
+
       return (
-        <div className="text-left">
-          <div className="pb-2 mb-3 border-b border-line">
-            <h3 className="font-display text-xl tracking-wide text-gold">
-              {projToEdit ? tx.projModalEdit[curLang] : tx.projModalNew[curLang]}
-            </h3>
+        <div className="text-left max-h-[82vh] overflow-y-auto pr-1">
+          <div className="pb-2 mb-3 border-b border-line flex items-center justify-between gap-2">
+            <div>
+              <h3 className="font-display text-xl tracking-wide text-gold">
+                {projToEdit ? tx.projModalEdit[curLang] : tx.projModalNew[curLang]}
+              </h3>
+              <p className="text-[11px] text-muted">
+                {tx.templatesBannerDesc[curLang]}
+              </p>
+            </div>
+            {linkPillars && (
+              <span className="px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/40 text-[10px] font-mono font-bold shrink-0">
+                🛡️ {L.progressDays(S)} {tx.badgePillarsStreak[curLang]}
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col gap-3">
+            {/* SELEÇÃO DE ÁREA / CATEGORIA */}
+            <div>
+              <span className="lbl mb-1 block">{tx.lblCategoryArea[curLang]}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {PROJECT_CATEGORIES.map((cat) => {
+                  const isSel = category === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setCategory(cat.id);
+                        AF.click();
+                      }}
+                      className={`p-2 rounded border text-left transition-all flex items-center gap-2 cursor-pointer ${
+                        isSel
+                          ? 'border-gold bg-gold/15 text-gold shadow-sm'
+                          : 'border-line bg-surface hover:border-gold/40 text-muted hover:text-ink'
+                      }`}
+                    >
+                      <span className="text-base flex-none">{cat.icon}</span>
+                      <span className="text-xs font-bold truncate">
+                        {cat.label[curLang] || cat.label.pt}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
               <span className="lbl mb-1 block">{tx.lblProjTitle[curLang]}</span>
               <input
                 type="text"
                 placeholder={tx.phProjTitle[curLang]}
-                className="field w-full text-xs sm:text-sm"
+                className="field w-full text-xs sm:text-sm font-semibold"
                 value={pTitle}
                 onChange={(e) => setPTitle(e.target.value)}
               />
@@ -706,13 +847,64 @@ export default function OpsView() {
               />
             </div>
 
-            {/* CRONOGRAMA COMPLETO: INÍCIO, DURAÇÃO EM DIAS E TÉRMINO */}
-            <div className="rounded border border-gold/40 bg-surface2/90 p-2.5">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-gold font-bold block mb-2">
-                {tx.lblProjSchedule[curLang]}
-              </span>
+            {/* PACTO DOS 3 PILARES */}
+            <div className={`p-2.5 rounded border transition-all ${
+              linkPillars ? 'border-gold/40 bg-gold/5' : 'border-line bg-surface/60'
+            }`}>
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={linkPillars}
+                  onChange={(e) => {
+                    setLinkPillars(e.target.checked);
+                    AF.click();
+                  }}
+                  className="mt-0.5 rounded border-line text-gold focus:ring-0 cursor-pointer"
+                />
+                <div>
+                  <b className={`text-xs block ${linkPillars ? 'text-gold' : 'text-ink'}`}>
+                    🛡️ {tx.lblPillarPact[curLang]}
+                  </b>
+                  <span className="text-[11px] text-muted block leading-snug">
+                    {tx.chkLinkPillars[curLang]}
+                  </span>
+                </div>
+              </label>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {/* CRONOGRAMA COMPLETO & ATALHOS DE DIAS */}
+            <div className="rounded border border-gold/40 bg-surface2/90 p-2.5">
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-gold font-bold">
+                  {tx.lblProjSchedule[curLang]}
+                </span>
+                {/* Atalhos Rápidos */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[9.5px] text-muted font-mono mr-0.5">{tx.durationShortcuts[curLang]}</span>
+                  {[
+                    { label: '21d', val: 21 },
+                    { label: '30d', val: 30 },
+                    { label: '60d', val: 60 },
+                    { label: '90d', val: 90 },
+                    { label: '100d', val: 100 },
+                  ].map((p) => (
+                    <button
+                      key={p.val}
+                      type="button"
+                      onClick={() => applyDurationPreset(p.val)}
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded border font-bold cursor-pointer transition-colors ${
+                        Number(pDays) === p.val
+                          ? 'bg-gold text-[#141414] border-gold'
+                          : 'bg-surface border-line text-muted hover:text-gold hover:border-gold/40'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
                 <div>
                   <span className="lbl mb-1 block">{tx.lblStartDate[curLang]}</span>
                   <input
@@ -757,6 +949,140 @@ export default function OpsView() {
                     }}
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* MANDAMENTOS & AUTOIMAGEM */}
+            <div className="rounded border border-line bg-surface p-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-ink">
+                  {tx.lblCommandments[curLang]}
+                </span>
+                <span className="text-[10px] font-mono text-muted">
+                  {commandments.length} {commandments.length === 1 ? 'lei' : 'leis'}
+                </span>
+              </div>
+              <p className="text-[10.5px] text-muted mb-2 leading-tight">
+                {tx.lblCommandmentsSub[curLang]}
+              </p>
+
+              {commandments.length > 0 && (
+                <div className="space-y-1 mb-2.5 max-h-36 overflow-y-auto pr-1">
+                  {commandments.map((cmd, idx) => (
+                    <div
+                      key={idx}
+                      className="p-1.5 px-2 rounded bg-surface2 border border-line/60 flex items-start justify-between gap-1.5 text-xs text-amber-200/90 font-mono"
+                    >
+                      <span className="flex-1 leading-snug">⚔️ {cmd}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeCommandment(idx)}
+                        className="text-muted hover:text-danger p-0.5 shrink-0"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Inserir novo mandamento */}
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  placeholder={tx.phNewCommandment[curLang]}
+                  value={newCmdTxt}
+                  onChange={(e) => setNewCmdTxt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCommandment();
+                    }
+                  }}
+                  className="field flex-1 text-xs py-1 px-2"
+                />
+                <button
+                  type="button"
+                  onClick={() => addCommandment()}
+                  className="btn-dark py-1 px-2.5 text-xs font-bold font-mono text-gold border-gold/30 shrink-0"
+                >
+                  + {tx.btnAddCommandment[curLang]}
+                </button>
+              </div>
+
+              {/* Sugestões da Categoria */}
+              {activeCatObj?.commandmentsSuggestions?.[curLang] && (
+                <div className="mt-2 pt-2 border-t border-line/40">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono text-muted uppercase font-bold">
+                      {tx.lblSuggestionsFromCategory[curLang]}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const recs = activeCatObj.commandmentsSuggestions[curLang] || [];
+                        setCommandments((prev) => Array.from(new Set([...prev, ...recs])));
+                        AF.click();
+                      }}
+                      className="text-[10px] font-mono text-gold hover:underline"
+                    >
+                      {tx.btnAddAllSuggestions[curLang]}
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(activeCatObj.commandmentsSuggestions[curLang] || []).map((sug, i) => {
+                      const already = commandments.includes(sug);
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          disabled={already}
+                          onClick={() => addCommandment(sug)}
+                          className={`text-[10px] font-mono text-left px-2 py-1 rounded border transition-all ${
+                            already
+                              ? 'bg-surface2/40 border-line/30 text-muted line-through opacity-50 cursor-not-allowed'
+                              : 'bg-surface2 hover:bg-gold/10 border-line hover:border-gold/40 text-muted hover:text-gold cursor-pointer'
+                          }`}
+                        >
+                          + {sug}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* HÁBITOS DA FORJA ANCORADOS */}
+            <div className="rounded border border-line bg-surface p-2.5">
+              <span className="text-xs font-bold text-ink block mb-0.5">
+                {tx.lblHabitsInProject[curLang]}
+              </span>
+              <p className="text-[10.5px] text-muted mb-2 leading-tight">
+                {tx.lblHabitsInProjectSub[curLang]}
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {(activeCatObj?.habitSuggestions || []).map((h) => {
+                  const isLinked = linkedHabitIds.includes(h.id);
+                  const hName = h.name[curLang] || h.name.pt;
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => toggleHabitLink(h.id)}
+                      className={`p-1.5 px-2 rounded border text-left text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+                        isLinked
+                          ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
+                          : 'border-line bg-surface2 text-muted hover:text-ink hover:border-gold/30'
+                      }`}
+                    >
+                      <span>{h.icon}</span>
+                      <span className="truncate flex-1 text-[11px]">{hName}</span>
+                      {isLinked && <Check size={11} strokeWidth={3} className="shrink-0 text-gold" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -815,7 +1141,7 @@ export default function OpsView() {
             )}
           </div>
 
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex gap-2 pt-2 border-t border-line">
             <button
               type="button"
               className="btn-gold flex-1 py-2 text-xs font-bold"
@@ -828,6 +1154,10 @@ export default function OpsView() {
                     if (pTarget) {
                       pTarget.title = pTitle.trim();
                       pTarget.desc = pDesc.trim();
+                      pTarget.category = category;
+                      pTarget.linkPillars = linkPillars;
+                      pTarget.commandments = commandments;
+                      pTarget.habitIds = linkedHabitIds;
                       pTarget.start = pStart || today();
                       pTarget.days = Number(pDays) || 30;
                       pTarget.deadline = pDeadline || '';
@@ -839,6 +1169,10 @@ export default function OpsView() {
                       id: 'proj_' + Date.now(),
                       title: pTitle.trim(),
                       desc: pDesc.trim(),
+                      category,
+                      linkPillars,
+                      commandments,
+                      habitIds: linkedHabitIds,
                       start: pStart || today(),
                       days: Number(pDays) || 30,
                       deadline: pDeadline || '',
@@ -846,7 +1180,7 @@ export default function OpsView() {
                       tEnd: tEnd || '',
                       status: 'ativo',
                       archived: false,
-                      steps: [],
+                      steps: projSteps,
                       createdAt: today(),
                     });
                   }
@@ -1361,11 +1695,28 @@ export default function OpsView() {
         )}
 
         {activeMainTab === 'projects' && (
-          <div className="flex items-center justify-end w-full min-w-0">
+          <div className="flex items-center justify-between w-full min-w-0 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowTemplates((prev) => !prev);
+                AF.click();
+              }}
+              className={`py-1.5 px-2.5 sm:px-3 text-xs font-mono font-bold rounded border transition-all flex items-center gap-1.5 cursor-pointer ${
+                showTemplates
+                  ? 'border-gold bg-gold/20 text-gold shadow-sm'
+                  : 'border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold'
+              }`}
+            >
+              <Sparkles size={13} className="text-gold" />
+              <span>{showTemplates ? tx.btnHideTemplates[curLang] : tx.btnExploreTemplates[curLang]}</span>
+              {showTemplates ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+
             <button
               type="button"
               onClick={() => openProjectModal()}
-              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap"
+              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap cursor-pointer"
             >
               <Plus size={13} strokeWidth={2.5} />
               <span>{tx.newProject[curLang]}</span>
@@ -1589,6 +1940,119 @@ export default function OpsView() {
             ))}
           </div>
 
+          {/* SEÇÃO EXPANSÍVEL: 6 MODELOS PRÉ-CONFIGURADOS DA FORJA */}
+          {showTemplates && (
+            <div className="p-3.5 sm:p-4 rounded-xl border border-gold/40 bg-gradient-to-b from-[#18110b] via-[#100b07] to-surface shadow-xl relative overflow-hidden mb-1">
+              <div className="flex items-start justify-between gap-2 mb-3 pb-2.5 border-b border-gold/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/40 text-gold flex items-center justify-center shrink-0">
+                    <Sparkles size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base tracking-wide text-gold">
+                      {tx.templatesBannerTitle[curLang]}
+                    </h3>
+                    <p className="text-[11px] text-muted leading-tight">
+                      {tx.templatesBannerDesc[curLang]}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTemplates(false)}
+                  className="text-muted hover:text-ink p-1 rounded hover:bg-surface2 transition-colors shrink-0 cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {PREDEFINED_TEMPLATES.map((tpl) => {
+                  const catObj = PROJECT_CATEGORIES.find((c) => c.id === tpl.category) || PROJECT_CATEGORIES[0];
+                  const tTitle = tpl.title[curLang] || tpl.title.pt;
+                  const tDesc = tpl.desc[curLang] || tpl.desc.pt;
+                  const tCmds = tpl.commandments[curLang] || tpl.commandments.pt || [];
+                  const tSteps = tpl.steps[curLang] || tpl.steps.pt || [];
+                  const habitsList = tpl.habits || [];
+
+                  return (
+                    <div
+                      key={tpl.id}
+                      className="rounded-lg border border-gold/30 bg-surface/90 hover:border-gold/60 p-3 flex flex-col justify-between transition-all hover:shadow-[0_4px_20px_rgba(245,158,11,0.15)] group"
+                    >
+                      <div>
+                        {/* Topo do Modelo */}
+                        <div className="flex items-center justify-between gap-1.5 mb-2 flex-wrap">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface2 border border-line text-muted flex items-center gap-1 font-bold">
+                            <span>{catObj.icon}</span>
+                            <span>{catObj.label[curLang] || catObj.label.pt}</span>
+                          </span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/40 font-extrabold">
+                            ⚡ {tpl.days} {tx.durationDaysWord[curLang]}
+                          </span>
+                        </div>
+
+                        <h4 className="text-xs sm:text-[13px] font-bold text-ink mb-1.5 leading-snug group-hover:text-gold transition-colors">
+                          {tTitle}
+                        </h4>
+
+                        <p className="text-[11px] text-muted line-clamp-3 mb-2.5 leading-relaxed">
+                          {tDesc}
+                        </p>
+
+                        {/* Pilares e Hábitos da Forja */}
+                        <div className="space-y-1.5 mb-3 pt-2 border-t border-line/40">
+                          {tpl.linkPillars && (
+                            <div className="flex items-center gap-1 text-[10px] font-mono text-gold font-bold">
+                              <Shield size={11} className="text-gold shrink-0" />
+                              <span>{tx.badgePillarsActive[curLang]}</span>
+                            </div>
+                          )}
+
+                          {habitsList.length > 0 && (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="text-[10px] font-mono text-muted mr-0.5">Hábitos:</span>
+                              {habitsList.map((h) => {
+                                const hName = h.name[curLang] || h.name.pt;
+                                return (
+                                  <span
+                                    key={h.id}
+                                    title={hName}
+                                    className="text-[10px] px-1.5 py-0.2 rounded bg-surface2 border border-line/60 text-ink font-mono flex items-center gap-0.5"
+                                  >
+                                    <span>{h.icon}</span>
+                                    <span className="max-w-[70px] truncate">{hName}</span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="text-[10px] font-mono text-muted flex items-center justify-between">
+                            <span>📜 {tCmds.length} leis de conduta</span>
+                            <span>🚩 {tSteps.length} etapas</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          openProjectModal(null, tpl);
+                          toast(tx.toastTemplateLoaded[curLang]);
+                        }}
+                        className="btn-gold w-full py-1.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm mt-1 cursor-pointer"
+                      >
+                        <Zap size={12} strokeWidth={2.5} />
+                        <span>{tx.btnUseTemplate[curLang]}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-start">
             {displayedProjects.length > 0 ? (
               <>
@@ -1605,6 +2069,11 @@ export default function OpsView() {
                 const isProjectLate = L.isProjLate(S, proj);
                 const hasDelayedTask = projTasks.some((t) => L.isTaskOverdue(t));
                 const hasPostponedTask = projTasks.some((t) => L.isTaskPostponed(t));
+                const catObj = PROJECT_CATEGORIES.find((c) => c.id === proj.category);
+                const userHabits = L.allH(S);
+                const projHabits = (proj.habitIds || []).map((hId) => userHabits.find((h) => String(h.id) === String(hId))).filter(Boolean);
+                const forgeDoneToday = (S?.forge?.done || {})[today()] || [];
+                const projCmds = Array.isArray(proj.commandments) ? proj.commandments : [];
 
                 return (
                   <Card
@@ -1621,19 +2090,39 @@ export default function OpsView() {
                   >
                     <div>
                       {/* Topo do Card */}
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Folder className="text-gold flex-none" size={18} />
-                          <h4 className={`text-sm font-bold truncate ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>
-                            {proj.title}
-                          </h4>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-start gap-2 min-w-0 flex-1">
+                          <span className="text-xl flex-none mt-0.5" role="img">{catObj?.icon || '🏛️'}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                              {catObj && (
+                                <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-surface border border-line text-muted font-bold">
+                                  {catObj.label[curLang] || catObj.label.pt}
+                                </span>
+                              )}
+                              {proj.days && (
+                                <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold">
+                                  ⚡ {proj.days} {tx.wordDays[curLang]}
+                                </span>
+                              )}
+                              {proj.linkPillars && (
+                                <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/40 font-extrabold flex items-center gap-1">
+                                  <Shield size={10} className="text-gold" />
+                                  <span>{tx.badgePillarsActive[curLang]} ({L.progressDays(S)} {tx.badgePillarsStreak[curLang]})</span>
+                                </span>
+                              )}
+                            </div>
+                            <h4 className={`text-sm sm:text-[15px] font-bold truncate leading-tight ${isCompleted ? 'line-through text-muted' : 'text-ink'}`}>
+                              {proj.title}
+                            </h4>
+                          </div>
                         </div>
                         <div className="flex items-center gap-1.5 flex-none">
                           {!isArchived && (
                             <button
                               type="button"
                               onClick={() => toggleProjectStatus(proj)}
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold transition-all ${
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold transition-all cursor-pointer ${
                                 isCompleted
                                   ? 'border-gold bg-gold/15 text-gold'
                                   : isProjectLate
@@ -1653,7 +2142,7 @@ export default function OpsView() {
                             type="button"
                             title={tx.editProjTitle[curLang]}
                             onClick={() => openProjectModal(proj)}
-                            className="text-muted hover:text-gold p-1 transition-colors"
+                            className="text-muted hover:text-gold p-1 transition-colors cursor-pointer"
                           >
                             <Edit3 size={13} />
                           </button>
@@ -1661,7 +2150,7 @@ export default function OpsView() {
                             type="button"
                             title={isArchived ? tx.unarchiveProjAction[curLang] : tx.archiveProjAction[curLang]}
                             onClick={() => requestArchiveProject(proj)}
-                            className="text-muted hover:text-gold p-1 transition-colors"
+                            className="text-muted hover:text-gold p-1 transition-colors cursor-pointer"
                           >
                             <Archive size={13} />
                           </button>
@@ -1669,7 +2158,7 @@ export default function OpsView() {
                             type="button"
                             title={tx.delProjAction[curLang]}
                             onClick={() => requestDeleteProject(proj)}
-                            className="text-muted hover:text-danger p-1 transition-colors"
+                            className="text-muted hover:text-danger p-1 transition-colors cursor-pointer"
                           >
                             <Trash2 size={13} />
                           </button>
@@ -1677,9 +2166,58 @@ export default function OpsView() {
                       </div>
 
                       {proj.desc && (
-                        <p className="text-xs text-muted mb-3 leading-relaxed">
+                        <p className="text-xs text-muted mb-2.5 leading-relaxed">
                           {proj.desc}
                         </p>
+                      )}
+
+                      {/* HÁBITOS DA FORJA ANCORADOS AO PROJETO */}
+                      {projHabits.length > 0 && (
+                        <div className="mb-2.5 p-2 rounded bg-surface/70 border border-line/40">
+                          <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
+                            <span className="uppercase font-bold text-amber-300 flex items-center gap-1">
+                              <Zap size={11} className="text-gold" /> {tx.lblHabitsInProject[curLang]}
+                            </span>
+                            <span>{projHabits.filter((h) => forgeDoneToday.includes(h.id)).length}/{projHabits.length} cumpridos hoje</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {projHabits.map((h) => {
+                              const isDoneToday = forgeDoneToday.includes(h.id);
+                              const hName = h.n || h.name || h.title || '';
+                              return (
+                                <span
+                                  key={h.id}
+                                  className={`text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 transition-all ${
+                                    isDoneToday
+                                      ? 'bg-gold/20 border-gold/60 text-gold font-bold shadow-sm'
+                                      : 'bg-surface2 border-line text-muted'
+                                  }`}
+                                >
+                                  <span>{h.icon || '⚡'}</span>
+                                  <span className="truncate max-w-[100px]">{hName}</span>
+                                  {isDoneToday && <Check size={10} strokeWidth={3} className="text-gold" />}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* LEIS & MANDAMENTOS DESTE PROJETO */}
+                      {projCmds.length > 0 && (
+                        <div className="mb-2.5 p-2 rounded bg-surface/60 border border-line/40">
+                          <span className="text-[10px] font-mono text-muted uppercase font-bold block mb-1">
+                            {tx.lblCommandments[curLang]} ({projCmds.length})
+                          </span>
+                          <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                            {projCmds.map((cmd, cIdx) => (
+                              <div key={cIdx} className="text-[11px] font-mono text-amber-200/90 leading-tight flex items-start gap-1">
+                                <span className="text-gold shrink-0">⚔️</span>
+                                <span>{cmd}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
                       {/* Banner de Atraso se Projeto Atrasado */}
@@ -1942,21 +2480,39 @@ export default function OpsView() {
               )}
             </>
             ) : (
-              <div className="col-span-2 py-10 text-center">
-                <Card className="py-8">
-                  <Empty>
+              <div className="col-span-2 py-8 text-center">
+                <Card className="py-8 px-4 max-w-lg mx-auto border-gold/30">
+                  <div className="w-12 h-12 rounded-full bg-gold/15 border border-gold/40 text-gold flex items-center justify-center mx-auto mb-3">
+                    <Layers size={24} />
+                  </div>
+                  <h4 className="font-display text-base text-ink mb-1">
                     {tx.noProjects[curLang]}
-                    <br />
-                    {projFilter === 'ativos' && (
+                  </h4>
+                  <p className="text-xs text-muted max-w-sm mx-auto mb-4">
+                    {tx.cardNewProjectSub[curLang]}
+                  </p>
+                  {projFilter === 'ativos' && (
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowTemplates(true);
+                          AF.click();
+                        }}
+                        className="btn-gold py-2 px-4 text-xs font-bold w-full sm:w-auto flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                      >
+                        <Sparkles size={14} />
+                        <span>{tx.btnExploreTemplates[curLang]}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => openProjectModal()}
-                        className="btn-gold py-1.5 px-4 text-xs font-bold mt-3"
+                        className="btn-dark py-2 px-4 text-xs font-bold w-full sm:w-auto cursor-pointer"
                       >
                         {tx.btnCreateFirstProject[curLang]}
                       </button>
-                    )}
-                  </Empty>
+                    </div>
+                  )}
                 </Card>
               </div>
             )}
