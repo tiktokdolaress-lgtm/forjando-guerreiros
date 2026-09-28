@@ -212,6 +212,107 @@ function useLiveTimer(startDateStr, daysTotal) {
   return time;
 }
 
+/* Batalha das 24 Horas & Pacto de Honra de Hoje (Trilíngue: PT, EN, ES) */
+const BATTLE_24H_I18N = {
+  cardTitle: {
+    pt: 'A BATALHA DAS 24 HORAS',
+    en: 'THE 24-HOUR BATTLE',
+    es: 'LA BATALLA DE LAS 24 HORAS',
+  },
+  cardSubtitle: {
+    pt: 'VENÇA O HOJE · O AMANHÃ NÃO EXISTE',
+    en: 'CONQUER TODAY · TOMORROW DOES NOT EXIST',
+    es: 'VENCE EL HOY · EL MAÑANA NO EXISTE',
+  },
+  badgeToday: {
+    pt: 'HOJE',
+    en: 'TODAY',
+    es: 'HOY',
+  },
+  timeRemaining: {
+    pt: (h, m) => `${h}h ${m}m restantes nestas 24h`,
+    en: (h, m) => `${h}h ${m}m left in these 24h`,
+    es: (h, m) => `${h}h ${m}m restantes en estas 24h`,
+  },
+  dayPassed: {
+    pt: (pct) => `${pct}% do dia de hoje decorrido`,
+    en: (pct) => `${pct}% of today elapsed`,
+    es: (pct) => `${pct}% del día transcurrido`,
+  },
+  pactButtonUnpledged: {
+    pt: '⚔️ SELAR PACTO DE HOJE: "HOJE EU NÃO CAIO"',
+    en: '⚔️ SEAL TODAY\'S PACT: "TODAY I WILL NOT FALL"',
+    es: '⚔️ SELLAR PACTO DE HOY: "HOY NO CAIGO"',
+  },
+  pactButtonPledged: {
+    pt: '🛡️ PACTO DE HOJE SELADO: SOBERANIA ATIVA',
+    en: '🛡️ TODAY\'S PACT SEALED: SOVEREIGNTY ACTIVE',
+    es: '🛡️ PACTO DE HOY SELLADO: SOBERANÍA ACTIVA',
+  },
+  pactToastPledged: {
+    pt: '⚔️ PACTO DE HONRA SELADO: O dia de hoje pertence à sua vitória!',
+    en: '⚔️ HONOR PACT SEALED: Today belongs to your victory!',
+    es: '⚔️ PACTO DE HONOR SELLADO: ¡El día de hoy pertenece a tu victoria!',
+  },
+  pactToastUnpledged: {
+    pt: 'Pacto reaberto para confirmação.',
+    en: 'Pact reopened for confirmation.',
+    es: 'Pacto reabierto para confirmación.',
+  },
+  allCleanHonor: {
+    pt: '3 Pilares invictos hoje. Mantenha a honra até o último segundo!',
+    en: '3 Pillars undefeated today. Hold honor until the final second!',
+    es: '3 Pilares invictos hoy. ¡Mantén el honor hasta el último segundo!',
+  },
+  pillarsPendingHonor: {
+    pt: 'Sua única missão é manter sua honra nestas 24 horas.',
+    en: 'Your sole mission is to preserve your honor in these 24 hours.',
+    es: 'Tu única misión es preservar tu honor en estas 24 horas.',
+  },
+  switchAxiomTooltip: {
+    pt: 'Toque para alternar o axioma de guerra de hoje',
+    en: 'Tap to switch today\'s battle axiom',
+    es: 'Toca para cambiar el axioma de guerra de hoy',
+  },
+  pactRegistered: {
+    pt: '✓ PACTO REGISTRADO',
+    en: '✓ PACT REGISTERED',
+    es: '✓ PACTO REGISTRADO',
+  },
+  pactPending: {
+    pt: 'AGUARDANDO PACTO',
+    en: 'AWAITING PACT',
+    es: 'ESPERANDO PACTO',
+  },
+  axioms: [
+    {
+      pt: 'Ontem virou cinzas e estatística. O amanhã ainda não existe. Toda a sua guerra se resume a vencer as próximas 24 horas. Faça deste dia épico.',
+      en: 'Yesterday turned to ash and statistics. Tomorrow does not yet exist. Your entire war comes down to conquering the next 24 hours. Make today epic.',
+      es: 'El ayer se convirtió en cenizas y estadísticas. El mañana aún no existe. Toda tu guerra se reduce a vencer las próximas 24 horas. Haz de hoy un día épico.',
+    },
+    {
+      pt: 'Não prometa 1 ano de pureza. Prometa vencer apenas o dia de hoje. A disciplina inquebrantável é forjada um único dia por vez.',
+      en: 'Do not promise a year of purity. Promise only to conquer today. Unshakable discipline is forged a single day at a time.',
+      es: 'No prometas un año de pureza. Promete vencer solo el día de hoy. La disciplina inquebrantable se forja un solo día a la vez.',
+    },
+    {
+      pt: 'O passado não pode ser reescrito e o futuro é construído agora. Domine seus impulsos nestas 24 horas e o império será erguido.',
+      en: 'The past cannot be rewritten and the future is built right now. Master your impulses during these 24 hours and the empire will rise.',
+      es: 'El pasado no se puede reescribir y el futuro se construye ahora. Domina tus impulsos en estas 24 horas y el imperio será levantado.',
+    },
+    {
+      pt: 'Hoje é o único dia em que você pode lutar, transmutar e honrar seu nome. Deixe o suor no campo e chegue invicto à noite.',
+      en: 'Today is the only day you can fight, transmute, and honor your name. Leave everything on the battlefield and finish the night undefeated.',
+      es: 'Hoy es el único día en que puedes luchar, transmutar y honrar tu nombre. Deja todo en el campo de batalla y llega invicto a la noche.',
+    },
+    {
+      pt: 'A mente fraca se apavora com a distância da jornada. O guerreiro de aço foca apenas no próximo passo e na vitória de hoje.',
+      en: 'A weak mind trembles before the length of the journey. A warrior of steel focuses only on the next step and today\'s victory.',
+      es: 'La mente débil se aterra ante la distancia del viaje. El guerrero de acero se enfoca solo en el siguiente paso y en la victoria de hoy.',
+    },
+  ],
+};
+
 export default function QgView() {
   const { S, update, t, openModal, closeModal, toast, setTab } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
@@ -221,6 +322,7 @@ export default function QgView() {
   const [showTacticsAccordion, setShowTacticsAccordion] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
+  const [pactAxiomIdx, setPactAxiomIdx] = useState(0);
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
@@ -637,6 +739,155 @@ export default function QgView() {
       </div>
     </Card>
   );
+
+  /* A BATALHA DAS 24 HORAS (VENÇA O HOJE & PACTO DE HONRA) */
+  const renderBattle24Hours = () => {
+    const isPledged = !!(S?.dailyPacts && S.dailyPacts[today()]);
+    const bTx = BATTLE_24H_I18N;
+    const now = new Date();
+    const curHour = now.getHours();
+    const curMin = now.getMinutes();
+    const minsPassed = curHour * 60 + curMin;
+    const dayPct = Math.min(100, Math.max(2, Math.round((minsPassed / 1440) * 100)));
+    const remHours = 23 - curHour;
+    const remMins = 59 - curMin;
+
+    const axiomIdx = (pactAxiomIdx !== undefined ? pactAxiomIdx : Math.abs(d) % bTx.axioms.length);
+    const curAxiom = bTx.axioms[axiomIdx % bTx.axioms.length][curLang] || bTx.axioms[0].pt;
+
+    const togglePact = () => {
+      const nextState = !isPledged;
+      update((s) => {
+        s.dailyPacts = s.dailyPacts || {};
+        s.dailyPacts[today()] = nextState;
+      });
+      if (nextState) {
+        AF.epicLevelUp();
+        toast(bTx.pactToastPledged[curLang]);
+      } else {
+        AF.click();
+        toast(bTx.pactToastUnpledged[curLang]);
+      }
+    };
+
+    const nextAxiom = (e) => {
+      e.stopPropagation();
+      setPactAxiomIdx((prev) => (prev + 1) % bTx.axioms.length);
+      AF.click();
+    };
+
+    const cToday = L.day(S, today());
+    const is3PillarsClean = !!(cToday.p && cToday.m && cToday.r);
+
+    return (
+      <div className="rounded-xl border border-gold/45 bg-gradient-to-br from-[#181410] via-[#121015] to-[#0D0D12] p-3 sm:p-3.5 shadow-[0_4px_20px_rgba(245,158,11,0.12)] relative overflow-hidden group w-full min-w-0">
+        {/* Glow de fundo */}
+        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gold/10 blur-2xl pointer-events-none" />
+
+        {/* Topo: Título e Relógio das 24 Horas */}
+        <div className="flex items-center justify-between gap-2 mb-2 relative z-10 flex-wrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-base text-gold animate-pulse">⚔️</span>
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-gold font-display leading-tight flex items-center gap-1.5">
+                <span>{bTx.cardTitle[curLang]}</span>
+                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/30">
+                  {bTx.badgeToday[curLang]}
+                </span>
+              </h3>
+              <p className="text-[10px] text-muted font-mono leading-none mt-0.5">
+                {bTx.cardSubtitle[curLang]}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-full bg-surface2 border border-line">
+            <Clock size={11} className="text-gold" />
+            <span>{bTx.timeRemaining[curLang](remHours, remMins)}</span>
+          </div>
+        </div>
+
+        {/* Barra de Progresso do Dia Atual (24 Horas) */}
+        <div className="mb-2.5 relative z-10">
+          <div className="flex items-center justify-between text-[9.5px] font-mono text-muted mb-1">
+            <span>{bTx.dayPassed[curLang](dayPct)}</span>
+            <span className="font-bold text-gold font-mono">{dayPct}%</span>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-[#1e1c24] overflow-hidden border border-line/60">
+            <div
+              className="h-full bg-gradient-to-r from-amber-600 via-gold to-yellow-300 transition-all duration-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+              style={{ width: `${dayPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Citação / Axioma de Guerra: Foco no Presente */}
+        <div
+          onClick={nextAxiom}
+          role="button"
+          tabIndex={0}
+          title={bTx.switchAxiomTooltip[curLang]}
+          className="p-2 sm:p-2.5 rounded-lg border border-gold/25 bg-black/40 hover:bg-black/60 transition-all cursor-pointer mb-2.5 relative z-10 flex items-start justify-between gap-2"
+        >
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <span className="text-gold text-sm leading-none mt-0.5">“</span>
+            <p className="text-[11.5px] sm:text-xs text-[#F2ECE0] italic font-medium leading-relaxed">
+              {curAxiom}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="text-muted/60 hover:text-gold p-0.5 shrink-0 transition-colors cursor-pointer"
+          >
+            <RefreshCw size={11} />
+          </button>
+        </div>
+
+        {/* Botão de Ação: Pacto de Honra de Hoje */}
+        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <button
+            type="button"
+            onClick={togglePact}
+            className={`w-full py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] ${
+              isPledged
+                ? 'border border-gold bg-gold text-[#121214] shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'border border-gold/60 bg-gold/15 hover:bg-gold/25 text-gold'
+            }`}
+          >
+            {isPledged ? (
+              <>
+                <Check size={14} strokeWidth={3} className="text-[#121214]" />
+                <span>{bTx.pactButtonPledged[curLang]}</span>
+              </>
+            ) : (
+              <>
+                <Flame size={14} className="text-gold animate-bounce" />
+                <span>{bTx.pactButtonUnpledged[curLang]}</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Status dos Pilares neste dia */}
+        <div className="mt-2 pt-2 border-t border-line/40 flex items-center justify-between text-[10px] font-mono text-muted relative z-10 flex-wrap gap-1">
+          <span className="flex items-center gap-1">
+            {is3PillarsClean ? (
+              <span className="text-ok font-bold flex items-center gap-1">
+                <span>🛡️</span> {bTx.allCleanHonor[curLang]}
+              </span>
+            ) : (
+              <span className="text-amber-300 font-semibold flex items-center gap-1">
+                <span>⚔️</span> {bTx.pillarsPendingHonor[curLang]}
+              </span>
+            )}
+          </span>
+          <span className="text-muted/70 text-[9px] font-bold">
+            {isPledged ? bTx.pactRegistered[curLang] : bTx.pactPending[curLang]}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   /* 2. O GUERREIRO VIVO DA FORJA (CARD 3D COM OS 3 PILARES GIRATÓRIOS DO PEDESTAL) */
   const renderPillars3DTowers = (isDesktop = false) => {
@@ -1160,6 +1411,9 @@ export default function QgView() {
         {/* 2. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro Lado a Lado) */}
         {renderPillars3DTowers(false)}
 
+        {/* 2.5 A BATALHA DAS 24 HORAS (Vença o Hoje & Pacto de Honra) */}
+        {renderBattle24Hours()}
+
         {/* 3. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
         <div className="rounded-xl border border-line/80 bg-[#15151C] p-2.5 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5 min-w-0">
@@ -1484,6 +1738,7 @@ export default function QgView() {
 
         {/* Coluna Direita Desktop: Registro Diário de Combate, Botão de Hábitos da Forja e Operações */}
         <div className="lg:col-span-5 flex flex-col gap-3.5">
+          {renderBattle24Hours()}
           {renderDailyCheckin()}
           {/* Botão Tático de Hábitos da Forja (Desktop) */}
           <button
