@@ -1767,7 +1767,7 @@ export default function OpsView() {
   });
 
   return (
-    <div className="grid gap-3.5">
+    <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-16">
       {/* SELETOR DE CATEGORIAS RESPONSIVO */}
       <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
         {OPS_CATEGORIES.map((cat) => {
@@ -1868,37 +1868,36 @@ export default function OpsView() {
 
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
-        <Card className="p-3.5 sm:p-4">
-          <div className="mb-3 pb-2.5 border-b border-line/60">
-            <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
-              {[
-                { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
-                { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => isTaskActive(t)).length },
-                { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => isTaskActive(t) && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
-                { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => isTaskActive(x) && L.isDone(x, today())).length },
-              ].map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFilter(f.id)}
-                  className={`w-full sm:w-auto text-[10px] sm:text-xs font-mono px-1 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer whitespace-nowrap select-none ${
-                    filter === f.id
-                      ? 'bg-gold text-[#141414] font-bold shadow-sm'
-                      : 'bg-surface2 text-muted hover:text-ink border border-line'
-                  }`}
-                >
-                  <span className="sm:hidden truncate">{f.labelShort}</span>
-                  <span className="hidden sm:inline">{f.labelFull}</span>
-                  <span className={`text-[8.5px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
-                    {f.count}
-                  </span>
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
+          {/* Sub-filtros de Tarefas Responsivos em Tela Cheia */}
+          <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
+            {[
+              { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
+              { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => isTaskActive(t)).length },
+              { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => isTaskActive(t) && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
+              { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => isTaskActive(x) && L.isDone(x, today())).length },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilter(f.id)}
+                className={`w-full sm:w-auto text-[10px] sm:text-xs font-mono px-1 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer whitespace-nowrap select-none ${
+                  filter === f.id
+                    ? 'bg-gold text-[#141414] font-bold shadow-sm'
+                    : 'bg-surface2 text-muted hover:text-ink border border-line'
+                }`}
+              >
+                <span className="sm:hidden truncate">{f.labelShort}</span>
+                <span className="hidden sm:inline">{f.labelFull}</span>
+                <span className={`text-[8.5px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
+                  {f.count}
+                </span>
+              </button>
+            ))}
           </div>
 
           {displayedTasks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 w-full">
               {displayedTasks.map((tItem) => {
                 const isDone = L.isDone(tItem, today());
                 const isPostponed = L.isTaskPostponed(tItem);
@@ -1911,9 +1910,9 @@ export default function OpsView() {
                 const parentProj = projects.find((p) => String(p.id) === String(tItem.projectId));
 
                 return (
-                  <div
+                  <Card
                     key={tItem.id}
-                    className={`flex items-center justify-between gap-2.5 p-2.5 rounded-r border transition-all ${
+                    className={`flex items-center justify-between gap-2.5 p-3 sm:p-3.5 border transition-all w-full ${
                       isDone
                         ? 'border-line/40 bg-surface/50 opacity-60'
                         : isPostponed
@@ -2028,7 +2027,7 @@ export default function OpsView() {
                         <Trash2 size={13} />
                       </button>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
 
@@ -2036,7 +2035,7 @@ export default function OpsView() {
               {displayedTasks.length % 2 === 1 && filter !== 'done' && (
                 <div
                   onClick={() => openTaskModal()}
-                  className="cursor-pointer border border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-r p-2.5 flex items-center justify-center gap-2 text-gold transition-all min-h-[46px]"
+                  className="cursor-pointer border border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-xl p-3 sm:p-3.5 flex items-center justify-center gap-2 text-gold transition-all min-h-[48px] w-full"
                 >
                   <Plus size={14} strokeWidth={2.5} />
                   <span className="text-xs font-bold font-mono uppercase tracking-wider">
@@ -2046,16 +2045,16 @@ export default function OpsView() {
               )}
             </div>
           ) : (
-            <div className="py-12 text-center">
+            <Card className="py-12 text-center w-full">
               <Empty>{tx.noTasks[curLang]}</Empty>
-            </div>
+            </Card>
           )}
-        </Card>
+        </div>
       )}
 
       {/* 2. ABA DE PROJETOS ESTRATÉGICOS */}
       {activeMainTab === 'projects' && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
           {/* Sub-filtros de Projetos Responsivos */}
           <div className="grid grid-cols-3 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
             {[
@@ -2724,8 +2723,8 @@ export default function OpsView() {
               )}
             </>
             ) : (
-              <div className="col-span-2 py-8 text-center">
-                <Card className="py-8 px-4 max-w-lg mx-auto border-gold/30">
+              <div className="col-span-1 md:col-span-2 py-8 text-center w-full">
+                <Card className="py-8 px-4 w-full border-gold/30">
                   <div className="w-12 h-12 rounded-full bg-gold/15 border border-gold/40 text-gold flex items-center justify-center mx-auto mb-3">
                     <Layers size={24} />
                   </div>
@@ -2766,7 +2765,7 @@ export default function OpsView() {
 
       {/* 3. ABA DE ARQUIVO GERAL */}
       {activeMainTab === 'archive' && (
-        <div className="grid gap-3.5">
+        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0">
           {/* Projetos Arquivados */}
           <Card className="p-4 border-line">
             <div className="flex items-center justify-between mb-3">
