@@ -308,13 +308,18 @@ export default function ForgeView() {
 
   let maxSlots = 2;
   try {
-    if (typeof L.maxSlots === 'function') {
+    if (typeof L.slotLimit === 'function') {
+      maxSlots = L.slotLimit(S);
+    } else if (typeof L.maxSlots === 'function') {
       maxSlots = L.maxSlots(d);
     } else if (Array.isArray(CURRENT_RULES)) {
       const found = CURRENT_RULES.slice().reverse().find((r) => d >= r.min);
       maxSlots = found ? found.slots : 2;
     }
   } catch {
+    maxSlots = 2;
+  }
+  if (!maxSlots || isNaN(maxSlots) || maxSlots < 2) {
     maxSlots = 2;
   }
   const nextRule = Array.isArray(CURRENT_RULES) ? CURRENT_RULES.find((r) => r.min > d) : null;
