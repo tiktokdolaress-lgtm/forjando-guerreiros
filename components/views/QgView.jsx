@@ -776,8 +776,9 @@ export default function QgView() {
       AF.click();
     };
 
-    const cToday = L.day(S, today());
-    const is3PillarsClean = !!(cToday.p && cToday.m && cToday.r);
+    const cToday = L.ci(S, today());
+    const reqPil = L.pillars(S);
+    const is3PillarsClean = reqPil.length > 0 && reqPil.every((p) => !!cToday[p]);
 
     return (
       <div className="rounded-xl border border-gold/45 bg-gradient-to-br from-[#181410] via-[#121015] to-[#0D0D12] p-3 sm:p-3.5 shadow-[0_4px_20px_rgba(245,158,11,0.12)] relative overflow-hidden group w-full min-w-0">
