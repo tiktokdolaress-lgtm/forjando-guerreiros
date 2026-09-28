@@ -264,6 +264,14 @@ const I18N = {
   },
   tipHabitDone: { pt: 'Concluído hoje! (Toque para desmarcar)', en: 'Done today! (Tap to uncheck)', es: '¡Cumplido hoy! (Toca para desmarcar)' },
   tipHabitPending: { pt: 'Pendente hoje (Toque para marcar como cumprido)', en: 'Pending today (Tap to mark done)', es: 'Pendiente hoy (Toca para marcar cumplido)' },
+  btnExpandProject: { pt: 'Expandir Projeto & Tarefas', en: 'Expand Project & Tasks', es: 'Expandir Proyecto y Tareas' },
+  btnCollapseProject: { pt: 'Recolher Projeto', en: 'Collapse Project', es: 'Plegar Proyecto' },
+  lblCompactTasks: { pt: 'tarefas', en: 'tasks', es: 'tareas' },
+  lblCompactHabits: { pt: 'hábitos', en: 'habits', es: 'hábitos' },
+  lblCompactLaws: { pt: 'leis', en: 'laws', es: 'leyes' },
+  lblCompactSteps: { pt: 'etapas', en: 'milestones', es: 'etapas' },
+  lblDoneTodayCount: { pt: 'cumpridos hoje', en: 'done today', es: 'cumplidos hoy' },
+  lblTasksDoneCount: { pt: 'concluídas', en: 'completed', es: 'completadas' },
 };
 
 export default function OpsView() {
@@ -276,6 +284,15 @@ export default function OpsView() {
   const [filter, setFilter] = useState('today');
   const [projFilter, setProjFilter] = useState('ativos'); // 'ativos', 'concluidos', 'arquivados'
   const [showTemplates, setShowTemplates] = useState(false);
+  const [expandedProjIds, setExpandedProjIds] = useState({});
+
+  const toggleExpandProject = (projId) => {
+    setExpandedProjIds((prev) => ({
+      ...prev,
+      [projId]: !prev[projId],
+    }));
+    AF.click();
+  };
 
   const tasks = S.tasks || [];
   const projects = S.projects || [];
@@ -2191,6 +2208,7 @@ export default function OpsView() {
                 const projHabits = (proj.habitIds || []).map((hId) => userHabits.find((h) => String(h.id) === String(hId))).filter(Boolean);
                 const forgeDoneToday = (S?.forge?.done || {})[today()] || [];
                 const projCmds = Array.isArray(proj.commandments) ? proj.commandments : [];
+                const isExpanded = !!expandedProjIds[proj.id];
 
                 return (
                   <Card
@@ -2288,73 +2306,8 @@ export default function OpsView() {
                         </p>
                       )}
 
-                      {/* HÁBITOS DA FORJA ANCORADOS AO PROJETO */}
-                      {projHabits.length > 0 && (
-                        <div className="mb-2.5 p-2 rounded bg-surface/70 border border-line/40">
-                          <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
-                            <span className="uppercase font-bold text-amber-300 flex items-center gap-1">
-                              <Zap size={11} className="text-gold" /> {tx.lblHabitsInProject[curLang]}
-                            </span>
-                            <span>{projHabits.filter((h) => forgeDoneToday.includes(h.id)).length}/{projHabits.length} cumpridos hoje</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {projHabits.map((h) => {
-                              const isDoneToday = forgeDoneToday.includes(h.id);
-                              const hName = h.n || h.name || h.title || '';
-                              return (
-                                <span
-                                  key={h.id}
-                                  className={`text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 transition-all ${
-                                    isDoneToday
-                                      ? 'bg-gold/20 border-gold/60 text-gold font-bold shadow-sm'
-                                      : 'bg-surface2 border-line text-muted'
-                                  }`}
-                                >
-                                  <span>{h.icon || '⚡'}</span>
-                                  <span className="truncate max-w-[100px]">{hName}</span>
-                                  {isDoneToday && <Check size={10} strokeWidth={3} className="text-gold" />}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* LEIS & MANDAMENTOS DESTE PROJETO */}
-                      {projCmds.length > 0 && (
-                        <div className="mb-2.5 p-2 rounded bg-surface/60 border border-line/40">
-                          <span className="text-[10px] font-mono text-muted uppercase font-bold block mb-1">
-                            {tx.lblCommandments[curLang]} ({projCmds.length})
-                          </span>
-                          <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
-                            {projCmds.map((cmd, cIdx) => (
-                              <div key={cIdx} className="text-[11px] font-mono text-amber-200/90 leading-tight flex items-start gap-1">
-                                <span className="text-gold shrink-0">⚔️</span>
-                                <span>{cmd}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Banner de Atraso se Projeto Atrasado */}
-                      {isProjectLate && !isCompleted && !isArchived && (
-                        <div className="mb-2.5 p-2 rounded bg-danger/10 border border-danger/30 flex items-center gap-1.5 text-xs text-danger">
-                          <AlertTriangle size={13} className="shrink-0 text-danger" />
-                          <span className="font-bold text-[11px] leading-tight">
-                            {hasDelayedTask && hasPostponedTask
-                              ? tx.projDelayedBoth[curLang]
-                              : hasPostponedTask
-                              ? tx.projDelayedPostponed[curLang]
-                              : hasDelayedTask
-                              ? tx.projDelayedOverdue[curLang]
-                              : tx.projDelayedDeadline[curLang]}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Barra de Progresso */}
-                      <div className="mb-3">
+                      {/* Barra de Progresso do Projeto (Sempre Visível) */}
+                      <div className="mb-2.5">
                         <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
                           <span>{tx.lblTotalProgress[curLang]}</span>
                           <span className="font-bold text-gold">{projPct}%</span>
@@ -2367,213 +2320,380 @@ export default function OpsView() {
                         </div>
                       </div>
 
-                      {/* TAREFAS VINCULADAS A ESTE PROJETO */}
-                      <div className="mb-3 p-2 rounded bg-surface/60 border border-line/40">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[10px] font-mono text-muted uppercase font-bold">
-                            {tx.lblLinkedTasks[curLang]} ({projTasksDone}/{projTasks.length})
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => openTaskModal(null, proj.id)}
-                              className="text-[10px] font-mono text-gold hover:underline flex items-center gap-0.5"
-                            >
-                              <Plus size={10} /> {tx.btnNewInline[curLang]}
-                            </button>
-                            <span className="text-muted text-[10px]">•</span>
-                            <button
-                              type="button"
-                              onClick={() => openLinkTaskModal(proj)}
-                              className="text-[10px] font-mono text-muted hover:text-ink flex items-center gap-0.5"
-                            >
-                              <Link2 size={10} /> {tx.btnLinkInline[curLang]}
-                            </button>
-                          </div>
-                        </div>
+                      {/* 1. MODO COMPACTO (PADRÃO / RECOLHIDO NO MOBILE E DESKTOP) */}
+                      {!isExpanded && (
+                        <div className="space-y-2 mt-1">
+                          {/* Badges de Resumo Tático dos Itens Vinculados */}
+                          <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+                            <span className={`px-2 py-0.5 rounded border flex items-center gap-1 font-bold ${
+                              projTasksDone === projTasks.length && projTasks.length > 0
+                                ? 'bg-gold/15 text-gold border-gold/40'
+                                : 'bg-surface border-line text-muted'
+                            }`}>
+                              <span>🎯</span>
+                              <span>{projTasksDone}/{projTasks.length} {tx.lblCompactTasks[curLang]}</span>
+                            </span>
 
-                        {projTasks.length > 0 ? (
-                          <div className="space-y-1">
-                            {projTasks.map((pt) => {
-                              const done = L.isDone(pt, today());
-                              const isPtPostponed = L.isTaskPostponed(pt);
-                              const isPtOverdue = L.isTaskOverdue(pt);
-                              return (
-                                <div
-                                  key={pt.id}
-                                  className={`flex items-center justify-between gap-1.5 p-1.5 px-2 rounded text-xs border transition-all ${
-                                    done
-                                      ? 'bg-surface2/40 border-line/20 opacity-60'
-                                      : isPtPostponed
-                                      ? 'bg-amber-500/10 border-amber-500/30'
-                                      : isPtOverdue
-                                      ? 'bg-danger/10 border-danger/30'
-                                      : 'bg-surface2/60 border-line/30'
-                                  }`}
+                            {projHabits.length > 0 && (
+                              <span className="px-2 py-0.5 rounded border border-line bg-surface text-muted flex items-center gap-1">
+                                <span>⚡</span>
+                                <span>{projHabits.filter((h) => forgeDoneToday.includes(h.id)).length}/{projHabits.length} {tx.lblCompactHabits[curLang]}</span>
+                              </span>
+                            )}
+
+                            {projCmds.length > 0 && (
+                              <span className="px-2 py-0.5 rounded border border-line bg-surface text-muted flex items-center gap-1">
+                                <span>📜</span>
+                                <span>{projCmds.length} {tx.lblCompactLaws[curLang]}</span>
+                              </span>
+                            )}
+
+                            {steps.length > 0 && (
+                              <span className="px-2 py-0.5 rounded border border-line bg-surface text-muted flex items-center gap-1">
+                                <span>🚩</span>
+                                <span>{stepsDone}/{steps.length} {tx.lblCompactSteps[curLang]}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Aviso de Atraso Resumido */}
+                          {isProjectLate && !isCompleted && !isArchived && (
+                            <div className="p-1.5 px-2 rounded bg-danger/10 border border-danger/30 flex items-center gap-1.5 text-[11px] text-danger font-bold">
+                              <AlertTriangle size={12} className="shrink-0 text-danger" />
+                              <span className="truncate">{tx.badgeProjectDelayed[curLang]}</span>
+                            </div>
+                          )}
+
+                          {/* Cronograma & Janela Resumidos */}
+                          <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono text-muted pt-1 border-t border-line/30">
+                            {proj.start && proj.deadline ? (
+                              <span className="text-gold2 font-semibold flex items-center gap-1">
+                                <Calendar size={11} /> {fmtD(proj.start)} ➔ {fmtD(proj.deadline)}
+                              </span>
+                            ) : proj.deadline ? (
+                              <span className="text-gold2 flex items-center gap-1">
+                                <Calendar size={11} /> {tx.wordDeadline[curLang]} {fmtD(proj.deadline)}
+                              </span>
+                            ) : (
+                              <span>{tx.noDeadline[curLang]}</span>
+                            )}
+
+                            {proj.tStart && proj.tEnd && (
+                              <span className="flex items-center gap-0.5 text-muted">
+                                <Clock size={10} /> {proj.tStart}–{proj.tEnd}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Botão Intuitivo para Expandir */}
+                          <button
+                            type="button"
+                            onClick={() => toggleExpandProject(proj.id)}
+                            className="w-full mt-2 py-1.5 px-3 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm group"
+                          >
+                            <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
+                            <span>{tx.btnExpandProject[curLang]}</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 2. MODO EXPANDIDO (DETALHADO) */}
+                      {isExpanded && (
+                        <div className="space-y-3 mt-2">
+                          {/* HÁBITOS DA FORJA ANCORADOS AO PROJETO */}
+                          {projHabits.length > 0 && (
+                            <div className="p-2 rounded bg-surface/70 border border-line/40">
+                              <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
+                                <span className="uppercase font-bold text-amber-300 flex items-center gap-1">
+                                  <Zap size={11} className="text-gold" /> {tx.lblHabitsInProject[curLang]}
+                                </span>
+                                <span>{projHabits.filter((h) => forgeDoneToday.includes(h.id)).length}/{projHabits.length} {tx.lblDoneTodayCount[curLang]}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {projHabits.map((h) => {
+                                  const isDoneToday = forgeDoneToday.includes(h.id);
+                                  const hName = h.n || h.name || h.title || '';
+                                  return (
+                                    <span
+                                      key={h.id}
+                                      className={`text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1 transition-all ${
+                                        isDoneToday
+                                          ? 'bg-gold/20 border-gold/60 text-gold font-bold shadow-sm'
+                                          : 'bg-surface2 border-line text-muted'
+                                      }`}
+                                    >
+                                      <span>{h.icon || '⚡'}</span>
+                                      <span className="truncate max-w-[100px]">{hName}</span>
+                                      {isDoneToday && <Check size={10} strokeWidth={3} className="text-gold" />}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* LEIS & MANDAMENTOS DESTE PROJETO */}
+                          {projCmds.length > 0 && (
+                            <div className="p-2 rounded bg-surface/60 border border-line/40">
+                              <span className="text-[10px] font-mono text-muted uppercase font-bold block mb-1">
+                                {tx.lblCommandments[curLang]} ({projCmds.length})
+                              </span>
+                              <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                                {projCmds.map((cmd, cIdx) => (
+                                  <div key={cIdx} className="text-[11px] font-mono text-amber-200/90 leading-tight flex items-start gap-1">
+                                    <span className="text-gold shrink-0">⚔️</span>
+                                    <span>{cmd}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Banner de Atraso se Projeto Atrasado */}
+                          {isProjectLate && !isCompleted && !isArchived && (
+                            <div className="p-2 rounded bg-danger/10 border border-danger/30 flex items-center gap-1.5 text-xs text-danger">
+                              <AlertTriangle size={13} className="shrink-0 text-danger" />
+                              <span className="font-bold text-[11px] leading-tight">
+                                {hasDelayedTask && hasPostponedTask
+                                  ? tx.projDelayedBoth[curLang]
+                                  : hasPostponedTask
+                                  ? tx.projDelayedPostponed[curLang]
+                                  : hasDelayedTask
+                                  ? tx.projDelayedOverdue[curLang]
+                                  : tx.projDelayedDeadline[curLang]}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* TAREFAS VINCULADAS A ESTE PROJETO */}
+                          <div className="p-2 rounded bg-surface/60 border border-line/40">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[10px] font-mono text-muted uppercase font-bold">
+                                {tx.lblLinkedTasks[curLang]} ({projTasksDone}/{projTasks.length})
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setExpandedProjIds((prev) => ({ ...prev, [proj.id]: true }));
+                                    openTaskModal(null, proj.id);
+                                  }}
+                                  className="text-[10px] font-mono text-gold hover:underline flex items-center gap-0.5 cursor-pointer"
                                 >
-                                  <div
-                                    className="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
-                                    onClick={() => toggleTask(pt.id)}
-                                  >
-                                    <div className={`w-3.5 h-3.5 rounded flex-none flex items-center justify-center border ${done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
-                                      {done && <Check size={10} strokeWidth={3} />}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <span className={`truncate text-[11px] block ${done ? 'line-through text-muted' : 'text-ink'}`}>
-                                        {pt.txt}
-                                      </span>
-                                      <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                        {isPtPostponed && (
-                                          <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/15 px-1 rounded border border-amber-500/30 flex items-center gap-0.5">
-                                            <CalendarClock size={9} />
-                                            <span>{tx.badgePostponed[curLang]} ({fmtD(pt.postponedTo)})</span>
+                                  <Plus size={10} /> {tx.btnNewInline[curLang]}
+                                </button>
+                                <span className="text-muted text-[10px]">•</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setExpandedProjIds((prev) => ({ ...prev, [proj.id]: true }));
+                                    openLinkTaskModal(proj);
+                                  }}
+                                  className="text-[10px] font-mono text-muted hover:text-ink flex items-center gap-0.5 cursor-pointer"
+                                >
+                                  <Link2 size={10} /> {tx.btnLinkInline[curLang]}
+                                </button>
+                              </div>
+                            </div>
+
+                            {projTasks.length > 0 ? (
+                              <div className="space-y-1">
+                                {projTasks.map((pt) => {
+                                  const done = L.isDone(pt, today());
+                                  const isPtPostponed = L.isTaskPostponed(pt);
+                                  const isPtOverdue = L.isTaskOverdue(pt);
+                                  return (
+                                    <div
+                                      key={pt.id}
+                                      className={`flex items-center justify-between gap-1.5 p-1.5 px-2 rounded text-xs border transition-all ${
+                                        done
+                                          ? 'bg-surface2/40 border-line/20 opacity-60'
+                                          : isPtPostponed
+                                          ? 'bg-amber-500/10 border-amber-500/30'
+                                          : isPtOverdue
+                                          ? 'bg-danger/10 border-danger/30'
+                                          : 'bg-surface2/60 border-line/30'
+                                      }`}
+                                    >
+                                      <div
+                                        className="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
+                                        onClick={() => toggleTask(pt.id)}
+                                      >
+                                        <div className={`w-3.5 h-3.5 rounded flex-none flex items-center justify-center border ${done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
+                                          {done && <Check size={10} strokeWidth={3} />}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <span className={`truncate text-[11px] block ${done ? 'line-through text-muted' : 'text-ink'}`}>
+                                            {pt.txt}
                                           </span>
-                                        )}
-                                        {isPtOverdue && !isPtPostponed && (
-                                          <span className="text-[9px] font-mono font-bold text-danger bg-danger/15 px-1 rounded border border-danger/30 flex items-center gap-0.5">
-                                            <AlertTriangle size={9} />
-                                            <span>{tx.badgeOverdue[curLang]}</span>
-                                          </span>
-                                        )}
+                                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                            {isPtPostponed && (
+                                              <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/15 px-1 rounded border border-amber-500/30 flex items-center gap-0.5">
+                                                <CalendarClock size={9} />
+                                                <span>{tx.badgePostponed[curLang]} ({fmtD(pt.postponedTo)})</span>
+                                              </span>
+                                            )}
+                                            {isPtOverdue && !isPtPostponed && (
+                                              <span className="text-[9px] font-mono font-bold text-danger bg-danger/15 px-1 rounded border border-danger/30 flex items-center gap-0.5">
+                                                <AlertTriangle size={9} />
+                                                <span>{tx.badgeOverdue[curLang]}</span>
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1 flex-none">
+                                        <button
+                                          type="button"
+                                          title={tx.btnPostponeAction[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openPostponeModal(pt);
+                                          }}
+                                          className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <CalendarClock size={12} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title={tx.editTaskTitle[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openTaskModal(pt);
+                                          }}
+                                          className="text-muted/60 hover:text-gold p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <Edit3 size={11} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title={tx.unlinkFromProj[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            unlinkTask(pt.id);
+                                          }}
+                                          className="text-muted/60 hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <Unlink size={11} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title={tx.btnArchiveTask[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            requestArchiveTask(pt);
+                                          }}
+                                          className="text-muted/60 hover:text-amber-300 p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <Archive size={11} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title={tx.delTaskTitle[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            requestDeleteTask(pt);
+                                          }}
+                                          className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 size={11} />
+                                        </button>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 flex-none">
-                                    <button
-                                      type="button"
-                                      title={tx.btnPostponeAction[curLang]}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openPostponeModal(pt);
-                                      }}
-                                      className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
-                                    >
-                                      <CalendarClock size={12} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title={tx.editTaskTitle[curLang]}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openTaskModal(pt);
-                                      }}
-                                      className="text-muted/60 hover:text-gold p-0.5 transition-colors cursor-pointer"
-                                    >
-                                      <Edit3 size={11} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title={tx.unlinkFromProj[curLang]}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        unlinkTask(pt.id);
-                                      }}
-                                      className="text-muted/60 hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
-                                    >
-                                      <Unlink size={11} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title={tx.btnArchiveTask[curLang]}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        requestArchiveTask(pt);
-                                      }}
-                                      className="text-muted/60 hover:text-amber-300 p-0.5 transition-colors cursor-pointer"
-                                    >
-                                      <Archive size={11} />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title={tx.delTaskTitle[curLang]}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        requestDeleteTask(pt);
-                                      }}
-                                      className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
-                                    >
-                                      <Trash2 size={11} />
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-muted italic">{tx.noLinkedTasks[curLang]}</p>
+                            )}
                           </div>
-                        ) : (
-                          <p className="text-[11px] text-muted italic">{tx.noLinkedTasks[curLang]}</p>
-                        )}
-                      </div>
 
-                      {/* ETAPAS / MARCOS */}
-                      <div className="space-y-1.5 mb-3">
-                        <span className="text-[10px] font-mono text-muted uppercase block font-bold">
-                          {tx.lblSteps[curLang]} ({stepsDone}/{steps.length})
-                        </span>
-                        {steps.map((st) => (
-                          <div
-                            key={st.id}
-                            onClick={() => toggleStep(proj.id, st.id)}
-                            className="flex items-center gap-2 p-1.5 rounded bg-surface border border-line/40 cursor-pointer text-xs"
-                          >
-                            <div className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center border ${st.done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
-                              {st.done && <Check size={10} strokeWidth={3} />}
-                            </div>
-                            <span className={`truncate text-xs ${st.done ? 'line-through text-muted' : 'text-ink'}`}>
-                              {st.txt}
+                          {/* ETAPAS / MARCOS */}
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] font-mono text-muted uppercase block font-bold">
+                              {tx.lblSteps[curLang]} ({stepsDone}/{steps.length})
                             </span>
+                            {steps.map((st) => (
+                              <div
+                                key={st.id}
+                                onClick={() => toggleStep(proj.id, st.id)}
+                                className="flex items-center gap-2 p-1.5 rounded bg-surface border border-line/40 cursor-pointer text-xs"
+                              >
+                                <div className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center border ${st.done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
+                                  {st.done && <Check size={10} strokeWidth={3} />}
+                                </div>
+                                <span className={`truncate text-xs ${st.done ? 'line-through text-muted' : 'text-ink'}`}>
+                                  {st.txt}
+                                </span>
+                              </div>
+                            ))}
+
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                const input = e.target.elements.stepInput;
+                                addStepToProject(proj.id, input.value);
+                                input.value = '';
+                              }}
+                              className="flex gap-1 pt-1"
+                            >
+                              <input
+                                name="stepInput"
+                                placeholder={tx.phAddStep[curLang]}
+                                className="field py-1 px-2 text-[11px] flex-1"
+                              />
+                              <button type="submit" className="btn-dark py-1 px-2 text-[11px] font-mono font-bold cursor-pointer">
+                                {tx.btnAdd[curLang]}
+                              </button>
+                            </form>
                           </div>
-                        ))}
-
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            const input = e.target.elements.stepInput;
-                            addStepToProject(proj.id, input.value);
-                            input.value = '';
-                          }}
-                          className="flex gap-1 pt-1"
-                        >
-                          <input
-                            name="stepInput"
-                            placeholder={tx.phAddStep[curLang]}
-                            className="field py-1 px-2 text-[11px] flex-1"
-                          />
-                          <button type="submit" className="btn-dark py-1 px-2 text-[11px] font-mono font-bold">
-                            {tx.btnAdd[curLang]}
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-line/40 flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono text-muted">
-                      {proj.start && proj.deadline ? (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="flex items-center gap-1 text-gold2 font-semibold">
-                            <Calendar size={11} />
-                            {fmtD(proj.start)} ➔ {fmtD(proj.deadline)}
-                          </span>
-                          <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold">
-                            {L.projTotal(proj)} {tx.wordDays[curLang]} {L.projCurDay(proj) > 0 ? `(${tx.wordDay[curLang]} ${L.projCurDay(proj)})` : ''}
-                          </span>
                         </div>
-                      ) : proj.deadline ? (
-                        <span className="flex items-center gap-1 text-gold2">
-                          <Calendar size={11} />
-                          {tx.wordDeadline[curLang]} {fmtD(proj.deadline)}
-                        </span>
-                      ) : (
-                        <span>{tx.noDeadline[curLang]}</span>
                       )}
-                      <div className="flex items-center gap-2">
-                        {proj.tStart && proj.tEnd && (
-                          <span className="flex items-center gap-0.5 text-muted">
-                            <Clock size={10} />
-                            {proj.tStart}–{proj.tEnd}
-                          </span>
-                        )}
-                        <span>{projTasks.length} {tx.wordTasks[curLang]}</span>
-                      </div>
                     </div>
+
+                    {isExpanded && (
+                      <div className="mt-3 pt-2 border-t border-line/40">
+                        <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] font-mono text-muted mb-2">
+                          {proj.start && proj.deadline ? (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="flex items-center gap-1 text-gold2 font-semibold">
+                                <Calendar size={11} />
+                                {fmtD(proj.start)} ➔ {fmtD(proj.deadline)}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold">
+                                {L.projTotal(proj)} {tx.wordDays[curLang]} {L.projCurDay(proj) > 0 ? `(${tx.wordDay[curLang]} ${L.projCurDay(proj)})` : ''}
+                              </span>
+                            </div>
+                          ) : proj.deadline ? (
+                            <span className="flex items-center gap-1 text-gold2">
+                              <Calendar size={11} />
+                              {tx.wordDeadline[curLang]} {fmtD(proj.deadline)}
+                            </span>
+                          ) : (
+                            <span>{tx.noDeadline[curLang]}</span>
+                          )}
+                          <div className="flex items-center gap-2">
+                            {proj.tStart && proj.tEnd && (
+                              <span className="flex items-center gap-0.5 text-muted">
+                                <Clock size={10} />
+                                {proj.tStart}–{proj.tEnd}
+                              </span>
+                            )}
+                            <span>{projTasks.length} {tx.wordTasks[curLang]}</span>
+                          </div>
+                        </div>
+
+                        {/* Botão de Recolher Projeto */}
+                        <button
+                          type="button"
+                          onClick={() => toggleExpandProject(proj.id)}
+                          className="w-full py-1.5 px-3 rounded-lg border border-line bg-surface hover:bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <ChevronUp size={14} />
+                          <span>{tx.btnCollapseProject[curLang]}</span>
+                        </button>
+                      </div>
+                    )}
                   </Card>
                 );
               })}
