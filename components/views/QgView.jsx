@@ -802,8 +802,8 @@ export default function QgView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-full bg-surface2 border border-line">
-            <Clock size={11} className="text-gold" />
+          <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-full bg-surface2 border border-line shrink-0">
+            <Clock size={11} className="text-gold shrink-0" />
             <span>{bTx.timeRemaining[curLang](remHours, remMins)}</span>
           </div>
         </div>
@@ -849,7 +849,7 @@ export default function QgView() {
           <button
             type="button"
             onClick={togglePact}
-            className={`w-full py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] ${
+            className={`w-full py-2 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-mono font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] text-center leading-snug ${
               isPledged
                 ? 'border border-gold bg-gold text-[#121214] shadow-[0_0_15px_rgba(245,158,11,0.25)]'
                 : 'border border-gold/60 bg-gold/15 hover:bg-gold/25 text-gold'
@@ -857,13 +857,13 @@ export default function QgView() {
           >
             {isPledged ? (
               <>
-                <Check size={14} strokeWidth={3} className="text-[#121214]" />
-                <span>{bTx.pactButtonPledged[curLang]}</span>
+                <Check size={14} strokeWidth={3} className="text-[#121214] shrink-0" />
+                <span className="break-words">{bTx.pactButtonPledged[curLang]}</span>
               </>
             ) : (
               <>
-                <Flame size={14} className="text-gold animate-bounce" />
-                <span>{bTx.pactButtonUnpledged[curLang]}</span>
+                <Flame size={14} className="text-gold animate-bounce shrink-0" />
+                <span className="break-words">{bTx.pactButtonUnpledged[curLang]}</span>
               </>
             )}
           </button>

@@ -33,11 +33,13 @@ const I18N = {
   tabTasks: { pt: '🎯 TAREFAS & OPERAÇÕES', en: '🎯 TASKS & OPERATIONS', es: '🎯 TAREAS Y OPERACIONES' },
   tabProjects: { pt: '🏛️ PROJETOS ESTRATÉGICOS', en: '🏛️ STRATEGIC PROJECTS', es: '🏛️ PROYECTOS ESTRATÉGICOS' },
   newTask: { pt: 'NOVA OPERAÇÃO', en: 'NEW OPERATION', es: 'NUEVA OPERACIÓN' },
+  newTaskShort: { pt: 'Nova Operação', en: 'New Operation', es: 'Nueva Operación' },
   newProject: { pt: 'NOVO PROJETO', en: 'NEW PROJECT', es: 'NUEVO PROYECTO' },
+  newProjectShort: { pt: 'Novo Projeto', en: 'New Project', es: 'Nuevo Proyecto' },
   filterAll: { pt: 'Todas', short: { pt: 'Todas', en: 'All', es: 'Todas' }, en: 'All', es: 'Todas' },
   filterToday: { pt: 'Para Hoje', short: { pt: 'Hoje', en: 'Today', es: 'Hoy' }, en: 'For Today', es: 'Para Hoy' },
-  filterPostponed: { pt: 'Adiadas', short: { pt: 'Adiadas', en: 'Postponed', es: 'Pospuestas' }, en: 'Postponed', es: 'Pospuestas' },
-  filterDone: { pt: 'Concluídas', short: { pt: 'Concluídas', en: 'Done', es: 'Hechas' }, en: 'Completed', es: 'Completadas' },
+  filterPostponed: { pt: 'Adiadas', short: { pt: 'Adiadas', en: 'Postp.', es: 'Posp.' }, en: 'Postponed', es: 'Pospuestas' },
+  filterDone: { pt: 'Concluídas', short: { pt: 'Feitas', en: 'Done', es: 'Hechas' }, en: 'Completed', es: 'Completadas' },
   filterActive: { pt: 'Ativos', en: 'Active', es: 'Activos' },
   filterArchived: { pt: 'Arquivados', en: 'Archived', es: 'Archivados' },
   progress: { pt: 'Progresso do Dia', en: 'Today\'s Progress', es: 'Progreso del Día' },
@@ -218,7 +220,9 @@ const I18N = {
   delProjAction: { pt: 'Excluir Projeto', en: 'Delete Project', es: 'Eliminar Proyecto' },
   unlinkFromProj: { pt: 'Desvincular do Projeto', en: 'Unlink from Project', es: 'Desvincular del Proyecto' },
   btnExploreTemplates: { pt: '⚡ 6 Modelos Prontos da Forja', en: '⚡ 6 Forge Templates', es: '⚡ 6 Plantillas de la Forja' },
+  btnExploreTemplatesShort: { pt: '⚡ 6 Modelos', en: '⚡ 6 Templates', es: '⚡ 6 Plantillas' },
   btnHideTemplates: { pt: 'Ocultar Modelos', en: 'Hide Templates', es: 'Ocultar Plantillas' },
+  btnHideTemplatesShort: { pt: 'Ocultar', en: 'Hide', es: 'Ocultar' },
   templatesBannerTitle: { pt: 'MODELOS PRÉ-CONFIGURADOS DA FORJA (1 CLIQUE)', en: 'FORGE PRE-CONFIGURED TEMPLATES (1-CLICK)', es: 'PLANTILLAS PRECONFIGURADAS DE LA FORJA (1-CLIC)' },
   templatesBannerDesc: { pt: 'Projetos prontos com mandamentos, hábitos e marcos táticos testados. Ative ou adapte como quiser:', en: 'Ready projects with commandments, habits, and tactical milestones. Activate or tailor as you wish:', es: 'Proyectos listos con mandamientos, hábitos e hitos tácticos probados. Activa o adapta a tu gusto:' },
   btnUseTemplate: { pt: 'Usar Modelo ➔', en: 'Use Template ➔', es: 'Usar Plantilla ➔' },
@@ -1782,20 +1786,20 @@ export default function OpsView() {
                 AF.click();
                 setActiveMainTab(cat.id);
               }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1 sm:px-3 rounded-lg text-xs font-bold transition-all select-none cursor-pointer ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg text-xs font-bold transition-all select-none cursor-pointer ${
                 isSelected
                   ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
                   : 'text-muted hover:text-ink hover:bg-surface/50'
               }`}
             >
-              <Icon size={14} className="flex-none" />
-              <span className="sm:hidden whitespace-nowrap text-[11px]">
+              <Icon size={13} className="shrink-0" />
+              <span className="sm:hidden truncate text-[10.5px]">
                 {cat.labelShort[curLang] || cat.labelShort.pt}
               </span>
               <span className="hidden sm:inline whitespace-nowrap">
                 {cat.labelFull[curLang] || cat.labelFull.pt}
               </span>
-              <span className={`text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded font-mono font-bold flex-none ${
+              <span className={`text-[9px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded font-mono font-bold shrink-0 ${
                 isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold'
               }`}>
                 {count}
@@ -1806,45 +1810,47 @@ export default function OpsView() {
       </div>
 
       {/* Barra de Ação de Operações */}
-      <div className="flex items-center justify-between gap-2 w-full min-w-0">
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2 w-full min-w-0">
         {activeMainTab === 'tasks' && (
-          <div className="flex items-center justify-between w-full min-w-0 gap-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-gold/30 flex items-center justify-center bg-gold/5 font-mono text-[9.5px] sm:text-[10px] font-bold text-gold shrink-0">
+          <div className="flex items-center justify-between w-full min-w-0 gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-gold/30 flex items-center justify-center bg-gold/5 font-mono text-[9px] sm:text-[10px] font-bold text-gold shrink-0">
                 {pct}%
               </div>
-              <span className="text-[11px] sm:text-xs font-mono text-muted truncate">
+              <span className="text-[10.5px] sm:text-xs font-mono text-muted truncate">
                 {completedToday}/{todayTasks.length} <span className="hidden sm:inline">{tx.progress[curLang]}</span>
               </span>
             </div>
             <button
               type="button"
               onClick={() => openTaskModal()}
-              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap"
+              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap cursor-pointer"
             >
-              <Plus size={13} strokeWidth={2.5} />
-              <span>{tx.newTask[curLang]}</span>
+              <Plus size={13} strokeWidth={2.5} className="shrink-0" />
+              <span className="hidden sm:inline">{tx.newTask[curLang]}</span>
+              <span className="sm:hidden">{tx.newTaskShort[curLang]}</span>
             </button>
           </div>
         )}
 
         {activeMainTab === 'projects' && (
-          <div className="flex items-center justify-between w-full min-w-0 gap-2">
+          <div className="flex items-center justify-between w-full min-w-0 gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => {
                 setShowTemplates((prev) => !prev);
                 AF.click();
               }}
-              className={`py-1.5 px-2.5 sm:px-3 text-xs font-mono font-bold rounded border transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`py-1.5 px-2 sm:px-3 text-xs font-mono font-bold rounded border transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer shrink min-w-0 ${
                 showTemplates
                   ? 'border-gold bg-gold/20 text-gold shadow-sm'
                   : 'border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold'
               }`}
             >
-              <Sparkles size={13} className="text-gold" />
-              <span>{showTemplates ? tx.btnHideTemplates[curLang] : tx.btnExploreTemplates[curLang]}</span>
-              {showTemplates ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              <Sparkles size={13} className="text-gold shrink-0" />
+              <span className="hidden sm:inline">{showTemplates ? tx.btnHideTemplates[curLang] : tx.btnExploreTemplates[curLang]}</span>
+              <span className="sm:hidden truncate">{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplatesShort[curLang]}</span>
+              {showTemplates ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}
             </button>
 
             <button
@@ -1852,8 +1858,9 @@ export default function OpsView() {
               onClick={() => openProjectModal()}
               className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap cursor-pointer"
             >
-              <Plus size={13} strokeWidth={2.5} />
-              <span>{tx.newProject[curLang]}</span>
+              <Plus size={13} strokeWidth={2.5} className="shrink-0" />
+              <span className="hidden sm:inline">{tx.newProject[curLang]}</span>
+              <span className="sm:hidden">{tx.newProjectShort[curLang]}</span>
             </button>
           </div>
         )}
@@ -1863,7 +1870,7 @@ export default function OpsView() {
       {activeMainTab === 'tasks' && (
         <Card className="p-3.5 sm:p-4">
           <div className="mb-3 pb-2.5 border-b border-line/60">
-            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5 max-w-full">
+            <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
               {[
                 { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
                 { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => isTaskActive(t)).length },
@@ -1874,15 +1881,15 @@ export default function OpsView() {
                   key={f.id}
                   type="button"
                   onClick={() => setFilter(f.id)}
-                  className={`flex-1 sm:flex-none shrink-0 text-[11px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer whitespace-nowrap ${
+                  className={`w-full sm:w-auto text-[10px] sm:text-xs font-mono px-1 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer whitespace-nowrap select-none ${
                     filter === f.id
                       ? 'bg-gold text-[#141414] font-bold shadow-sm'
                       : 'bg-surface2 text-muted hover:text-ink border border-line'
                   }`}
                 >
-                  <span className="sm:hidden">{f.labelShort}</span>
+                  <span className="sm:hidden truncate">{f.labelShort}</span>
                   <span className="hidden sm:inline">{f.labelFull}</span>
-                  <span className={`text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
+                  <span className={`text-[8.5px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
                     {f.count}
                   </span>
                 </button>
@@ -2049,8 +2056,8 @@ export default function OpsView() {
       {/* 2. ABA DE PROJETOS ESTRATÉGICOS */}
       {activeMainTab === 'projects' && (
         <div className="flex flex-col gap-3">
-          {/* Sub-filtros de Projetos com Scroll Horizontal Suave */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 max-w-full -mx-0.5 px-0.5">
+          {/* Sub-filtros de Projetos Responsivos */}
+          <div className="grid grid-cols-3 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
             {[
               { id: 'ativos', label: tx.projFilterActive[curLang], count: projects.filter((p) => !p.archived && p.status !== 'concluido').length },
               { id: 'concluidos', label: tx.projFilterDone[curLang], count: projects.filter((p) => !p.archived && p.status === 'concluido').length },
@@ -2060,14 +2067,14 @@ export default function OpsView() {
                 key={pf.id}
                 type="button"
                 onClick={() => setProjFilter(pf.id)}
-                className={`shrink-0 text-xs font-mono px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${
+                className={`w-full sm:w-auto text-[10.5px] sm:text-xs font-mono px-1.5 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-1 sm:gap-1.5 select-none cursor-pointer ${
                   projFilter === pf.id
                     ? 'bg-gold text-[#141414] font-bold shadow-sm'
                     : 'bg-surface2 text-muted hover:text-ink border border-line'
                 }`}
               >
-                <span>{pf.label}</span>
-                <span className={`text-[9.5px] px-1.5 py-0.2 rounded ${projFilter === pf.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
+                <span className="truncate">{pf.label}</span>
+                <span className={`text-[9px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${projFilter === pf.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
                   {pf.count}
                 </span>
               </button>
