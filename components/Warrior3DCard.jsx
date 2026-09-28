@@ -148,6 +148,63 @@ export default function Warrior3DCard({
       en: '"Navigates the storms without fearing any temptation."',
       es: '"Navega las tormentas sin temer ninguna tentación."',
     },
+    stageQuotes: {
+      1: {
+        pt: '"Nas cinzas da fraqueza, a primeira centelha de honra é acesa."',
+        en: '"In the ashes of weakness, the first spark of honor is kindled."',
+        es: '"En las cenizas de la debilidad, se enciende la primera chispa de honor."',
+      },
+      2: {
+        pt: '"O fogo vital desperta: a carne obedece quando o espírito decide lutar."',
+        en: '"The vital fire awakens: the flesh obeys when the spirit resolves to fight."',
+        es: '"El fuego vital despierta: la carne obedece cuando el espíritu decide luchar."',
+      },
+      3: {
+        pt: '"Navega as tempestades sem temer qualquer tentação."',
+        en: '"Navigates the storms without fearing any temptation."',
+        es: '"Navega las tormentas sin temer ninguna tentación."',
+      },
+      4: {
+        pt: '"Aço temperado na disciplina: a mente reconquista sua clareza de combate."',
+        en: '"Steel tempered in discipline: the mind reclaims its battle clarity."',
+        es: '"Acero templado en disciplina: la mente reconquista su claridad de combate."',
+      },
+      5: {
+        pt: '"Armadura polida e olhar inabalável: um mês de soberania sobre a carne."',
+        en: '"Polished armor and unshakable gaze: one month of sovereignty over the flesh."',
+        es: '"Armadura pulida y mirada inquebrantable: un mes de soberanía sobre la carne."',
+      },
+      6: {
+        pt: '"Vencedor do abismo e dos 90 dias: onde muitos sucumbiram, ele forjou o império."',
+        en: '"Conqueror of the abyss and the 90 days: where many fell, he forged an empire."',
+        es: '"Vencedor del abismo y de los 90 días: donde muchos cayeron, él forjó su imperio."',
+      },
+      7: {
+        pt: '"O comando imperial é forjado no silêncio; sua presença curva o caos ao redor."',
+        en: '"Imperial command is forged in silence; his very presence bends chaos around him."',
+        es: '"El mando imperial se forja en el silencio; su presencia doblega el caos circundante."',
+      },
+      8: {
+        pt: '"Reconfiguração neural completa: a energia vital flui como lâmina incandescente."',
+        en: '"Complete neural reconfiguration: vital energy flows like an incandescent blade."',
+        es: '"Reconfiguración neural completa: la energía vital fluye como una hoja incandescente."',
+      },
+      9: {
+        pt: '"Soberano do Templo Sagrado: a transmutação é absoluta e as trevas fogem da sua luz."',
+        en: '"Sovereign of the Sacred Temple: transmutation is absolute, and darkness flees before his light."',
+        es: '"Soberano del Templo Sagrado: la transmutación es absoluta y las sombras huyen de su luz."',
+      },
+      10: {
+        pt: '"Patriarca da Vontade Eterna: um ano de aço puro, coroado na glória da imortalidade."',
+        en: '"Patriarch of Eternal Will: one year of pure steel, crowned in the glory of immortality."',
+        es: '"Patriarca de la Voluntad Eterna: un año de acero puro, coronado en la gloria de la inmortalidad."',
+      },
+      11: {
+        pt: '"Mito vivo no zênite cósmico: o senhor absoluto do seu destino e da sua energia."',
+        en: '"Living myth at the cosmic zenith: absolute lord of his destiny and life energy."',
+        es: '"Mito vivo en el cenit cósmico: señor absoluto de su destino y de su energía."',
+      },
+    },
     rotateHint: {
       pt: 'GIRAR PEDESTAL 360°',
       en: 'ROTATE PEDESTAL 360°',
@@ -288,12 +345,16 @@ export default function Warrior3DCard({
           </div>
         </div>
 
-        {/* Frase sobre o guerreiro no topo onde tem o nome */}
-        {TXT.quote[curLang] && (
-          <p className="text-[11px] sm:text-xs font-mono text-amber-200/80 italic text-center w-full mt-0.5">
-            &ldquo;{TXT.quote[curLang]}&rdquo;
-          </p>
-        )}
+        {/* Frase sobre o guerreiro no topo onde tem o nome (específica para cada um dos 11 estágios) */}
+        {(() => {
+          const stageQuoteObj = TXT.stageQuotes[arm.stageNum] || TXT.quote;
+          const displayQuote = stageQuoteObj[curLang] || stageQuoteObj.pt || TXT.quote[curLang];
+          return displayQuote ? (
+            <p className="text-[11px] sm:text-xs font-mono text-amber-200/80 italic text-center w-full mt-0.5">
+              {displayQuote}
+            </p>
+          ) : null;
+        })()}
       </div>
 
       {/* CANVAS 3D INTERATIVO (O GUERREIRO E OS 3 ESTANDARTES GIRAM JUNTOS) */}
