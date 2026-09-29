@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Shield, Swords, Sparkles, Flame, ChevronRight, BarChart2, RefreshCw } from 'lucide-react';
 import { AF } from '@/lib/audio';
@@ -34,6 +34,36 @@ export default function Warrior3DCard({
   quoteTotal = null,
 }) {
   const [selectedPillar, setSelectedPillar] = useState(0);
+
+  // Contador em tempo real das 24 Horas do Dia Atual
+  const [dayTime, setDayTime] = useState(() => {
+    const now = new Date();
+    const curHour = now.getHours();
+    const curMin = now.getMinutes();
+    const minsPassed = curHour * 60 + curMin;
+    return {
+      remHours: 23 - curHour,
+      remMins: 59 - curMin,
+      dayPct: Math.min(100, Math.max(2, Math.round((minsPassed / 1440) * 100))),
+    };
+  });
+
+  useEffect(() => {
+    const updateDayTime = () => {
+      const now = new Date();
+      const curHour = now.getHours();
+      const curMin = now.getMinutes();
+      const minsPassed = curHour * 60 + curMin;
+      setDayTime({
+        remHours: 23 - curHour,
+        remMins: 59 - curMin,
+        dayPct: Math.min(100, Math.max(2, Math.round((minsPassed / 1440) * 100))),
+      });
+    };
+    updateDayTime();
+    const timer = setInterval(updateDayTime, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   const safeTier = tier && typeof tier.min === 'number' ? tier : {
     min: 0,
@@ -386,6 +416,37 @@ export default function Warrior3DCard({
             </div>
           </div>
         )}
+
+        {/* LINHA TÁTICA MINIMALISTA: CONTADOR DAS 24 HORAS (Vigília do Dia Atual) */}
+        <div className="mt-1 flex items-center justify-between gap-2 px-1 py-0.5 text-[9px] sm:text-[10px] font-mono select-none">
+          {/* Esquerda: Tempo restante */}
+          <div className="flex items-center gap-1 font-bold text-amber-300/90 shrink-0">
+            <span className="text-[10px]">⏳</span>
+            <span>
+              {curLang === 'en'
+                ? `${dayTime.remHours}h ${dayTime.remMins}m left today`
+                : curLang === 'es'
+                ? `${dayTime.remHours}h ${dayTime.remMins}m restantes hoy`
+                : `${dayTime.remHours}h ${dayTime.remMins}m restantes hoje`}
+            </span>
+          </div>
+
+          {/* Centro: Barra de progresso ultra fina metálica */}
+          <div className="flex-1 mx-1.5 h-1 rounded-full bg-[#181410] border border-amber-900/40 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+              style={{ width: `${dayTime.dayPct}%` }}
+            />
+          </div>
+
+          {/* Direita: Percentual do dia decorrido */}
+          <div className="font-extrabold text-gold shrink-0">
+            <span>{dayTime.dayPct}%</span>
+            <span className="text-stone-400/80 font-normal ml-0.5 hidden xs:inline">
+              {curLang === 'en' ? 'of day' : curLang === 'es' ? 'del día' : 'do dia'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* CANVAS 3D INTERATIVO (O GUERREIRO E OS 3 ESTANDARTES GIRAM JUNTOS) */}

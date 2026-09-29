@@ -1371,13 +1371,10 @@ export default function QgView() {
   const renderMobileOneScreen = () => {
     return (
       <div className="flex flex-col gap-3 w-full min-w-0 max-w-full">
-        {/* 1. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro Lado a Lado com Frase do Dia Integrada) */}
+        {/* 1. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro com Frase do Dia e Contador 24h Integrados) */}
         {renderPillars3DTowers(false)}
 
-        {/* 2. A BATALHA DAS 24 HORAS (Vença o Hoje & Pacto de Honra) */}
-        {renderBattle24Hours()}
-
-        {/* 3. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
+        {/* 2. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
         <div className="rounded-xl border border-line/80 bg-[#15151C] p-2.5 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5 min-w-0">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -1697,7 +1694,6 @@ export default function QgView() {
 
         {/* Coluna Direita Desktop: Registro Diário de Combate, Botão de Hábitos da Forja e Operações */}
         <div className="lg:col-span-5 flex flex-col gap-3.5">
-          {renderBattle24Hours()}
           {renderDailyCheckin()}
           {/* Botão Tático de Hábitos da Forja (Desktop) */}
           <button
