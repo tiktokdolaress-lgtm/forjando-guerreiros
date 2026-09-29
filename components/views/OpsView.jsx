@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock, Shield, Sparkles, ScrollText, CheckSquare, HeartHandshake, Zap, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Plus, Check, Trash2, Clock, Calendar, Flag, Folder, Layers, CheckCircle2, Circle, AlertCircle, Edit3, ChevronRight, Target, Flame, Archive, AlertTriangle, Link2, Unlink, MoreVertical, ArchiveRestore, CalendarClock, Shield, Sparkles, ScrollText, CheckSquare, HeartHandshake, Zap, ChevronDown, ChevronUp, X, BarChart2, TrendingUp, Activity } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
 import { today, fdmy, dstr, fmtD, daysBetween, parseD } from '@/lib/utils';
@@ -276,6 +276,42 @@ const I18N = {
   lblCompactSteps: { pt: 'etapas', en: 'milestones', es: 'etapas' },
   lblDoneTodayCount: { pt: 'cumpridos hoje', en: 'done today', es: 'cumplidos hoy' },
   lblTasksDoneCount: { pt: 'concluídas', en: 'completed', es: 'completadas' },
+  btnAnalyzeTask: { pt: 'Analisar Tarefa', en: 'Analyze Task', es: 'Analizar Tarea' },
+  btnAnalyzeShort: { pt: 'Análise', en: 'Analysis', es: 'Análisis' },
+  taskAnalysisTitle: { pt: 'ANÁLISE DA OPERAÇÃO', en: 'OPERATION ANALYSIS', es: 'ANÁLISIS DE LA OPERACIÓN' },
+  taskAnalysisSub: { pt: 'Histórico de consistência, frequência e evolução na disciplina', en: 'Consistency history, frequency, and discipline evolution', es: 'Historial de consistencia, frecuencia y evolución en la disciplina' },
+  lblTotalExecutions: { pt: 'Total de Conclusões', en: 'Total Completions', es: 'Total de Conclusiones' },
+  subCumulativeHistory: { pt: 'Execuções registradas', en: 'Recorded executions', es: 'Ejecuciones registradas' },
+  lblCurrentStreak: { pt: 'Sequência Ativa', en: 'Active Streak', es: 'Racha Activa' },
+  subConsecutiveDays: { pt: 'dias consecutivos', en: 'consecutive days', es: 'días consecutivos' },
+  lblConsistencyRate: { pt: 'Taxa de Consistência', en: 'Consistency Rate', es: 'Tasa de Consistencia' },
+  subLast30Days: { pt: 'Últimos 30 dias', en: 'Last 30 days', es: 'Últimos 30 días' },
+  lblProjectContribution: { pt: 'Meta do Projeto', en: 'Project Goal', es: 'Meta del Proyecto' },
+  subDaysDoneOfTotal: { pt: 'dias cumpridos na meta', en: 'days completed in goal', es: 'días cumplidos en la meta' },
+  lblIndependentTask: { pt: 'Operação Avulsa', en: 'Standalone Operation', es: 'Operación Suelta' },
+  subNoLinkedProject: { pt: 'Sem projeto vinculado', en: 'No linked project', es: 'Sin proyecto vinculado' },
+  lblStatusToday: { pt: 'Status de Hoje', en: 'Today\'s Status', es: 'Estado de Hoy' },
+  badgeDoneTodayHonored: { pt: '✓ Concluída Hoje com Honra!', en: '✓ Completed Today with Honor!', es: '¡✓ Cumplida Hoy con Honor!' },
+  badgePendingToday: { pt: '⏳ Pendente para Hoje', en: '⏳ Pending for Today', es: '⏳ Pendiente para Hoy' },
+  btnMarkDoneNow: { pt: '✓ Marcar como Feita', en: '✓ Mark as Done', es: '✓ Marcar como Hecha' },
+  btnUnmarkToday: { pt: 'Desmarcar Hoje', en: 'Unmark Today', es: 'Desmarcar Hoy' },
+  lblHeatmap14Days: { pt: 'Histórico dos Últimos 14 Dias', en: 'Last 14 Days History', es: 'Historial de los Últimos 14 Días' },
+  lblHeatmapTip: { pt: 'Toque em qualquer dia para marcar ou desmarcar retrospectivamente.', en: 'Tap any day to mark or unmark retroactively.', es: 'Toca cualquier día para marcar o desmarcar retroactivamente.' },
+  lblCompletedDatesList: { pt: 'Registro de Datas Cumpridas', en: 'Log of Completed Dates', es: 'Registro de Fechas Cumplidas' },
+  noCompletionsYet: { pt: 'Nenhuma conclusão registrada ainda. Cumpra a missão hoje para iniciar sua série de vitórias!', en: 'No completions recorded yet. Complete the mission today to launch your winning streak!', es: 'Ninguna conclusión registrada aún. ¡Cumple la misión hoy para iniciar tu racha de victorias!' },
+  lblTaskSpecs: { pt: 'Ficha Técnica da Missão', en: 'Mission Technical Specs', es: 'Ficha Técnica de la Misión' },
+  lblCreatedOn: { pt: 'Criada em:', en: 'Created on:', es: 'Creada en:' },
+  lblTargetDaysInProject: { pt: 'Meta de Duração:', en: 'Target Duration:', es: 'Meta de Duración:' },
+  lblExecutionsOrDays: { pt: 'dias', en: 'days', es: 'días' },
+  lblDoneTodayTag: { pt: 'Feita hoje', en: 'Done today', es: 'Hecha hoy' },
+  lblPendingTodayTag: { pt: 'Pendente hoje', en: 'Pending today', es: 'Pendiente hoy' },
+  lblTaskDaysCompletedBadge: { pt: 'dias cumpridos', en: 'days completed', es: 'días cumplidos' },
+  btnFinishAnalysis: { pt: 'Fechar Análise', en: 'Close Analysis', es: 'Cerrar Análisis' },
+  lblSuggestedTaskMatch: { pt: 'Operação correspondente encontrada:', en: 'Matching operation found:', es: 'Operación coincidente encontrada:' },
+  btnLinkThisTask: { pt: 'Vincular com 1 Toque', en: 'Link with 1 Tap', es: 'Vincular con 1 Toque' },
+  toastTaskLinked: { pt: 'Operação vinculada ao projeto com sucesso!', en: 'Operation successfully linked to project!', es: '¡Operación vinculada al proyecto con éxito!' },
+  lblDaysCompletedInGoal: { pt: 'dias cumpridos na meta', en: 'days completed in goal', es: 'días cumplidos en la meta' },
+  lblNoTasksInProjNotice: { pt: 'Nenhuma tarefa vinculada a este projeto ainda.', en: 'No tasks linked to this project yet.', es: 'Ninguna tarea vinculada a este proyecto aún.' },
 };
 
 export default function OpsView() {
@@ -314,6 +350,185 @@ export default function OpsView() {
   const todayTasks = tasks.filter((x) => isTaskActive(x) && L.repDue(x, today()));
   const completedToday = todayTasks.filter((x) => L.isDone(x, today())).length;
   const pct = todayTasks.length ? Math.round((completedToday / todayTasks.length) * 100) : 0;
+
+  /* Funções Utilitárias de Análise de Tarefas e Progresso de Projetos */
+  const getTaskStreak = useCallback((t) => {
+    if (!t) return 0;
+    if ((t.rep || 'unica') === 'unica') {
+      return t.done ? 1 : 0;
+    }
+    const dates = new Set(t.doneDates || []);
+    if (dates.size === 0) return 0;
+    const tod = today();
+    let streak = 0;
+    let curr = parseD(tod);
+    if (!dates.has(tod)) {
+      curr = new Date(curr.getTime() - 86400000);
+      if (!dates.has(dstr(curr))) return 0;
+    }
+    while (true) {
+      const s = dstr(curr);
+      if (dates.has(s)) {
+        streak++;
+        curr = new Date(curr.getTime() - 86400000);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }, []);
+
+  const getTaskTotalDone = useCallback((t) => {
+    if (!t) return 0;
+    if ((t.rep || 'unica') === 'unica') return t.done ? 1 : 0;
+    return (t.doneDates || []).length || (t.done ? 1 : 0);
+  }, []);
+
+  const getTaskConsistency = useCallback((t, daysWindow = 30) => {
+    if (!t) return 0;
+    const dates = new Set(t.doneDates || []);
+    if ((t.rep || 'unica') === 'unica') return t.done ? 100 : 0;
+    const createdDate = t.createdAt || today();
+    const createdMs = parseD(createdDate).getTime();
+    const todayMs = parseD(today()).getTime();
+    const daysSinceCreation = Math.max(1, Math.round((todayMs - createdMs) / 86400000) + 1);
+    const windowDays = Math.min(daysWindow, daysSinceCreation);
+    let dueCount = 0;
+    let doneCount = 0;
+    for (let i = 0; i < windowDays; i++) {
+      const d = new Date(todayMs - i * 86400000);
+      const ds = dstr(d);
+      if (L.repDue(t, ds)) {
+        dueCount++;
+        if (dates.has(ds)) doneCount++;
+      }
+    }
+    return dueCount > 0 ? Math.min(100, Math.round((doneCount / dueCount) * 100)) : (dates.size > 0 ? 100 : 0);
+  }, []);
+
+  const calcProjectProgress = useCallback((proj, allTasks = tasks) => {
+    const isCompleted = proj.status === 'concluido';
+    if (isCompleted) {
+      return {
+        pct: 100,
+        isCompleted: true,
+        hasRecurring: false,
+        recurringDone: 0,
+        recurringTarget: 0,
+        todayDue: 0,
+        todayDone: 0,
+        taskStats: [],
+      };
+    }
+
+    const projDuration = proj.days
+      ? Number(proj.days)
+      : (proj.start && proj.deadline ? Math.max(1, daysBetween(proj.start, proj.deadline) + 1) : 0);
+
+    const steps = proj.steps || [];
+    const stepsDone = steps.filter((s) => s.done).length;
+
+    const projTasks = (allTasks || []).filter(
+      (t) => (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) && !t.archived
+    );
+
+    const singleTasks = projTasks.filter((t) => (t.rep || 'unica') === 'unica');
+    const recurringTasks = projTasks.filter((t) => (t.rep || 'unica') !== 'unica');
+    const singleDone = singleTasks.filter((t) => t.done).length;
+
+    let recurringTargetSum = 0;
+    let recurringDoneSum = 0;
+    let todayDueCount = 0;
+    let todayDoneCount = 0;
+    const tod = today();
+
+    const taskStats = projTasks.map((t) => {
+      const isExplicitRec = (t.rep || 'unica') !== 'unica';
+      const recordedDays = (t.doneDates || []).length;
+      const isMultiDayProject = projDuration > 1;
+      const isTreatedAsRecurring = isExplicitRec || recordedDays > 1 || (isMultiDayProject && steps.length === 0);
+
+      const isDoneToday = L.isDone(t, tod);
+      const isDueToday = isTreatedAsRecurring ? (isExplicitRec ? L.repDue(t, tod) : true) : true;
+      if (isDueToday) {
+        todayDueCount++;
+        if (isDoneToday) todayDoneCount++;
+      }
+
+      if (!isTreatedAsRecurring) {
+        return {
+          id: t.id,
+          isRec: false,
+          done: t.done,
+          target: 1,
+          completed: t.done ? 1 : 0,
+          pct: t.done ? 100 : 0,
+          isDoneToday,
+        };
+      }
+
+      let target = 30;
+      if (projDuration > 0) {
+        if (!isExplicitRec || t.rep === 'diaria') target = projDuration;
+        else if (t.rep === 'dias_uteis') target = Math.max(1, Math.round((projDuration * 5) / 7));
+        else if (t.rep === 'fds') target = Math.max(1, Math.round((projDuration * 2) / 7));
+        else if (t.rep === 'semanal') target = Math.max(1, Math.round(projDuration / 7));
+        else if (t.rep === 'custom') target = Math.max(1, Math.round((projDuration * (t.repDays?.length || 1)) / 7));
+      } else {
+        target = Math.max(1, recordedDays + (isDoneToday ? 0 : 1));
+      }
+
+      const completed = Math.max(recordedDays, (t.done || isDoneToday) ? 1 : 0);
+      recurringTargetSum += target;
+      recurringDoneSum += Math.min(target, completed);
+
+      return {
+        id: t.id,
+        isRec: true,
+        target,
+        completed,
+        pct: Math.min(100, Math.round((completed / target) * 100)),
+        isDoneToday,
+      };
+    });
+
+    let pct = 0;
+    const effectiveRecurring = taskStats.filter((ts) => ts.isRec);
+    const effectiveSingle = taskStats.filter((ts) => !ts.isRec);
+    const hasRecurring = effectiveRecurring.length > 0;
+    const hasDiscreteItems = steps.length > 0 || effectiveSingle.length > 0;
+
+    if (hasRecurring && !hasDiscreteItems) {
+      pct = recurringTargetSum > 0 ? Math.min(100, Math.round((recurringDoneSum / recurringTargetSum) * 100)) : 0;
+    } else if (!hasRecurring && hasDiscreteItems) {
+      const totalDiscrete = steps.length + effectiveSingle.length;
+      const doneDiscrete = stepsDone + effectiveSingle.filter((ts) => ts.done).length;
+      pct = totalDiscrete > 0 ? Math.round((doneDiscrete / totalDiscrete) * 100) : 0;
+    } else if (hasRecurring && hasDiscreteItems) {
+      const totalDiscrete = steps.length + effectiveSingle.length;
+      const doneDiscrete = stepsDone + effectiveSingle.filter((ts) => ts.done).length;
+      const discreteRatio = totalDiscrete > 0 ? doneDiscrete / totalDiscrete : 0;
+      const recRatio = recurringTargetSum > 0 ? recurringDoneSum / recurringTargetSum : 0;
+      pct = Math.min(100, Math.round(((discreteRatio + recRatio) / 2) * 100));
+    } else {
+      pct = 0;
+    }
+
+    return {
+      pct,
+      projDuration,
+      stepsTotal: steps.length,
+      stepsDone,
+      singleTotal: effectiveSingle.length,
+      singleDone: effectiveSingle.filter((ts) => ts.done).length,
+      hasRecurring,
+      recurringTarget: recurringTargetSum,
+      recurringDone: recurringDoneSum,
+      todayDue: todayDueCount,
+      todayDone: todayDoneCount,
+      taskStats,
+    };
+  }, [tasks]);
 
   /* MODAL: Confirmação Genérica */
   const confirmAction = ({ title, message, onConfirm, confirmText = null, danger = false }) => {
@@ -1345,17 +1560,399 @@ export default function OpsView() {
     update((s) => {
       const target = (s.tasks || []).find((x) => String(x.id) === String(id));
       if (!target) return;
+      const dd = today();
+      target.doneDates = target.doneDates || [];
       if ((target.rep || 'unica') === 'unica') {
         target.done = !target.done;
+        if (target.done) {
+          if (!target.doneDates.includes(dd)) {
+            target.doneDates.push(dd);
+            target.doneDates.sort();
+          }
+        } else {
+          const i = target.doneDates.indexOf(dd);
+          if (i >= 0) target.doneDates.splice(i, 1);
+        }
       } else {
-        const dd = today();
-        target.doneDates = target.doneDates || [];
         const i = target.doneDates.indexOf(dd);
-        if (i >= 0) target.doneDates.splice(i, 1);
-        else target.doneDates.push(dd);
+        if (i >= 0) {
+          target.doneDates.splice(i, 1);
+          target.done = false;
+        } else {
+          target.doneDates.push(dd);
+          target.doneDates.sort();
+          target.done = true;
+        }
       }
     });
     AF.click();
+  };
+
+  /* MODAL: Análise Estratégica Completa da Tarefa / Operação */
+  const openTaskAnalysisModal = (taskItem) => {
+    const TaskAnalysisModalContent = () => {
+      const liveTask = (S?.tasks || []).find((x) => String(x.id) === String(taskItem.id)) || taskItem;
+      const tod = today();
+      const isDoneToday = L.isDone(liveTask, tod);
+
+      const streak = getTaskStreak(liveTask);
+      const totalDone = getTaskTotalDone(liveTask);
+      const consistency = getTaskConsistency(liveTask, 30);
+
+      const parentProj = (S?.projects || []).find(
+        (p) => String(p.id) === String(liveTask.projectId || liveTask.proj)
+      );
+
+      // Meta e contribuição no projeto
+      const projDuration = parentProj?.days
+        ? Number(parentProj.days)
+        : (parentProj?.start && parentProj?.deadline
+            ? Math.max(1, daysBetween(parentProj.start, parentProj.deadline) + 1)
+            : 30);
+
+      const completedInProj = (liveTask.doneDates || []).length || (liveTask.done ? 1 : 0);
+      let targetDaysInProj = projDuration;
+      if (liveTask.rep === 'dias_uteis') targetDaysInProj = Math.max(1, Math.round((projDuration * 5) / 7));
+      else if (liveTask.rep === 'fds') targetDaysInProj = Math.max(1, Math.round((projDuration * 2) / 7));
+      else if (liveTask.rep === 'semanal') targetDaysInProj = Math.max(1, Math.round(projDuration / 7));
+      else if (liveTask.rep === 'custom') targetDaysInProj = Math.max(1, Math.round((projDuration * (liveTask.repDays?.length || 1)) / 7));
+      else if (liveTask.rep === 'unica') targetDaysInProj = 1;
+
+      const projContribPct = Math.min(100, Math.round((completedInProj / targetDaysInProj) * 100));
+
+      // Heatmap dos últimos 14 dias
+      const past14Days = [];
+      const todayMs = parseD(tod).getTime();
+      const dayNamesShort = curLang === 'en'
+        ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        : curLang === 'es'
+        ? ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+        : ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(todayMs - i * 86400000);
+        const ds = dstr(d);
+        const doneOnDay = (liveTask.doneDates || []).includes(ds) || (ds === tod && liveTask.done);
+        const dueOnDay = L.repDue(liveTask, ds);
+        const isCurrentDay = ds === tod;
+        past14Days.push({
+          dateStr: ds,
+          dayNum: d.getDate(),
+          weekDayShort: dayNamesShort[d.getDay()],
+          isDone: doneOnDay,
+          isDue: dueOnDay,
+          isToday: isCurrentDay,
+        });
+      }
+
+      const toggleDateInHistory = (targetDateStr) => {
+        update((s) => {
+          const t = (s.tasks || []).find((x) => String(x.id) === String(liveTask.id));
+          if (!t) return;
+          if ((t.rep || 'unica') === 'unica') {
+            t.done = !t.done;
+            if (t.done) t.doneDates = [targetDateStr];
+            else t.doneDates = [];
+          } else {
+            t.doneDates = t.doneDates || [];
+            const idx = t.doneDates.indexOf(targetDateStr);
+            if (idx >= 0) {
+              t.doneDates.splice(idx, 1);
+              if (targetDateStr === tod) t.done = false;
+            } else {
+              t.doneDates.push(targetDateStr);
+              t.doneDates.sort();
+              if (targetDateStr === tod) t.done = true;
+            }
+          }
+        });
+        AF.click();
+      };
+
+      const sortedDoneDates = Array.from(new Set(liveTask.doneDates || []))
+        .sort()
+        .reverse();
+
+      return (
+        <div className="text-left max-h-[85vh] overflow-y-auto pr-1">
+          {/* Topo do Modal de Análise */}
+          <div className="pb-2.5 mb-3 border-b border-line flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-2 rounded-xl bg-gold/15 border border-gold/40 text-gold flex-none">
+                <BarChart2 size={22} className="text-gold" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-gold font-extrabold uppercase tracking-wider block">
+                  {tx.taskAnalysisTitle[curLang]}
+                </span>
+                <h3 className="font-display text-base sm:text-lg font-bold text-ink leading-tight truncate">
+                  {liveTask.txt}
+                </h3>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={closeModal}
+              className="p-1 rounded-lg border border-line bg-surface text-muted hover:text-ink hover:border-gold/40 transition-colors cursor-pointer shrink-0"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          {/* Cards de Métricas Principais (4 KPIs em Grid) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5">
+            {/* KPI 1: Total de Conclusões */}
+            <div className="p-2.5 rounded-xl border border-line/60 bg-surface/60 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted text-[10px] font-mono mb-1">
+                <span>{tx.lblTotalExecutions[curLang]}</span>
+                <span>🏆</span>
+              </div>
+              <div>
+                <b className="font-display text-2xl text-gold block leading-none">{totalDone}</b>
+                <span className="text-[9.5px] text-muted font-mono block mt-1">
+                  {tx.subCumulativeHistory[curLang]}
+                </span>
+              </div>
+            </div>
+
+            {/* KPI 2: Sequência Ativa */}
+            <div className="p-2.5 rounded-xl border border-gold/30 bg-gold/5 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-gold text-[10px] font-mono mb-1 font-bold">
+                <span>{tx.lblCurrentStreak[curLang]}</span>
+                <span>🔥</span>
+              </div>
+              <div>
+                <b className="font-display text-2xl text-gold block leading-none">{streak}</b>
+                <span className="text-[9.5px] text-gold2 font-mono block mt-1">
+                  {tx.subConsecutiveDays[curLang]}
+                </span>
+              </div>
+            </div>
+
+            {/* KPI 3: Taxa de Consistência */}
+            <div className="p-2.5 rounded-xl border border-line/60 bg-surface/60 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted text-[10px] font-mono mb-1">
+                <span>{tx.lblConsistencyRate[curLang]}</span>
+                <span>📈</span>
+              </div>
+              <div>
+                <b className="font-display text-2xl text-ink block leading-none">{consistency}%</b>
+                <span className="text-[9.5px] text-muted font-mono block mt-1">
+                  {tx.subLast30Days[curLang]}
+                </span>
+              </div>
+            </div>
+
+            {/* KPI 4: Contribuição no Projeto */}
+            <div className="p-2.5 rounded-xl border border-line/60 bg-surface/60 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-muted text-[10px] font-mono mb-1">
+                <span>{parentProj ? tx.lblProjectContribution[curLang] : tx.lblIndependentTask[curLang]}</span>
+                <span>📁</span>
+              </div>
+              <div>
+                {parentProj ? (
+                  <>
+                    <b className="font-display text-2xl text-gold block leading-none">{projContribPct}%</b>
+                    <span className="text-[9.5px] text-muted font-mono block mt-1 truncate">
+                      {completedInProj}/{targetDaysInProj} {tx.lblExecutionsOrDays[curLang]}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-xs font-bold text-muted block leading-none mt-1">
+                      {tx.lblIndependentTask[curLang]}
+                    </span>
+                    <span className="text-[9.5px] text-muted font-mono block mt-1">
+                      {tx.subNoLinkedProject[curLang]}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Barra de Status de Hoje & Ação Imediata */}
+          <div className="mb-3.5">
+            <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 ${
+              isDoneToday
+                ? 'border-emerald-500/40 bg-emerald-500/10'
+                : 'border-gold/40 bg-gold/10'
+            }`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-none ${
+                  isDoneToday ? 'bg-emerald-500 text-black font-bold' : 'bg-gold/20 text-gold'
+                }`}>
+                  {isDoneToday ? <Check size={18} strokeWidth={3} /> : <Clock size={16} />}
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-bold block truncate text-ink">
+                    {isDoneToday ? tx.badgeDoneTodayHonored[curLang] : tx.badgePendingToday[curLang]}
+                  </span>
+                  <span className="text-[10px] font-mono text-muted block truncate">
+                    {fmtD(tod)} · {liveTask.time || '--:--'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => toggleTask(liveTask.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer flex-none ${
+                  isDoneToday
+                    ? 'border border-line bg-surface text-muted hover:text-danger hover:border-danger/40'
+                    : 'btn-gold shadow-sm'
+                }`}
+              >
+                {isDoneToday ? tx.btnUnmarkToday[curLang] : tx.btnMarkDoneNow[curLang]}
+              </button>
+            </div>
+          </div>
+
+          {/* Calendário / Heatmap Interativo dos Últimos 14 Dias */}
+          <div className="p-3 rounded-xl border border-line bg-surface2/60 mb-3.5">
+            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+              <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+                <Calendar size={13} className="text-gold" />
+                <span>{tx.lblHeatmap14Days[curLang]}</span>
+              </span>
+              <span className="text-[9.5px] font-mono text-muted">
+                {tx.lblHeatmapTip[curLang]}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-7 sm:grid-cols-14 gap-1.5 mt-2">
+              {past14Days.map((day) => {
+                return (
+                  <button
+                    key={day.dateStr}
+                    type="button"
+                    onClick={() => toggleDateInHistory(day.dateStr)}
+                    className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-between min-h-[48px] ${
+                      day.isDone
+                        ? 'border-gold bg-gold/20 text-gold shadow-sm'
+                        : day.isToday
+                        ? 'border-gold/70 bg-surface text-ink ring-2 ring-gold/30'
+                        : day.isDue
+                        ? 'border-line/60 bg-surface/40 text-muted hover:border-gold/40 hover:text-ink'
+                        : 'border-line/30 bg-surface/20 text-muted/50'
+                    }`}
+                    title={`${day.dateStr}: ${day.isDone ? 'Concluída ✓' : 'Pendente'}`}
+                  >
+                    <span className="text-[9px] font-mono uppercase block">{day.weekDayShort}</span>
+                    <b className="text-xs font-mono block leading-none my-0.5">{day.dayNum}</b>
+                    <span className="text-[10px] block leading-none">
+                      {day.isDone ? '✓' : day.isToday ? '⏳' : '·'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Histórico Recente de Datas Cumpridas */}
+          <div className="p-3 rounded-xl border border-line bg-surface2/60 mb-3.5">
+            <span className="text-xs font-bold text-ink flex items-center gap-1.5 mb-2">
+              <Sparkles size={13} className="text-gold" />
+              <span>{tx.lblCompletedDatesList[curLang]} ({sortedDoneDates.length})</span>
+            </span>
+
+            {sortedDoneDates.length > 0 ? (
+              <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                {sortedDoneDates.map((ds) => {
+                  const isTod = ds === tod;
+                  return (
+                    <div
+                      key={ds}
+                      className="p-1.5 px-2.5 rounded-lg border border-line/60 bg-surface/60 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-400 font-bold">✓</span>
+                        <span className="font-mono text-ink font-bold">
+                          {fmtD(ds)} {isTod && <span className="text-[9.5px] text-gold font-bold bg-gold/10 px-1.5 py-0.2 rounded border border-gold/30 ml-1">HOJE</span>}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleDateInHistory(ds)}
+                        className="text-[10px] font-mono text-muted hover:text-danger hover:underline cursor-pointer"
+                        title="Remover data do histórico"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted leading-relaxed">
+                {tx.noCompletionsYet[curLang]}
+              </p>
+            )}
+          </div>
+
+          {/* Ficha Técnica & Atalhos */}
+          <div className="p-2.5 rounded-xl border border-line/60 bg-surface/40 mb-3 text-[11px] font-mono space-y-1 text-muted">
+            <div className="flex items-center justify-between">
+              <span>{tx.lblPriority[curLang]}</span>
+              <b className="uppercase text-ink">{liveTask.pri}</b>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>{tx.lblFrequency[curLang]}</span>
+              <b className="text-ink">{formatRepLabel(liveTask) || 'Única'}</b>
+            </div>
+            {parentProj && (
+              <div className="flex items-center justify-between">
+                <span>{tx.lblLinkProject[curLang]}</span>
+                <b className="text-gold truncate max-w-[180px]">{parentProj.title}</b>
+              </div>
+            )}
+            {liveTask.createdAt && (
+              <div className="flex items-center justify-between">
+                <span>{tx.lblCreatedOn[curLang]}</span>
+                <span className="text-muted">{fmtD(liveTask.createdAt)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Botões Finais de Ação */}
+          <div className="flex gap-2 pt-2 border-t border-line">
+            <button
+              type="button"
+              onClick={() => {
+                closeModal();
+                setTimeout(() => openTaskModal(liveTask), 100);
+              }}
+              className="btn-dark py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 flex-1 cursor-pointer"
+            >
+              <Edit3 size={13} />
+              <span>{tx.editTaskTitle[curLang]}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                closeModal();
+                setTimeout(() => openPostponeModal(liveTask), 100);
+              }}
+              className="btn-dark py-2 px-3 text-xs font-bold flex items-center justify-center gap-1.5 flex-1 cursor-pointer border-amber-500/40 text-amber-400"
+            >
+              <CalendarClock size={13} />
+              <span>{tx.btnPostponeAction[curLang]}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={closeModal}
+              className="btn-gold py-2 px-4 text-xs font-bold cursor-pointer"
+            >
+              {tx.btnFinishAnalysis[curLang]}
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    openModal(<TaskAnalysisModalContent />);
   };
 
   /* MODAL: Adiar Operação */
@@ -1902,12 +2499,14 @@ export default function OpsView() {
                 const isDone = L.isDone(tItem, today());
                 const isPostponed = L.isTaskPostponed(tItem);
                 const isOverdue = L.isTaskOverdue(tItem);
+                const streak = getTaskStreak(tItem);
+                const totalDone = getTaskTotalDone(tItem);
                 const priColor = {
                   alta: 'border-danger/40 bg-danger/5 text-danger',
                   media: 'border-gold/40 bg-gold/5 text-gold',
                   baixa: 'border-line bg-surface text-muted',
                 }[tItem.pri] || 'border-line text-muted';
-                const parentProj = projects.find((p) => String(p.id) === String(tItem.projectId));
+                const parentProj = projects.find((p) => String(p.id) === String(tItem.projectId || tItem.proj));
 
                 return (
                   <Card
@@ -1972,11 +2571,49 @@ export default function OpsView() {
                               📁 {parentProj.title}
                             </span>
                           )}
+                          {streak > 0 && (
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTaskAnalysisModal(tItem);
+                              }}
+                              className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold flex items-center gap-0.5 hover:bg-gold/20 transition-colors cursor-pointer"
+                              title={tx.btnAnalyzeTask[curLang]}
+                            >
+                              <span>🔥</span>
+                              <span>{streak} {tx.subConsecutiveDays[curLang]}</span>
+                            </span>
+                          )}
+                          {totalDone > 0 && streak === 0 && (
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTaskAnalysisModal(tItem);
+                              }}
+                              className="px-1.5 py-0.2 rounded bg-surface border border-line text-muted font-bold flex items-center gap-0.5 hover:text-gold hover:border-gold/30 transition-colors cursor-pointer"
+                              title={tx.btnAnalyzeTask[curLang]}
+                            >
+                              <span>⚡</span>
+                              <span>{totalDone} {tx.lblExecutionsOrDays[curLang]}</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1 flex-none">
+                      <button
+                        type="button"
+                        title={tx.btnAnalyzeTask[curLang]}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openTaskAnalysisModal(tItem);
+                        }}
+                        className="text-muted hover:text-gold p-1.5 rounded hover:bg-gold/10 transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer"
+                      >
+                        <BarChart2 size={13} className="text-gold" />
+                        <span className="text-[10px] hidden md:inline">{tx.btnAnalyzeShort[curLang]}</span>
+                      </button>
                       <button
                         type="button"
                         title={tx.btnPostponeAction[curLang]}
@@ -2202,10 +2839,15 @@ export default function OpsView() {
                 const steps = proj.steps || [];
                 const stepsDone = steps.filter((s) => s.done).length;
                 const projTasks = tasks.filter((t) => (String(t.projectId) === String(proj.id) || String(t.proj) === String(proj.id)) && !t.archived);
+                const projStats = calcProjectProgress(proj, tasks);
+                const projPct = projStats.pct;
                 const projTasksDone = projTasks.filter((t) => L.isDone(t, today())).length;
-                const totalItems = steps.length + projTasks.length;
-                const doneItems = stepsDone + projTasksDone;
-                const projPct = totalItems ? Math.round((doneItems / totalItems) * 100) : isCompleted ? 100 : 0;
+                const unlinkedTasks = tasks.filter((t) => !t.archived && !t.projectId && !t.proj);
+                const suggestedTask = projTasks.length === 0 ? unlinkedTasks.find((t) => {
+                  const pWords = proj.title.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+                  const tWords = t.txt.toLowerCase();
+                  return pWords.some((w) => tWords.includes(w));
+                }) : null;
                 const isProjectLate = L.isProjLate(S, proj);
                 const hasDelayedTask = projTasks.some((t) => L.isTaskOverdue(t));
                 const hasPostponedTask = projTasks.some((t) => L.isTaskPostponed(t));
@@ -2315,30 +2957,88 @@ export default function OpsView() {
                       {/* Barra de Progresso do Projeto (Sempre Visível) */}
                       <div className="mb-2.5">
                         <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
-                          <span>{tx.lblTotalProgress[curLang]}</span>
-                          <span className="font-bold text-gold">{projPct}%</span>
+                          <span className="flex items-center gap-1.5 font-bold text-ink">
+                            <span>{tx.lblTotalProgress[curLang]}</span>
+                            {projStats.hasRecurring && projStats.recurringTarget > 0 && (
+                              <span className="text-gold font-mono font-normal text-[9.5px]">
+                                · {projStats.recurringDone}/{projStats.recurringTarget} {tx.lblExecutionsOrDays[curLang]}
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-bold text-gold text-xs">{projPct}%</span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden border border-line/40">
+                        <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-line/40">
                           <div
-                            className="h-full bg-gold transition-all duration-300"
+                            className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-300 rounded-full"
                             style={{ width: `${projPct}%` }}
                           />
                         </div>
                       </div>
+
+                      {/* Sugestão Inteligente se houver tarefa avulsa compatível */}
+                      {suggestedTask && (
+                        <div className="p-2 rounded-lg bg-gold/10 border border-gold/40 flex items-center justify-between gap-2 mb-2 text-xs">
+                          <div className="min-w-0">
+                            <span className="text-[9.5px] font-mono text-muted block leading-none mb-0.5">
+                              {tx.lblSuggestedTaskMatch[curLang]}
+                            </span>
+                            <b className="text-gold truncate block text-[11px] leading-tight">
+                              {suggestedTask.txt}
+                            </b>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              update((s) => {
+                                const tgt = (s.tasks || []).find((x) => String(x.id) === String(suggestedTask.id));
+                                if (tgt) {
+                                  tgt.projectId = proj.id;
+                                  tgt.proj = proj.id;
+                                }
+                              });
+                              AF.click();
+                              toast(tx.toastTaskLinked[curLang]);
+                            }}
+                            className="btn-gold px-2 py-1 text-[10px] font-bold shrink-0 cursor-pointer"
+                          >
+                            + {tx.btnLinkThisTask[curLang]}
+                          </button>
+                        </div>
+                      )}
 
                       {/* 1. MODO COMPACTO (PADRÃO / RECOLHIDO NO MOBILE E DESKTOP) */}
                       {!isExpanded && (
                         <div className="space-y-2 mt-1">
                           {/* Badges de Resumo Tático dos Itens Vinculados */}
                           <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
-                            <span className={`px-2 py-0.5 rounded border flex items-center gap-1 font-bold ${
-                              projTasksDone === projTasks.length && projTasks.length > 0
-                                ? 'bg-gold/15 text-gold border-gold/40'
-                                : 'bg-surface border-line text-muted'
-                            }`}>
-                              <span>🎯</span>
-                              <span>{projTasksDone}/{projTasks.length} {tx.lblCompactTasks[curLang]}</span>
-                            </span>
+                            {projTasks.length > 0 ? (
+                              <span className={`px-2 py-0.5 rounded border flex items-center gap-1 font-bold ${
+                                projStats.hasRecurring
+                                  ? 'bg-gold/15 text-gold border-gold/40'
+                                  : projTasksDone === projTasks.length
+                                  ? 'bg-gold/15 text-gold border-gold/40'
+                                  : 'bg-surface border-line text-muted'
+                              }`}>
+                                <span>🎯</span>
+                                {projStats.hasRecurring ? (
+                                  <span>{projStats.recurringDone}/{projStats.recurringTarget} {tx.lblExecutionsOrDays[curLang]} ({projStats.todayDone}/{projStats.todayDue || projTasks.length} {tx.lblDoneTodayCount[curLang]})</span>
+                                ) : (
+                                  <span>{projTasksDone}/{projTasks.length} {tx.lblCompactTasks[curLang]}</span>
+                                )}
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openLinkTaskModal(proj);
+                                }}
+                                className="px-2 py-0.5 rounded border border-gold/40 bg-gold/10 text-gold hover:bg-gold/20 flex items-center gap-1 font-bold cursor-pointer transition-colors"
+                              >
+                                <Plus size={10} />
+                                <span>{tx.btnLinkExistingTask[curLang]}</span>
+                              </button>
+                            )}
 
                             {projHabits.length > 0 && (
                               <span className="px-2 py-0.5 rounded border border-line bg-surface text-muted flex items-center gap-1">
@@ -2549,6 +3249,17 @@ export default function OpsView() {
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1 flex-none">
+                                        <button
+                                          type="button"
+                                          title={tx.btnAnalyzeTask[curLang]}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openTaskAnalysisModal(pt);
+                                          }}
+                                          className="text-muted hover:text-gold p-0.5 transition-colors cursor-pointer"
+                                        >
+                                          <BarChart2 size={12} className="text-gold" />
+                                        </button>
                                         <button
                                           type="button"
                                           title={tx.btnPostponeAction[curLang]}
