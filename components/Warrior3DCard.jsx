@@ -16,6 +16,45 @@ const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
   ),
 });
 
+// Textos táticos da Batalha das 24 Horas que alternam automaticamente durante o dia
+const BATTLE_FOCUS_AXIOMS = [
+  {
+    pt: 'Vença o hoje · Hoje é o que importa',
+    en: 'Conquer today · Today is what matters',
+    es: 'Vence el hoy · Hoy es lo que importa',
+  },
+  {
+    pt: 'O amanhã ainda não existe · Foco no agora',
+    en: 'Tomorrow does not exist yet · Focus on now',
+    es: 'El mañana aún no existe · Foco en el ahora',
+  },
+  {
+    pt: 'Apenas as próximas 24h · Mantenha a honra',
+    en: 'Only the next 24h · Hold your honor',
+    es: 'Solo las próximas 24h · Mantén el honor',
+  },
+  {
+    pt: 'Um dia limpo por vez forja o império',
+    en: 'One clean day at a time builds the empire',
+    es: 'Un día limpio a la vez forja el imperio',
+  },
+  {
+    pt: 'Chegue invicto ao final deste dia',
+    en: 'Finish this day undefeated',
+    es: 'Llega invicto al final de este día',
+  },
+  {
+    pt: 'A vitória de hoje garante o amanhã',
+    en: "Today's victory secures tomorrow",
+    es: 'La victoria de hoy asegura el mañana',
+  },
+  {
+    pt: 'Sua única missão é honrar o dia de hoje',
+    en: 'Your sole mission is to honor today',
+    es: 'Tu única misión es honrar el día de hoy',
+  },
+];
+
 export default function Warrior3DCard({
   tier,
   d = 0,
@@ -64,6 +103,24 @@ export default function Warrior3DCard({
     const timer = setInterval(updateDayTime, 30000);
     return () => clearInterval(timer);
   }, []);
+
+  // Alternância automática dos lemas táticos durante o dia
+  const [battleAxiomIdx, setBattleAxiomIdx] = useState(0);
+
+  useEffect(() => {
+    const axiomTimer = setInterval(() => {
+      setBattleAxiomIdx((prev) => (prev + 1) % BATTLE_FOCUS_AXIOMS.length);
+    }, 10000);
+    return () => clearInterval(axiomTimer);
+  }, []);
+
+  const curAxiomObj = BATTLE_FOCUS_AXIOMS[battleAxiomIdx % BATTLE_FOCUS_AXIOMS.length] || BATTLE_FOCUS_AXIOMS[0];
+  const curBattleAxiom = curAxiomObj[curLang] || curAxiomObj.pt;
+
+  const handleNextBattleAxiom = () => {
+    try { AF.click(); } catch (e) {}
+    setBattleAxiomIdx((prev) => (prev + 1) % BATTLE_FOCUS_AXIOMS.length);
+  };
 
   const safeTier = tier && typeof tier.min === 'number' ? tier : {
     min: 0,
@@ -417,34 +474,49 @@ export default function Warrior3DCard({
           </div>
         )}
 
-        {/* LINHA TÁTICA MINIMALISTA: CONTADOR DAS 24 HORAS (Vigília do Dia Atual) */}
-        <div className="mt-1 flex items-center justify-between gap-2 px-1 py-0.5 text-[9px] sm:text-[10px] font-mono select-none">
-          {/* Esquerda: Tempo restante */}
-          <div className="flex items-center gap-1 font-bold text-amber-300/90 shrink-0">
-            <span className="text-[10px]">⏳</span>
-            <span>
-              {curLang === 'en'
-                ? `${dayTime.remHours}h ${dayTime.remMins}m left today`
-                : curLang === 'es'
-                ? `${dayTime.remHours}h ${dayTime.remMins}m restantes hoy`
-                : `${dayTime.remHours}h ${dayTime.remMins}m restantes hoje`}
-            </span>
+        {/* LINHA TÁTICA MINIMALISTA: CONTADOR DAS 24 HORAS & FOCO DO DIA */}
+        <div className="mt-1 flex flex-col gap-1 px-1 py-0.5 select-none">
+          {/* Linha Superior: Tempo Restante + Frase Tática que se altera automaticamente + Percentual */}
+          <div className="flex items-center justify-between gap-1.5 text-[9px] sm:text-[10px] font-mono">
+            {/* Esquerda: Tempo restante */}
+            <div className="flex items-center gap-1 font-bold text-amber-300/90 shrink-0">
+              <span className="text-[10px]">⏳</span>
+              <span>
+                {curLang === 'en'
+                  ? `${dayTime.remHours}h ${dayTime.remMins}m left`
+                  : curLang === 'es'
+                  ? `${dayTime.remHours}h ${dayTime.remMins}m rest.`
+                  : `${dayTime.remHours}h ${dayTime.remMins}m restantes`}
+              </span>
+            </div>
+
+            {/* Centro: Texto Tático Automático que altera durante o dia */}
+            <div
+              onClick={handleNextBattleAxiom}
+              title={curLang === 'en' ? 'Click to rotate tactical focus' : curLang === 'es' ? 'Haz clic para cambiar foco táctico' : 'Clique para alternar o foco tático'}
+              className="flex items-center justify-center gap-1 font-bold text-amber-200/95 hover:text-amber-100 tracking-wide truncate cursor-pointer transition-colors px-1"
+            >
+              <span className="text-[8.5px] text-amber-400 shrink-0">⚔️</span>
+              <span className="italic truncate transition-all duration-300">
+                "{curBattleAxiom}"
+              </span>
+            </div>
+
+            {/* Direita: Percentual do dia decorrido */}
+            <div className="font-extrabold text-gold shrink-0">
+              <span>{dayTime.dayPct}%</span>
+              <span className="text-stone-400/80 font-normal ml-0.5 hidden xs:inline">
+                {curLang === 'en' ? 'day' : curLang === 'es' ? 'día' : 'do dia'}
+              </span>
+            </div>
           </div>
 
-          {/* Centro: Barra de progresso ultra fina metálica */}
-          <div className="flex-1 mx-1.5 h-1 rounded-full bg-[#181410] border border-amber-900/40 overflow-hidden">
+          {/* Linha Inferior: Barra de progresso ultra fina metálica */}
+          <div className="w-full h-1 rounded-full bg-[#181410] border border-amber-900/40 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
               style={{ width: `${dayTime.dayPct}%` }}
             />
-          </div>
-
-          {/* Direita: Percentual do dia decorrido */}
-          <div className="font-extrabold text-gold shrink-0">
-            <span>{dayTime.dayPct}%</span>
-            <span className="text-stone-400/80 font-normal ml-0.5 hidden xs:inline">
-              {curLang === 'en' ? 'of day' : curLang === 'es' ? 'del día' : 'do dia'}
-            </span>
           </div>
         </div>
       </div>
