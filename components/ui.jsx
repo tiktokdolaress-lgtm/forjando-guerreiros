@@ -63,27 +63,31 @@ export function ModalHost() {
       modal.cls?.includes('dialog') ||
       modal.cls?.includes('custom') ||
       modal.cls?.includes('no-close') ||
-      modal.cls?.includes('full')
+      modal.cls?.includes('full') ||
+      modal.cls?.includes('tour')
     )
   );
+  const isTour = Boolean(modal && modal.cls?.includes('tour'));
 
   return (
     <div
-      className={`fixed inset-0 z-[70] grid place-items-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm transition-opacity ${
+      className={`fixed inset-0 z-[70] grid place-items-center p-3 sm:p-4 transition-opacity ${
+        isTour ? 'bg-black/50 backdrop-blur-[1px]' : 'bg-black/75 backdrop-blur-sm'
+      } ${
         modal ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
       onClick={(e) => {
-        if (e.target === e.currentTarget) closeModal();
+        if (e.target === e.currentTarget && !isTour) closeModal();
       }}
     >
       {modal && (
         <div
-          className={`relative max-h-[92dvh] w-full overflow-y-auto rounded-r2 rise ${modal.cls} ${
+          className={`relative max-h-[95dvh] w-full overflow-y-auto rounded-r2 rise ${modal.cls} ${
             isCustomModal
               ? 'p-0 border-0 bg-transparent shadow-none'
               : 'border border-gold/25 bg-[#16161a] p-5'
           }`}
-          style={{ maxWidth: modal.cls?.includes('wide') ? 880 : 540 }}
+          style={{ maxWidth: isTour ? 560 : modal.cls?.includes('wide') ? 880 : 540 }}
         >
           {!isCustomModal && (
             <button

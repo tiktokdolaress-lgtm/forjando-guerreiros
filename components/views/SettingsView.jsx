@@ -518,7 +518,7 @@ export default function SettingsView() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <b className="text-xs text-gold">{T('tour_banner_title', 'Manual do Guerreiro (Tour de Apresentação)')}</b>
                     <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
-                      5 ETAPAS
+                      {T('tour_banner_steps_badge', '5 ETAPAS')}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted truncate">
@@ -528,7 +528,7 @@ export default function SettingsView() {
               </div>
               <button
                 type="button"
-                onClick={() => openModal(<AppTourModal onClose={closeModal} />, 'dialog')}
+                onClick={() => openModal(<AppTourModal onClose={closeModal} />, 'tour dialog')}
                 className="flex-none px-3 py-1.5 rounded-lg border border-gold/50 bg-gold/20 text-gold text-xs font-bold hover:bg-gold/30 transition-colors cursor-pointer"
               >
                 {T('tour_banner_btn', 'Ver Tour do App')}

@@ -27,6 +27,7 @@ export const TOUR_STEPS = [
   {
     id: 'qg_towers',
     tab: 'qg',
+    target: 'towers',
     icon: '🏰',
     badge: {
       pt: 'ETAPA 1 DE 5 · QUARTEL GENERAL',
@@ -38,10 +39,11 @@ export const TOUR_STEPS = [
       en: 'The 3 3D Towers & 24-Hour Victory',
       es: 'Las 3 Torres 3D y Victoria de 24 Horas',
     },
+    arrowDirection: 'down',
     arrowLabel: {
-      pt: '👇 ESTA É A SUA TORRE DE CONTROLE DE COMBATE',
-      en: '👇 THIS IS YOUR COMBAT CONTROL TOWER',
-      es: '👇 ESTA ES TU TORRE DE CONTROL DE COMBATE',
+      pt: '👇 ESTAS SÃO AS SUAS 3 TORRES DE RETENÇÃO NO QG',
+      en: '👇 THESE ARE YOUR 3 RETENTION TOWERS IN HQ',
+      es: '👇 ESTAS SON TUS 3 TORRES DE RETENCIÓN EN EL QG',
     },
     desc: {
       pt: 'Aqui está o coração do aplicativo. As 3 Torres 3D monitoram em tempo real, segundo a segundo, sua Retenção Seminal, Zero Pornografia e Zero Masturbação.',
@@ -58,6 +60,7 @@ export const TOUR_STEPS = [
   {
     id: 'forge_habits',
     tab: 'forge',
+    target: 'habits',
     icon: '🔨',
     badge: {
       pt: 'ETAPA 2 DE 5 · FORJA DE HÁBITOS',
@@ -69,6 +72,7 @@ export const TOUR_STEPS = [
       en: 'Habit Protocol & Discipline Slots',
       es: 'Protocolo de Hábitos y Slots de Disciplina',
     },
+    arrowDirection: 'down',
     arrowLabel: {
       pt: '👇 CUMPRA OU FALHE SEUS HÁBITOS AQUI DIARIAMENTE',
       en: '👇 COMPLETE OR FAIL YOUR HABITS HERE DAILY',
@@ -89,6 +93,7 @@ export const TOUR_STEPS = [
   {
     id: 'ops_tasks',
     tab: 'ops',
+    target: 'tasks',
     icon: '⚔️',
     badge: {
       pt: 'ETAPA 3 DE 5 · OPERAÇÕES DE GUERRA',
@@ -100,6 +105,7 @@ export const TOUR_STEPS = [
       en: 'Daily Missions & Strategic Projects',
       es: 'Misiones Diarias y Proyectos Estratégicos',
     },
+    arrowDirection: 'down',
     arrowLabel: {
       pt: '👇 ORGANIZE SUAS TAREFAS E PROJETOS DE VIDA',
       en: '👇 ORGANIZE YOUR TASKS & LIFE PROJECTS',
@@ -120,6 +126,7 @@ export const TOUR_STEPS = [
   {
     id: 'sos_fab',
     tab: 'qg',
+    target: 'sos',
     icon: '🚨',
     badge: {
       pt: 'ETAPA 4 DE 5 · BOTÃO DE EMERGÊNCIA S.O.S',
@@ -131,10 +138,11 @@ export const TOUR_STEPS = [
       en: 'Instant Relapse Shielding',
       es: 'Blindaje Instantáneo Contra Recaídas',
     },
+    arrowDirection: 'corner-down-right',
     arrowLabel: {
-      pt: '👉 O BOTÃO VERMELHO S.O.S FICA FIXO NO CANTO INFERIOR',
-      en: '👉 THE RED S.O.S BUTTON FLOATS IN THE BOTTOM CORNER',
-      es: '👉 EL BOTÓN ROJO S.O.S ESTÁ FIJO EN LA ESQUINA INFERIOR',
+      pt: '↘️ O BOTÃO VERMELHO S.O.S FICA FIXO NO CANTO INFERIOR',
+      en: '↘️ THE RED S.O.S BUTTON FLOATS IN THE BOTTOM CORNER',
+      es: '↘️ EL BOTÓN ROJO S.O.S ESTÁ FIJO EN LA ESQUINA INFERIOR',
     },
     desc: {
       pt: 'Em qualquer tela do aplicativo, este botão vermelho flutuante estará sempre à mão. Quando a tentação ou fissura apertar, aperte-o sem hesitar para cortar o pico de dopamina imediatamente.',
@@ -151,6 +159,7 @@ export const TOUR_STEPS = [
   {
     id: 'manual_access',
     tab: 'settings',
+    target: 'manual',
     icon: '🧭',
     badge: {
       pt: 'ETAPA 5 DE 5 · MANUAL TÁTICO & AJUSTES',
@@ -162,6 +171,7 @@ export const TOUR_STEPS = [
       en: 'Warrior Manual Always Ready',
       es: 'Manual del Guerrero Siempre Disponible',
     },
+    arrowDirection: 'up',
     arrowLabel: {
       pt: '👆 REVEJA ESTE TOUR QUANDO QUISER NO TOPO OU AJUSTES',
       en: '👆 REVIEW THIS TOUR ANYTIME AT THE TOP OR SETTINGS',
@@ -187,6 +197,46 @@ export const TOUR_I18N = {
   nextBtn: { pt: 'Próximo', en: 'Next', es: 'Siguiente' },
   finishBtn: { pt: 'COMEÇAR A BATALHA', en: 'ENTER THE BATTLE', es: 'COMENZAR LA BATALLA' },
   tipPrefix: { pt: 'DIRETRIZ DE COMBATE', en: 'COMBAT DIRECTIVE', es: 'DIRECTRIZ DE COMBATE' },
+  screenPointerBadge: { pt: 'ALVO NO APP:', en: 'TARGET IN APP:', es: 'OBJETIVO EN APP:' },
+};
+
+export const PREVIEW_I18N = {
+  // Step 1: Towers
+  towersRetention: { pt: 'Retenção', en: 'Retention', es: 'Retención' },
+  towersLive: { pt: 'Ao Vivo ⏱️', en: 'Live ⏱️', es: 'En Vivo ⏱️' },
+  towersZeroPorn: { pt: 'Zero Porn', en: 'Zero Porn', es: 'Cero Porn' },
+  towersZeroMast: { pt: 'Zero Mast', en: 'Zero Mast', es: 'Cero Mast' },
+  towersClean: { pt: 'Limpo ✓', en: 'Clean ✓', es: 'Limpio ✓' },
+  towersBattleTitle: { pt: '⚔️ Batalha das 24 Horas: Vença o Hoje', en: '⚔️ 24-Hour Battle: Win Today', es: '⚔️ Batalla de las 24 Horas: Vence el Hoy' },
+  towersHonorBadge: { pt: 'HONRA', en: 'HONOR', es: 'HONOR' },
+
+  // Step 2: Forge
+  forgeSlotsLabel: { pt: 'Slots da Forja:', en: 'Forge Slots:', es: 'Slots de la Forja:' },
+  forgeSlotsVal: { pt: '3 Ativos / 3 Máx', en: '3 Active / 3 Max', es: '3 Activos / 3 Máx' },
+  forgeTierBadge: { pt: 'PATAMAR I', en: 'TIER I', es: 'RANGO I' },
+  forgeHabitTitle: { pt: 'Treino Pesado & Vigor', en: 'Heavy Workout & Vigor', es: 'Entrenamiento Duro & Vigor' },
+  forgeBtnDone: { pt: '✓ CONCLUIR', en: '✓ COMPLETE', es: '✓ COMPLETAR' },
+  forgeBtnFail: { pt: '✕ FALHEI', en: '✕ FAILED', es: '✕ FALLÉ' },
+
+  // Step 3: Ops
+  opsHeaderLabel: { pt: 'Operações Táticas:', en: 'Tactical Operations:', es: 'Operaciones Tácticas:' },
+  opsProgressVal: { pt: 'Progresso 100%', en: 'Progress 100%', es: 'Progreso 100%' },
+  opsNewTaskBtn: { pt: '+ Nova Tarefa', en: '+ New Task', es: '+ Nueva Tarea' },
+  opsPriHigh: { pt: 'ALTA', en: 'HIGH', es: 'ALTA' },
+  opsSampleTask: { pt: 'Leitura estoica de 20 páginas', en: 'Stoic reading 20 pages', es: 'Lectura estoica 20 páginas' },
+
+  // Step 4: SOS
+  sosButtonTitle: { pt: 'Botão Vermelho S.O.S', en: 'Red S.O.S Button', es: 'Botón Rojo S.O.S' },
+  sosButtonSub: { pt: 'Fixo no canto inferior direito', en: 'Pinned in bottom right corner', es: 'Fijo en la esquina inferior derecha' },
+  sosBadge: { pt: 'RESGATE', en: 'RESCUE', es: 'RESCATE' },
+
+  // Step 5: Manual
+  manualTitle: { pt: 'Manual do Guerreiro', en: "Warrior's Manual", es: 'Manual del Guerrero' },
+  manualSub: { pt: 'Toque na bússola ou na aba Ajustes', en: 'Tap the compass or Settings tab', es: 'Toca la brújula o la pestaña Ajustes' },
+  manualBtn: { pt: 'REVER TOUR', en: 'REPLAY TOUR', es: 'REPETIR TOUR' },
+
+  // Step indicator aria-label
+  stepAria: { pt: 'Passo', en: 'Step', es: 'Paso' },
 };
 
 export default function AppTourModal({ onClose }) {
@@ -194,6 +244,7 @@ export default function AppTourModal({ onClose }) {
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const l = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = TOUR_I18N;
+  const pv = PREVIEW_I18N;
   const steps = TOUR_STEPS;
 
   const [stepIdx, setStepIdx] = useState(0);
@@ -244,216 +295,313 @@ export default function AppTourModal({ onClose }) {
   };
 
   return (
-    <div className="relative w-full max-w-lg mx-auto rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#090604] border-2 border-gold/60 p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.95)] text-ink overflow-hidden select-none">
-      {/* Brilho Superior Dourado */}
-      <div className="pointer-events-none absolute left-1/2 -top-12 -translate-x-1/2 h-24 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.25)_0%,transparent_75%)]" />
+    <>
+      {/* ======================================================== */}
+      {/* SPOTLIGHTS & SETAS INDICATIVAS APONTANDO PARA A TELA REAL */}
+      {/* ======================================================== */}
 
-      {/* CABEÇALHO */}
-      <div className="relative z-10 flex items-start justify-between gap-3 pb-2.5 border-b border-gold/20">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex-none p-2 rounded-xl bg-gold/15 border border-gold/40 text-gold shadow-sm">
-            <Compass size={22} className="text-gold" />
+      {/* ETAPA 4: SETA GIGANTE E SPOTLIGHT NO BOTÃO S.O.S REAL (CANTO INFERIOR DIREITO) */}
+      {step.id === 'sos_fab' && (
+        <div className="fixed inset-0 z-[80] pointer-events-none overflow-hidden select-none">
+          {/* Anel de Radar e Brilho Pulsante no botão S.O.S */}
+          <div 
+            className="fixed z-[85] grid place-items-center"
+            style={{
+              right: 'calc(0.75rem + env(safe-area-inset-right, 0px))',
+              bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+              width: '68px',
+              height: '68px',
+            }}
+          >
+            <div className="absolute inset-0 rounded-full border-4 border-red-500 shadow-[0_0_35px_rgba(239,68,68,1)] animate-ping" />
+            <div className="absolute -inset-2 rounded-full border-2 border-red-400/80 animate-pulse" />
           </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-mono text-gold font-extrabold uppercase tracking-wider block truncate">
-              {step.badge[l]}
-            </span>
-            <h3 className="font-display text-sm sm:text-base font-bold text-ink leading-tight truncate">
-              {step.title[l]}
-            </h3>
+
+          {/* Seta Indicativa Gigante Flutuante Apontando para o S.O.S */}
+          <div 
+            className="fixed z-[86] flex flex-col items-end animate-bounce"
+            style={{
+              right: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
+              bottom: 'calc(9.5rem + env(safe-area-inset-bottom, 0px))',
+            }}
+          >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-600 via-rose-600 to-red-500 text-white font-mono text-[11px] sm:text-xs font-black tracking-wider shadow-[0_0_25px_rgba(239,68,68,0.9)] border-2 border-white/60">
+              <span className="animate-pulse">🚨</span>
+              <span>{step.arrowLabel[l]}</span>
+            </div>
+            <div className="mr-8 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[18px] border-t-red-600 drop-shadow-[0_4px_10px_rgba(239,68,68,0.9)]" />
           </div>
         </div>
+      )}
 
-        <button
-          type="button"
-          onClick={handleFinish}
-          className="flex-none flex items-center gap-1 px-2.5 py-1 rounded-lg border border-line bg-surface2 text-muted hover:text-gold hover:border-gold/40 text-xs font-mono transition-colors cursor-pointer"
-        >
-          <span>{tx.skipBtn[l]}</span>
-          <X size={13} />
-        </button>
-      </div>
+      {/* ETAPA 5: SETA GIGANTE E SPOTLIGHT NO MANUAL / BÚSSOLA NO TOPO REAL */}
+      {step.id === 'manual_access' && (
+        <div className="fixed inset-0 z-[80] pointer-events-none overflow-hidden select-none">
+          {/* Anel de Radar na Bússola do Header */}
+          <div 
+            className="fixed z-[85] grid place-items-center"
+            style={{
+              right: 'calc(3.5rem + env(safe-area-inset-right, 0px))',
+              top: '0.6rem',
+              width: '42px',
+              height: '42px',
+            }}
+          >
+            <div className="absolute inset-0 rounded-xl border-3 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,1)] animate-ping" />
+            <div className="absolute -inset-1.5 rounded-xl border-2 border-amber-300/80 animate-pulse" />
+          </div>
 
-      {/* BARRA DE PROGRESSO SLIDE */}
-      <div className="relative z-10 w-full bg-surface2 h-1 rounded-full overflow-hidden my-3">
-        <div 
-          className="h-full bg-gradient-to-r from-amber-500 to-gold transition-all duration-300 rounded-full"
-          style={{ width: `${((stepIdx + 1) / steps.length) * 100}%` }}
-        />
-      </div>
-
-      {/* SETA INDICATIVA ANIMADA ("SETINHA") APONTANDO PARA O ELEMENTO */}
-      <div className="relative z-10 mb-2 flex flex-col items-center animate-bounce">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-[#141414] font-mono text-[10px] sm:text-xs font-black tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.6)] border border-white/30">
-          <span>{step.arrowLabel[l]}</span>
+          {/* Seta Indicativa Gigante Apontando para Cima na Bússola */}
+          <div 
+            className="fixed z-[86] flex flex-col items-end animate-bounce"
+            style={{
+              right: 'calc(1.5rem + env(safe-area-inset-right, 0px))',
+              top: '3.6rem',
+            }}
+          >
+            <div className="mr-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[18px] border-b-amber-500 drop-shadow-[0_-4px_10px_rgba(245,158,11,0.9)]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-gold to-yellow-400 text-black font-mono text-[11px] sm:text-xs font-black tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.9)] border-2 border-white/60">
+              <span className="animate-pulse">🧭</span>
+              <span>{step.arrowLabel[l]}</span>
+            </div>
+          </div>
         </div>
-        <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-gold drop-shadow-[0_2px_4px_rgba(245,158,11,0.5)]" />
-      </div>
+      )}
 
-      {/* CAIXA DE SIMULAÇÃO VISUAL DA FERRAMENTA REAL */}
-      <div className="relative z-10 rounded-xl border border-gold/40 bg-black/60 p-3 sm:p-3.5 mb-3 shadow-inner">
-        {step.previewType === 'towers' && (
-          <div className="space-y-2">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2 rounded-lg bg-surface2 border border-gold/30">
-                <span className="text-base block">🏛️</span>
-                <span className="text-[10px] font-mono font-bold text-gold block truncate">Retenção</span>
-                <span className="text-xs font-mono font-black text-ink">Ao Vivo ⏱️</span>
-              </div>
-              <div className="p-2 rounded-lg bg-surface2 border border-line">
-                <span className="text-base block">🛡️</span>
-                <span className="text-[10px] font-mono font-bold text-muted block truncate">Zero Porn</span>
-                <span className="text-xs font-mono font-black text-ok">Limpo ✓</span>
-              </div>
-              <div className="p-2 rounded-lg bg-surface2 border border-line">
-                <span className="text-base block">⚔️</span>
-                <span className="text-[10px] font-mono font-bold text-muted block truncate">Zero Mast</span>
-                <span className="text-xs font-mono font-black text-ok">Limpo ✓</span>
-              </div>
+      {/* ETAPAS 1, 2, 3: BARRA INDICADORA SUPERIOR APONTANDO PARA A TELA */}
+      {(step.id === 'qg_towers' || step.id === 'forge_habits' || step.id === 'ops_tasks') && (
+        <div className="fixed top-14 sm:top-16 inset-x-0 z-[80] pointer-events-none flex justify-center px-4 animate-bounce">
+          <div className="flex flex-col items-center">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gold text-[#141414] font-mono text-[11px] sm:text-xs font-black tracking-wider shadow-[0_0_25px_rgba(245,158,11,0.85)] border-2 border-white/60">
+              <span>{step.arrowLabel[l]}</span>
             </div>
-            <div className="flex items-center justify-between p-2 rounded bg-gold/10 border border-gold/30 text-[11px] font-mono text-gold font-bold">
-              <span>⚔️ Batalha das 24 Horas: Vença o Hoje</span>
-              <span className="text-[10px] bg-gold text-black px-1.5 py-0.2 rounded font-black">HONRA</span>
-            </div>
+            <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[14px] border-t-gold drop-shadow-[0_4px_8px_rgba(245,158,11,0.8)]" />
           </div>
-        )}
+        </div>
+      )}
 
-        {step.previewType === 'forge' && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-muted border-b border-line/60 pb-1.5">
-              <span>Slots da Forja: <b className="text-gold">3 Ativos / 3 Máx</b></span>
-              <span className="text-[10px] bg-gold/10 text-gold border border-gold/30 px-2 py-0.5 rounded font-bold">PATAMAR I</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface2 border border-gold/40">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-base">🏛️</span>
-                <span className="text-xs font-bold text-ink truncate">Treino Pesado & Vigor</span>
-              </div>
-              <div className="flex items-center gap-1.5 flex-none">
-                <span className="text-[10px] font-mono bg-ok/20 text-ok border border-ok/40 px-2 py-1 rounded font-bold">✓ CONCLUIR</span>
-                <span className="text-[10px] font-mono bg-danger/10 text-danger border border-danger/30 px-2 py-1 rounded font-bold">✕ FALHEI</span>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* ======================================================== */}
+      {/* CARD PRINCIPAL DO MANUAL (RESPONSIVO E NAVEGÁVEL)       */}
+      {/* ======================================================== */}
+      <div className="relative z-[90] w-full max-w-lg mx-auto rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#090604] border-2 border-gold/70 p-4 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.98)] text-ink overflow-hidden select-none">
+        {/* Brilho Superior Dourado */}
+        <div className="pointer-events-none absolute left-1/2 -top-12 -translate-x-1/2 h-24 w-80 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.3)_0%,transparent_75%)]" />
 
-        {step.previewType === 'ops' && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-mono text-muted border-b border-line/60 pb-1.5">
-              <span>Operações Táticas: <b className="text-gold">Progresso 100%</b></span>
-              <span className="text-[10px] bg-gold/15 text-gold border border-gold/30 px-2 py-0.5 rounded font-bold">+ Nova Tarefa</span>
+        {/* CABEÇALHO */}
+        <div className="relative z-10 flex items-start justify-between gap-3 pb-2.5 border-b border-gold/20">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex-none p-2 rounded-xl bg-gold/15 border border-gold/40 text-gold shadow-sm">
+              <Compass size={22} className="text-gold" />
             </div>
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface2 border border-line">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[10px] font-mono bg-danger/20 text-danger px-1.5 py-0.5 rounded font-bold uppercase">ALTA</span>
-                <span className="text-xs font-bold text-ink truncate">Leitura estoica de 20 páginas</span>
-              </div>
-              <span className="text-[10px] font-mono text-muted flex items-center gap-1">
-                <Clock size={10} /> 08:00
+            <div className="min-w-0">
+              <span className="text-[10px] font-mono text-gold font-extrabold uppercase tracking-wider block truncate">
+                {step.badge[l]}
               </span>
+              <h3 className="font-display text-sm sm:text-base font-bold text-ink leading-tight truncate">
+                {step.title[l]}
+              </h3>
             </div>
           </div>
-        )}
-
-        {step.previewType === 'sos' && (
-          <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-danger/10 border border-danger/40">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white shadow-[0_0_15px_rgba(239,68,68,0.7)] flex-none animate-pulse">
-                <Siren size={20} />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-red-200 block truncate">Botão Vermelho S.O.S</span>
-                <span className="text-[10px] text-muted block truncate">Fixo no canto inferior direito</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono font-black text-danger bg-danger/20 border border-danger/40 px-2 py-1 rounded uppercase tracking-wider flex-none">
-              RESGATE
-            </span>
-          </div>
-        )}
-
-        {step.previewType === 'manual' && (
-          <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-gold/10 border border-gold/30">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-gold/20 border border-gold/40 flex items-center justify-center text-gold flex-none">
-                <Compass size={18} />
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-gold block truncate">Manual do Guerreiro</span>
-                <span className="text-[10px] text-muted block truncate">Toque na bússola ou na aba Ajustes</span>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono font-bold text-gold bg-gold/20 border border-gold/40 px-2 py-1 rounded uppercase flex-none">
-              REVER TOUR
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* TEXTO EXPLICATIVO */}
-      <p className="relative z-10 text-xs sm:text-[13px] text-ink/90 leading-relaxed mb-3">
-        {step.desc[l]}
-      </p>
-
-      {/* DICA DE COMBATE */}
-      <div className="relative z-10 p-2.5 rounded-lg border border-gold/30 bg-gold/5 flex items-start gap-2 text-xs mb-3.5">
-        <span className="text-sm flex-none mt-0.5">💡</span>
-        <div>
-          <span className="font-mono text-[9.5px] font-extrabold text-gold block uppercase tracking-wider">
-            {tx.tipPrefix[l]}
-          </span>
-          <p className="text-gold2 leading-tight text-[11px] sm:text-xs mt-0.5">
-            {step.tip[l]}
-          </p>
-        </div>
-      </div>
-
-      {/* RODAPÉ: BOTÕES E NAVEGAÇÃO */}
-      <div className="relative z-10 pt-2 border-t border-gold/20 flex items-center justify-between gap-2">
-        {/* INDICADOR DE BOLINHAS */}
-        <div className="flex items-center gap-1.5">
-          {steps.map((s, idx) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => handleJump(idx)}
-              className={`h-2 transition-all rounded-full cursor-pointer ${
-                idx === stepIdx
-                  ? 'w-6 bg-gold shadow-sm'
-                  : 'w-2 bg-line hover:bg-muted'
-              }`}
-              aria-label={`Passo ${idx + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* BOTÕES DE CONTROLE */}
-        <div className="flex items-center gap-1.5">
-          {!isFirst && (
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="px-3 py-1.5 rounded-lg border border-line bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer"
-            >
-              <ArrowLeft size={13} />
-              <span>{tx.prevBtn[l]}</span>
-            </button>
-          )}
 
           <button
             type="button"
-            onClick={handleNext}
-            className={`py-1.5 px-3.5 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer ${
-              isLast
-                ? 'bg-gradient-to-r from-amber-500 via-gold to-amber-400 text-[#141414] font-black hover:brightness-110 active:scale-95'
-                : 'btn-gold'
-            }`}
+            onClick={handleFinish}
+            className="flex-none flex items-center gap-1 px-2.5 py-1 rounded-lg border border-line bg-surface2 text-muted hover:text-gold hover:border-gold/40 text-xs font-mono transition-colors cursor-pointer"
           >
-            <span>{isLast ? tx.finishBtn[l] : tx.nextBtn[l]}</span>
-            {isLast ? <Check size={13} strokeWidth={3} /> : <ArrowRight size={13} />}
+            <span>{tx.skipBtn[l]}</span>
+            <X size={13} />
           </button>
         </div>
+
+        {/* BARRA DE PROGRESSO DO SLIDE */}
+        <div className="relative z-10 w-full bg-surface2 h-1.5 rounded-full overflow-hidden my-3">
+          <div 
+            className="h-full bg-gradient-to-r from-amber-500 via-gold to-yellow-400 transition-all duration-300 rounded-full"
+            style={{ width: `${((stepIdx + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+
+        {/* INDICADOR VISUAL COM SETA DENTRO DO CARD */}
+        <div className="relative z-10 mb-2 flex flex-col items-center">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10.5px] sm:text-xs font-black tracking-wider border border-white/30 shadow-md ${
+            step.id === 'sos_fab'
+              ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.7)]'
+              : 'bg-gold text-[#141414] shadow-[0_0_15px_rgba(245,158,11,0.6)]'
+          }`}>
+            <span>{step.arrowLabel[l]}</span>
+          </div>
+          <div className={`w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent ${
+            step.arrowDirection === 'up'
+              ? 'border-b-[9px] border-b-gold order-first mb-0.5'
+              : 'border-t-[9px] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]'
+          } ${step.id === 'sos_fab' ? 'border-t-red-600' : 'border-t-gold'}`} />
+        </div>
+
+        {/* CAIXA DE SIMULAÇÃO VISUAL DA FERRAMENTA REAL */}
+        <div className="relative z-10 rounded-xl border border-gold/40 bg-black/60 p-3 sm:p-3.5 mb-3 shadow-inner">
+          {step.previewType === 'towers' && (
+            <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-2 rounded-lg bg-surface2 border border-gold/30">
+                  <span className="text-base block">🏛️</span>
+                  <span className="text-[10px] font-mono font-bold text-gold block truncate">{pv.towersRetention[l]}</span>
+                  <span className="text-xs font-mono font-black text-ink">{pv.towersLive[l]}</span>
+                </div>
+                <div className="p-2 rounded-lg bg-surface2 border border-line">
+                  <span className="text-base block">🛡️</span>
+                  <span className="text-[10px] font-mono font-bold text-muted block truncate">{pv.towersZeroPorn[l]}</span>
+                  <span className="text-xs font-mono font-black text-ok">{pv.towersClean[l]}</span>
+                </div>
+                <div className="p-2 rounded-lg bg-surface2 border border-line">
+                  <span className="text-base block">⚔️</span>
+                  <span className="text-[10px] font-mono font-bold text-muted block truncate">{pv.towersZeroMast[l]}</span>
+                  <span className="text-xs font-mono font-black text-ok">{pv.towersClean[l]}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-gold/10 border border-gold/30 text-[11px] font-mono text-gold font-bold">
+                <span>{pv.towersBattleTitle[l]}</span>
+                <span className="text-[10px] bg-gold text-black px-1.5 py-0.2 rounded font-black">{pv.towersHonorBadge[l]}</span>
+              </div>
+            </div>
+          )}
+
+          {step.previewType === 'forge' && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-muted border-b border-line/60 pb-1.5">
+                <span>{pv.forgeSlotsLabel[l]} <b className="text-gold">{pv.forgeSlotsVal[l]}</b></span>
+                <span className="text-[10px] bg-gold/10 text-gold border border-gold/30 px-2 py-0.5 rounded font-bold">{pv.forgeTierBadge[l]}</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-surface2 border border-gold/40">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-base">🏛️</span>
+                  <span className="text-xs font-bold text-ink truncate">{pv.forgeHabitTitle[l]}</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-none">
+                  <span className="text-[10px] font-mono bg-ok/20 text-ok border border-ok/40 px-2 py-1 rounded font-bold">{pv.forgeBtnDone[l]}</span>
+                  <span className="text-[10px] font-mono bg-danger/10 text-danger border border-danger/30 px-2 py-1 rounded font-bold">{pv.forgeBtnFail[l]}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step.previewType === 'ops' && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-muted border-b border-line/60 pb-1.5">
+                <span>{pv.opsHeaderLabel[l]} <b className="text-gold">{pv.opsProgressVal[l]}</b></span>
+                <span className="text-[10px] bg-gold/15 text-gold border border-gold/30 px-2 py-0.5 rounded font-bold">{pv.opsNewTaskBtn[l]}</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-surface2 border border-line">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10px] font-mono bg-danger/20 text-danger px-1.5 py-0.5 rounded font-bold uppercase">{pv.opsPriHigh[l]}</span>
+                  <span className="text-xs font-bold text-ink truncate">{pv.opsSampleTask[l]}</span>
+                </div>
+                <span className="text-[10px] font-mono text-muted flex items-center gap-1">
+                  <Clock size={10} /> 08:00
+                </span>
+              </div>
+            </div>
+          )}
+
+          {step.previewType === 'sos' && (
+            <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-danger/10 border border-danger/40">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-white shadow-[0_0_15px_rgba(239,68,68,0.7)] flex-none animate-pulse">
+                  <Siren size={20} />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-red-200 block truncate">{pv.sosButtonTitle[l]}</span>
+                  <span className="text-[10px] text-muted block truncate">{pv.sosButtonSub[l]}</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-black text-danger bg-danger/20 border border-danger/40 px-2 py-1 rounded uppercase tracking-wider flex-none">
+                {pv.sosBadge[l]}
+              </span>
+            </div>
+          )}
+
+          {step.previewType === 'manual' && (
+            <div className="flex items-center justify-between gap-3 p-2 rounded-lg bg-gold/10 border border-gold/30">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-gold/20 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                  <Compass size={18} />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-gold block truncate">{pv.manualTitle[l]}</span>
+                  <span className="text-[10px] text-muted block truncate">{pv.manualSub[l]}</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-gold bg-gold/20 border border-gold/40 px-2 py-1 rounded uppercase flex-none">
+                {pv.manualBtn[l]}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* TEXTO EXPLICATIVO */}
+        <p className="relative z-10 text-xs sm:text-[13px] text-ink/90 leading-relaxed mb-3">
+          {step.desc[l]}
+        </p>
+
+        {/* DICA DE COMBATE */}
+        <div className="relative z-10 p-2.5 rounded-lg border border-gold/30 bg-gold/5 flex items-start gap-2 text-xs mb-3.5">
+          <span className="text-sm flex-none mt-0.5">💡</span>
+          <div>
+            <span className="font-mono text-[9.5px] font-extrabold text-gold block uppercase tracking-wider">
+              {tx.tipPrefix[l]}
+            </span>
+            <p className="text-gold2 leading-tight text-[11px] sm:text-xs mt-0.5">
+              {step.tip[l]}
+            </p>
+          </div>
+        </div>
+
+        {/* RODAPÉ: BOTÕES E NAVEGAÇÃO */}
+        <div className="relative z-10 pt-2 border-t border-gold/20 flex items-center justify-between gap-2">
+          {/* INDICADOR DE BOLINHAS */}
+          <div className="flex items-center gap-1.5">
+            {steps.map((s, idx) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => handleJump(idx)}
+                className={`h-2 transition-all rounded-full cursor-pointer ${
+                  idx === stepIdx
+                    ? 'w-6 bg-gold shadow-sm'
+                    : 'w-2 bg-line hover:bg-muted'
+                }`}
+                aria-label={`${pv.stepAria[l]} ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* BOTÕES DE CONTROLE */}
+          <div className="flex items-center gap-1.5">
+            {!isFirst && (
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="px-3 py-1.5 rounded-lg border border-line bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <ArrowLeft size={13} />
+                <span>{tx.prevBtn[l]}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleNext}
+              className={`py-1.5 px-3.5 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer ${
+                isLast
+                  ? 'bg-gradient-to-r from-amber-500 via-gold to-amber-400 text-[#141414] font-black hover:brightness-110 active:scale-95'
+                  : 'btn-gold'
+              }`}
+            >
+              <span>{isLast ? tx.finishBtn[l] : tx.nextBtn[l]}</span>
+              {isLast ? <Check size={13} strokeWidth={3} /> : <ArrowRight size={13} />}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

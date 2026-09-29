@@ -128,7 +128,7 @@ export default function Shell() {
                 try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
               }}
             />,
-            'dialog'
+            'tour dialog'
           );
         }, 900);
         return () => clearTimeout(timer);
@@ -244,7 +244,7 @@ export default function Shell() {
                     try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
                   }}
                 />,
-                'dialog'
+                'tour dialog'
               );
             }}
             className="mt-2 flex items-center gap-2.5 rounded-lg border border-line/60 bg-surface/50 px-3 py-2 text-xs font-bold text-muted hover:text-gold hover:border-gold/40 transition-colors cursor-pointer select-none"
@@ -364,7 +364,7 @@ export default function Shell() {
                         try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
                       }}
                     />,
-                    'dialog'
+                    'tour dialog'
                   );
                 }}
                 className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95 cursor-pointer"
