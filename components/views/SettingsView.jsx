@@ -4,7 +4,7 @@ import {
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
   Trophy, Palette, Check, Volume2, Shield, Database, ChevronRight, Lock,
-  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Crown
+  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Crown, Compass
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Toggle, Chk, Empty } from '@/components/ui';
@@ -17,6 +17,7 @@ import { AF } from '@/lib/audio';
 import { today, LSKEY } from '@/lib/utils';
 import { pushSupported, askPermission, subscribePush, unsubscribePush, localNotify } from '@/lib/notify';
 import ChangelogModal from '../ChangelogModal';
+import AppTourModal, { TOUR_STORAGE_KEY } from '../AppTourModal';
 import { CURRENT_APP_VERSION } from '@/lib/changelog';
 
 const SUB_LBL_FALLBACK = {
@@ -502,6 +503,35 @@ export default function SettingsView() {
                 className="flex-none px-3 py-1.5 rounded-lg border border-amber-500/50 bg-amber-950/80 text-amber-300 text-xs font-bold hover:bg-amber-900 transition-colors cursor-pointer"
               >
                 {T('decrees_banner_btn', 'Ver Novidades')}
+              </button>
+            </div>
+          </div>
+
+          {/* BANNER MANUAL TÁTICO / TOUR DO GUERREIRO */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gold/40 bg-gradient-to-r from-gold/15 via-surface2/60 to-surface border-dashed">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 rounded-lg bg-gold/15 border border-gold/40 text-gold flex-none">
+                  <Compass size={16} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <b className="text-xs text-gold">{T('tour_banner_title', 'Manual do Guerreiro (Tour de Apresentação)')}</b>
+                    <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
+                      5 ETAPAS
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted truncate">
+                    {T('tour_banner_sub', 'Relembre como usar as 3 Torres do QG, Forja de Hábitos, Missões Operacionais e Botão S.O.S.')}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => openModal(<AppTourModal onClose={closeModal} />, 'dialog')}
+                className="flex-none px-3 py-1.5 rounded-lg border border-gold/50 bg-gold/20 text-gold text-xs font-bold hover:bg-gold/30 transition-colors cursor-pointer"
+              >
+                {T('tour_banner_btn', 'Ver Tour do App')}
               </button>
             </div>
           </div>

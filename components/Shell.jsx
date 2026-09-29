@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -11,6 +11,7 @@ import { hasUnreadUpdates, CURRENT_APP_VERSION, markUpdatesAsRead } from '@/lib/
 import WarriorLogo from './WarriorLogo';
 import SosModal from './SosModal';
 import ChangelogModal from './ChangelogModal';
+import AppTourModal, { TOUR_STORAGE_KEY } from './AppTourModal';
 import CommandReplyModal from './CommandReplyModal';
 import QgView from './views/QgView';
 import ForgeView from './views/ForgeView';
@@ -113,9 +114,27 @@ export default function Shell() {
     };
   }, [userEmail, auth?.userId]);
 
-  /* Notificação visual automática e estritamente interna (in-app) quando houver nova versão / atualização */
+  /* Notificação visual automática e estritamente interna (in-app): Tour para novatos e Decretos para veteranos */
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
+      const hasSeenTour = localStorage.getItem(TOUR_STORAGE_KEY);
+      if (!hasSeenTour) {
+        // Apresentação inicial guiada para quem acabou de entrar ou nunca viu o tour
+        const timer = setTimeout(() => {
+          openModal(
+            <AppTourModal
+              onClose={() => {
+                closeModal();
+                try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
+              }}
+            />,
+            'dialog'
+          );
+        }, 900);
+        return () => clearTimeout(timer);
+      }
+
+      // Se já viu o tour, verifica se há atualizações / Decretos da Forja
       const unread = hasUnreadUpdates();
       setHasUnread(unread);
       if (unread) {
@@ -214,6 +233,25 @@ export default function Shell() {
               <span>PAINEL DO DONO</span>
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              openModal(
+                <AppTourModal
+                  onClose={() => {
+                    closeModal();
+                    try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
+                  }}
+                />,
+                'dialog'
+              );
+            }}
+            className="mt-2 flex items-center gap-2.5 rounded-lg border border-line/60 bg-surface/50 px-3 py-2 text-xs font-bold text-muted hover:text-gold hover:border-gold/40 transition-colors cursor-pointer select-none"
+          >
+            <Compass size={15} className="text-gold flex-none" />
+            <span>{lang === 'en' ? "Warrior's Manual" : lang === 'es' ? 'Manual del Guerrero' : 'Manual do Guerreiro'}</span>
+          </button>
         </nav>
         <div className="mt-auto rounded-r2 border border-gold/20 bg-surface p-3.5 text-center">
           <b className="block font-display text-[34px] leading-none text-gold">{progressDays(S)}</b>
@@ -315,7 +353,27 @@ export default function Shell() {
                 )}
               </button>
               <button
-                className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95"
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  openModal(
+                    <AppTourModal
+                      onClose={() => {
+                        closeModal();
+                        try { localStorage.setItem(TOUR_STORAGE_KEY, 'true'); } catch (e) {}
+                      }}
+                    />,
+                    'dialog'
+                  );
+                }}
+                className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95 cursor-pointer"
+                title={lang === 'en' ? "Warrior's Manual (App Tour)" : lang === 'es' ? 'Manual del Guerrero (Tour de la App)' : 'Manual do Guerreiro (Tour do App)'}
+                aria-label="Tour"
+              >
+                <Compass size={17} />
+              </button>
+              <button
+                className="flex-none rounded-lg border border-line bg-surface2 p-1.5 sm:p-2 text-muted hover:text-gold transition-colors active:scale-95 cursor-pointer"
                 onClick={() => go('settings')}
                 aria-label={t('adj')}
                 title={t('settings')}
