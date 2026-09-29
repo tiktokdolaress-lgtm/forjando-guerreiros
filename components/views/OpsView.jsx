@@ -1676,7 +1676,7 @@ export default function OpsView() {
       return (
         <div className="text-left max-h-[85vh] overflow-y-auto pr-1">
           {/* Topo do Modal de Análise */}
-          <div className="pb-2.5 mb-3 border-b border-line flex items-start justify-between gap-3">
+          <div className="pb-2.5 mb-3 border-b border-line flex items-start justify-between gap-3 pr-8">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="p-2 rounded-xl bg-gold/15 border border-gold/40 text-gold flex-none">
                 <BarChart2 size={22} className="text-gold" />
@@ -1690,13 +1690,6 @@ export default function OpsView() {
                 </h3>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={closeModal}
-              className="p-1 rounded-lg border border-line bg-surface text-muted hover:text-ink hover:border-gold/40 transition-colors cursor-pointer shrink-0"
-            >
-              <X size={15} />
-            </button>
           </div>
 
           {/* Cards de Métricas Principais (4 KPIs em Grid) */}
