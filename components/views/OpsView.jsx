@@ -312,6 +312,7 @@ const I18N = {
   toastTaskLinked: { pt: 'Operação vinculada ao projeto com sucesso!', en: 'Operation successfully linked to project!', es: '¡Operación vinculada al proyecto con éxito!' },
   lblDaysCompletedInGoal: { pt: 'dias cumpridos na meta', en: 'days completed in goal', es: 'días cumplidos en la meta' },
   lblNoTasksInProjNotice: { pt: 'Nenhuma tarefa vinculada a este projeto ainda.', en: 'No tasks linked to this project yet.', es: 'Ninguna tarea vinculada a este proyecto aún.' },
+  lblTodayBadge: { pt: 'HOJE', en: 'TODAY', es: 'HOY' },
 };
 
 export default function OpsView() {
@@ -1861,17 +1862,14 @@ export default function OpsView() {
                       <div className="flex items-center gap-2">
                         <span className="text-emerald-400 font-bold">✓</span>
                         <span className="font-mono text-ink font-bold">
-                          {fmtD(ds)} {isTod && <span className="text-[9.5px] text-gold font-bold bg-gold/10 px-1.5 py-0.2 rounded border border-gold/30 ml-1">HOJE</span>}
+                          {fmtD(ds)}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleDateInHistory(ds)}
-                        className="text-[10px] font-mono text-muted hover:text-danger hover:underline cursor-pointer"
-                        title="Remover data do histórico"
-                      >
-                        ✕
-                      </button>
+                      {isTod && (
+                        <span className="text-[9.5px] text-gold font-bold bg-gold/10 px-1.5 py-0.2 rounded border border-gold/30">
+                          {tx.lblTodayBadge[curLang]}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
