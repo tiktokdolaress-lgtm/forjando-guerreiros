@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Shield, Swords, Sparkles, Flame, ChevronRight, BarChart2 } from 'lucide-react';
+import { Shield, Swords, Sparkles, Flame, ChevronRight, BarChart2, RefreshCw } from 'lucide-react';
 import { AF } from '@/lib/audio';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -28,6 +28,10 @@ export default function Warrior3DCard({
   lvlPct = 0,
   lvlTxt = '',
   onGoToArmors = null,
+  dailyQuote = '',
+  onNextQuote = null,
+  quoteIdx = null,
+  quoteTotal = null,
 }) {
   const [selectedPillar, setSelectedPillar] = useState(0);
 
@@ -345,16 +349,43 @@ export default function Warrior3DCard({
           </div>
         </div>
 
-        {/* Frase sobre o guerreiro no topo onde tem o nome (específica para cada um dos 11 estágios) */}
-        {(() => {
-          const stageQuoteObj = TXT.stageQuotes[arm.stageNum] || TXT.quote;
-          const displayQuote = stageQuoteObj[curLang] || stageQuoteObj.pt || TXT.quote[curLang];
-          return displayQuote ? (
-            <p className="text-[11px] sm:text-xs font-mono text-amber-200/80 italic text-center w-full mt-0.5">
-              {displayQuote}
-            </p>
-          ) : null;
-        })()}
+        {/* FRASE DO DIA INTEGRADA: Inspiradora, Focada, Sem Poluição Visual */}
+        {dailyQuote && (
+          <div
+            onClick={() => {
+              try { AF.click(); } catch (e) {}
+              if (typeof onNextQuote === 'function') onNextQuote();
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                try { AF.click(); } catch (err) {}
+                if (typeof onNextQuote === 'function') onNextQuote();
+              }
+            }}
+            title={curLang === 'en' ? 'Click to show next quote of the day' : curLang === 'es' ? 'Haz clic para ver la siguiente frase del día' : 'Clique para ver a próxima frase do dia'}
+            className="group mt-1 flex items-center justify-between gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-black/55 border border-amber-500/30 hover:border-amber-400/60 transition-all cursor-pointer select-none active:scale-[0.99] text-left shadow-sm"
+          >
+            <div className="flex items-start sm:items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <span className="text-[9px] sm:text-[10px] text-amber-400 font-black font-mono uppercase tracking-wider flex items-center gap-1 shrink-0 pt-0.5 sm:pt-0">
+                <span className="animate-pulse">⚡</span>
+                <span className="hidden xs:inline">{curLang === 'en' ? 'QUOTE OF THE DAY' : curLang === 'es' ? 'FRASE DEL DÍA' : 'FRASE DO DIA'}</span>
+                <span className="xs:hidden">{curLang === 'en' ? 'QUOTE' : 'FRASE'}</span>
+                {quoteIdx && quoteTotal ? (
+                  <span className="text-[8.5px] sm:text-[9px] text-amber-400/70 font-normal">({quoteIdx}/{quoteTotal})</span>
+                ) : null}
+                :
+              </span>
+              <p className="text-[11px] sm:text-[12px] font-semibold italic text-[#f3ead2] group-hover:text-amber-200 transition-colors line-clamp-2 leading-tight">
+                "{dailyQuote}"
+              </p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0 text-amber-400/60 group-hover:text-amber-300 transition-colors pl-1">
+              <RefreshCw size={11} className="transition-transform group-hover:rotate-180 duration-500" />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CANVAS 3D INTERATIVO (O GUERREIRO E OS 3 ESTANDARTES GIRAM JUNTOS) */}
