@@ -353,6 +353,7 @@ export default function Shell() {
                 )}
               </button>
               <button
+                id="tour-btn-manual"
                 type="button"
                 onClick={() => {
                   AF.click();
@@ -393,6 +394,7 @@ export default function Shell() {
 
       {/* Menu de abas fixo inferior no mobile ao rolar a tela */}
       <nav
+        id="tour-bottom-nav"
         aria-label="Navegação móvel"
         className="fixed bottom-0 left-0 right-0 z-40 border-t border-gold/20 bg-[rgba(13,13,14,0.96)] backdrop-blur-xl lg:hidden shadow-[0_-4px_24px_rgba(0,0,0,0.85)]"
         style={{

@@ -893,21 +893,23 @@ export default function QgView() {
   /* 2. O GUERREIRO VIVO DA FORJA (CARD 3D COM OS 3 PILARES GIRATÓRIOS DO PEDESTAL) */
   const renderPillars3DTowers = (isDesktop = false) => {
     return (
-      <ErrorBoundary>
-        <Warrior3DCard
-          tier={tier}
-          d={d}
-          nt={nt}
-          curLang={curLang}
-          purity={S.purity}
-          streak={streak}
-          sosWins={L.sosWins(S)}
-          pillarsData={pillarsData}
-          lvlPct={lvlPct}
-          lvlTxt={lvlTxt}
-          onGoToArmors={() => setTab && setTab('forge')}
-        />
-      </ErrorBoundary>
+      <div id="tour-qg-towers" className="w-full">
+        <ErrorBoundary>
+          <Warrior3DCard
+            tier={tier}
+            d={d}
+            nt={nt}
+            curLang={curLang}
+            purity={S.purity}
+            streak={streak}
+            sosWins={L.sosWins(S)}
+            pillarsData={pillarsData}
+            lvlPct={lvlPct}
+            lvlTxt={lvlTxt}
+            onGoToArmors={() => setTab && setTab('forge')}
+          />
+        </ErrorBoundary>
+      </div>
     );
   };
 

@@ -757,7 +757,7 @@ export default function ForgeView() {
 
       {/* 1. PROTOCOLO ATIVO */}
       {activeCategory === 'active' && (
-        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
+        <div id="tour-forge-habits" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
           {/* TOPO COMPACTO: Regras de Desbloqueio e Slots */}
           <Card className="p-3 sm:p-3.5 border-gold/30 bg-surface2/60 w-full max-w-full min-w-0 overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 min-w-0 w-full">

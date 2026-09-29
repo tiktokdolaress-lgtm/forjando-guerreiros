@@ -1868,7 +1868,7 @@ export default function OpsView() {
 
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
-        <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
+        <div id="tour-ops-tasks" className="flex flex-col gap-3 w-full max-w-full min-w-0">
           {/* Sub-filtros de Tarefas Responsivos em Tela Cheia */}
           <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
             {[

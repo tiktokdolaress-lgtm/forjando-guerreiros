@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Compass, 
   X, 
@@ -10,283 +10,265 @@ import {
   Flame, 
   Zap, 
   Siren, 
-  Layers, 
-  BookOpen, 
-  Skull, 
-  Sparkles,
-  Award
+  Target,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { AF } from '@/lib/audio';
 
 export const TOUR_STORAGE_KEY = 'fg_tour_seen_v1';
 
+export const TOUR_STEPS = [
+  {
+    id: 'qg_towers',
+    tab: 'qg',
+    selector: '#tour-qg-towers',
+    fallbackSelector: '#tour-bottom-nav',
+    icon: '🏰',
+    arrowLabel: {
+      pt: 'AQUI ESTÃO SUAS 3 TORRES 👆',
+      en: 'HERE ARE YOUR 3 TOWERS 👆',
+      es: 'AQUÍ ESTÁN TUS 3 TORRES 👆',
+    },
+    badge: {
+      pt: '1 DE 5 · O CORAÇÃO DO SISTEMA',
+      en: '1 OF 5 · THE CORE OF THE SYSTEM',
+      es: '1 DE 5 · EL CORAZÓN DEL SISTEMA',
+    },
+    title: {
+      pt: 'Quartel General & As 3 Torres 3D',
+      en: 'Headquarters & The 3 3D Towers',
+      es: 'Cuartel General y las 3 Torres 3D',
+    },
+    desc: {
+      pt: 'Aqui você vence cada 24 horas. Estas 3 Torres 3D acompanham em tempo real sua Retenção Seminal, Zero Pornografia e Zero Masturbação com cronômetro de precisão.',
+      en: 'Here you conquer each 24-hour cycle. These 3 3D Towers monitor your Semen Retention, Zero Pornography, and Zero Masturbation in real time with high precision.',
+      es: 'Aquí vences cada ciclo de 24 horas. Estas 3 Torres 3D monitorean tu Retención Seminal, Cero Pornografía y Cero Masturbación en tiempo real con cronómetro de precisión.',
+    },
+    tip: {
+      pt: 'Toque nas torres ou na Batalha Diária todo fim de tarde para registrar sua vitória e subir de armadura.',
+      en: 'Tap the towers or the Daily Battle every evening to seal your victory and level up your armor.',
+      es: 'Toca las torres o la Batalla Diaria cada atardecer para registrar tu victoria y subir de armadura.',
+    },
+  },
+  {
+    id: 'forge_habits',
+    tab: 'forge',
+    selector: '#tour-forge-habits',
+    fallbackSelector: '#tour-bottom-nav',
+    icon: '🔨',
+    arrowLabel: {
+      pt: 'FORJA DE HÁBITOS & SLOTS 👆',
+      en: 'HABIT FORGE & SLOTS 👆',
+      es: 'FORJA DE HÁBITOS Y SLOTS 👆',
+    },
+    badge: {
+      pt: '2 DE 5 · CONSTRUÇÃO DE DISCIPLINA',
+      en: '2 OF 5 · DISCIPLINE BUILDING',
+      es: '2 OF 5 · CONSTRUCCIÓN DE DISCIPLINA',
+    },
+    title: {
+      pt: 'A Forja & Slots de Hábitos',
+      en: 'The Forge & Habit Slots',
+      es: 'La Forja y Slots de Hábitos',
+    },
+    desc: {
+      pt: 'Construa novos hábitos viris para canalizar sua energia. O sistema libera slots controlados conforme sua patente aumenta para evitar sobrecarga.',
+      en: 'Forge new masculine habits to transmute your energy. The system unlocks controlled slots as your rank rises to prevent burnout.',
+      es: 'Construye nuevos hábitos viriles para canalizar tu energía. El sistema desbloquea ranuras controladas según sube tu rango para evitar sobrecargas.',
+    },
+    tip: {
+      pt: 'Marque feito (✓) ou falhou (✕) diariamente. O app dispara Alertas de Negligência se você abandonar hábitos ativos.',
+      en: 'Mark done (✓) or failed (✕) daily. The app triggers Neglect Alerts if you abandon active habits.',
+      es: 'Marca cumplido (✓) o fallado (✕) a diario. La app activa Alertas de Negligencia si abandonas hábitos activos.',
+    },
+  },
+  {
+    id: 'ops_tasks',
+    tab: 'ops',
+    selector: '#tour-ops-tasks',
+    fallbackSelector: '#tour-bottom-nav',
+    icon: '⚔️',
+    arrowLabel: {
+      pt: 'OPERAÇÕES & MISSÕES 👆',
+      en: 'OPERATIONS & MISSIONS 👆',
+      es: 'OPERACIONES Y MISIONES 👆',
+    },
+    badge: {
+      pt: '3 DE 5 · AÇÃO NO MUNDO REAL',
+      en: '3 OF 5 · REAL-WORLD ACTION',
+      es: '3 OF 5 · ACCIÓN EN EL MUNDO REAL',
+    },
+    title: {
+      pt: 'Operações & Projetos Estratégicos',
+      en: 'Operations & Strategic Projects',
+      es: 'Operaciones y Proyectos Estratégicos',
+    },
+    desc: {
+      pt: 'Homens sem missão caem em tentação. Na aba Operações você cria tarefas diárias priorizadas e organiza projetos de 30 a 90 dias com os 6 modelos prontos.',
+      en: 'Men without a mission fall into temptation. In the Operations tab you create prioritized daily tasks and organize 30 to 90-day projects with 6 ready templates.',
+      es: 'Los hombres sin misión caen en tentación. En Operaciones creas tareas diarias priorizadas y organizas proyectos de 30 a 90 días con 6 plantillas listas.',
+    },
+    tip: {
+      pt: 'Defina suas missões na noite anterior e use "Adiar com Honra" se houver imprevistos sem perder o controle.',
+      en: 'Set your missions the night before and use "Postpone with Honor" when unexpected events occur without losing control.',
+      es: 'Define tus misiones la noche anterior y usa "Posponer con Honor" si ocurren imprevistos sin perder el control.',
+    },
+  },
+  {
+    id: 'sos_fab',
+    tab: null, // Mantém na aba atual e foca no FAB flutuante
+    selector: '#fab',
+    fallbackSelector: '#fab',
+    icon: '🚨',
+    arrowLabel: {
+      pt: 'SEU BOTÃO DE RESGATE S.O.S 👇',
+      en: 'YOUR S.O.S RESCUE BUTTON 👇',
+      es: 'TU BOTÓN DE RESCATE S.O.S 👇',
+    },
+    badge: {
+      pt: '4 DE 5 · BLINDAGEM DE EMERGÊNCIA',
+      en: '4 OF 5 · EMERGENCY SHIELD',
+      es: '4 OF 5 · BLINDAJE DE EMERGENCIA',
+    },
+    title: {
+      pt: 'Botão Flutuante S.O.S de Pânico',
+      en: 'Floating Red S.O.S Button',
+      es: 'Botón Flotante Rojo S.O.S de Pánico',
+    },
+    desc: {
+      pt: 'Em qualquer lugar do app, este botão vermelho estará sempre à mão. Se a fissura ou tentação apertar, aperte-o sem hesitar para cortar o pico de dopamina imediatamente.',
+      en: 'Anywhere in the app, this red button remains pinned within reach. When urge or temptation strikes, tap it without hesitation to kill the dopamine spike immediately.',
+      es: 'En cualquier parte de la app, este botón rojo estará siempre a tu alcance. Cuando la tentación apriete, tócalo sin dudar para cortar el pico de dopamina de inmediato.',
+    },
+    tip: {
+      pt: 'Vencer uma fissura de 5 minutos preserva meses de honra. O S.O.S ativa respiração tática 4-4-4-4 e frequências sonoras.',
+      en: 'Conquering a 5-minute urge preserves months of honor. S.O.S triggers 4-4-4-4 box breathing and acoustic tones.',
+      es: 'Vencer una urgencia de 5 minutos preserva meses de honor. El S.O.S activa respiración táctica 4-4-4-4 y tonos sonoros.',
+    },
+  },
+  {
+    id: 'manual_access',
+    tab: null,
+    selector: '#tour-btn-manual',
+    fallbackSelector: '#tour-bottom-nav',
+    icon: '🧭',
+    arrowLabel: {
+      pt: 'REVEJA O TOUR AQUI A QUALQUER HORA 👆',
+      en: 'REVIEW TOUR HERE AT ANY TIME 👆',
+      es: 'REVISA EL TOUR AQUÍ EN CUALQUIER MOMENTO 👆',
+    },
+    badge: {
+      pt: '5 DE 5 · MANUAL TÁTICO SEMPRE À MÃO',
+      en: '5 OF 5 · TACTICAL MANUAL ALWAYS READY',
+      es: '5 OF 5 · MANUAL TÁCTICO SIEMPRE A MANO',
+    },
+    title: {
+      pt: 'Pronto para a Batalha!',
+      en: 'Ready for Battle!',
+      es: '¡Listo para la Batalla!',
+    },
+    desc: {
+      pt: 'Você pode rever este tour interativo com as setas a qualquer momento tocando na bússola no topo do app ou na aba Ajustes. O Comando está com você.',
+      en: 'You can review this interactive tour with the arrows at any time by tapping the compass in the header or in the Settings tab. Command is with you.',
+      es: 'Puedes revisar este tour interactivo con las flechas en cualquier momento tocando la brújula arriba o en Ajustes. El Comando está contigo.',
+    },
+    tip: {
+      pt: 'A disciplina supera o talento. Entre no QG, sele seus 3 pilares e vença o dia de hoje!',
+      en: 'Discipline beats talent. Enter HQ, seal your 3 pillars, and conquer today!',
+      es: 'La disciplina supera al talento. ¡Entra al QG, sella tus 3 pilares y vence el día de hoy!',
+    },
+  },
+];
+
 export const TOUR_I18N = {
-  headerTitle: {
-    pt: 'MANUAL DO GUERREIRO',
-    en: "WARRIOR'S MANUAL",
-    es: 'MANUAL DEL GUERRERO',
-  },
-  headerSub: {
-    pt: 'Tour guiado pelas ferramentas táticas do aplicativo',
-    en: 'Guided tour of the tactical tools in the app',
-    es: 'Tour guiado por las herramientas tácticas de la app',
-  },
-  skipBtn: {
-    pt: 'Pular',
-    en: 'Skip',
-    es: 'Saltar',
-  },
-  prevBtn: {
-    pt: 'Anterior',
-    en: 'Previous',
-    es: 'Anterior',
-  },
-  nextBtn: {
-    pt: 'Próximo',
-    en: 'Next',
-    es: 'Siguiente',
-  },
-  finishBtn: {
-    pt: 'ENTENDIDO, IR PARA A BATALHA',
-    en: 'UNDERSTOOD, ENTER BATTLE',
-    es: 'ENTENDIDO, IR A LA BATALLA',
-  },
-  stepLabel: {
-    pt: 'ETAPA',
-    en: 'STEP',
-    es: 'ETAPA',
-  },
-  ofLabel: {
-    pt: 'DE',
-    en: 'OF',
-    es: 'DE',
-  },
-  tipPrefix: {
-    pt: 'DIRETRIZ DE COMBATE',
-    en: 'COMBAT DIRECTIVE',
-    es: 'DIRECTRIZ DE COMBATE',
-  },
-  slides: [
-    {
-      id: 'qg',
-      icon: '🏰',
-      badge: {
-        pt: '1. O CORAÇÃO DO SISTEMA',
-        en: '1. THE CORE OF THE SYSTEM',
-        es: '1. EL CORAZÓN DEL SISTEMA',
-      },
-      title: {
-        pt: 'Quartel General & As 3 Torres 3D',
-        en: 'Headquarters & The 3 3D Towers',
-        es: 'Cuartel General y las 3 Torres 3D',
-      },
-      desc: {
-        pt: 'Aqui você vence cada ciclo de 24 horas. Acompanhe em tempo real suas 3 Torres de Honra: Retenção Seminal, Zero Pornografia e Zero Masturbação. Seus segundos limpos acumulam poder e fazem sua armadura medieval evoluir.',
-        en: 'Here you conquer each 24-hour cycle. Monitor your 3 Pillar Towers in real time: Semen Retention, Zero Pornography, and Zero Masturbation. Your clean seconds forge power and evolve your medieval armor.',
-        es: 'Aquí vences cada ciclo de 24 horas. Monitorea en tiempo real las 3 Torres de los Pilares: Retención Seminal, Cero Pornografía y Cero Masturbación. Tus segundos limpios forjan poder y hacen evolucionar tu armadura medieval.',
-      },
-      features: [
-        {
-          pt: '🏛️ 3 Torres Interativas com cronômetro ao vivo segundo a segundo',
-          en: '🏛️ 3 Interactive Towers with live second-by-second precision timer',
-          es: '🏛️ 3 Torres interactivas con cronómetro en vivo segundo a segundo',
-        },
-        {
-          pt: '⚔️ Pacto de Honra diário e Registro da Batalha das 24 Horas',
-          en: '⚔️ Daily Honor Pact and 24-Hour Battle Log',
-          es: '⚔️ Pacto de Honor diario y Registro de Batalla cada 24 horas',
-        },
-        {
-          pt: '🛡️ Evolução de 11 Armaduras Medievais e Frases de Poder por Nível',
-          en: '🛡️ Evolution of 11 Medieval Armors & Power Quotes by Level',
-          es: '🛡️ Evolución de 11 Armaduras Medievales y Frases de Poder por Nivel',
-        },
-      ],
-      tip: {
-        pt: 'Toque nas torres ou no card de combate todo fim de tarde para selar sua vitória diária.',
-        en: 'Tap the towers or daily combat card every evening to seal your daily victory.',
-        es: 'Toca las torres o la tarjeta diaria cada atardecer para sellar tu victoria.',
-      },
-    },
-    {
-      id: 'forge',
-      icon: '🔨',
-      badge: {
-        pt: '2. CONSTRUÇÃO DE DISCIPLINA',
-        en: '2. DISCIPLINE BUILDING',
-        es: '2. CONSTRUCCIÓN DE DISCIPLINA',
-      },
-      title: {
-        pt: 'A Forja & Slots de Hábitos',
-        en: 'The Forge & Habit Slots',
-        es: 'La Forja y Slots de Hábitos',
-      },
-      desc: {
-        pt: 'Construa novos hábitos viris para canalizar sua energia vital. O sistema libera slots limitados conforme seu nível aumenta para evitar sobrecarga e garantir consistência inabalável.',
-        en: 'Forge new masculine habits to transmute your vital energy. The system unlocks slots as your rank rises to prevent burnout and ensure unshakable consistency.',
-        es: 'Construye hábitos viriles para transmutar tu energía vital. El sistema desbloquea ranuras según sube tu rango para evitar sobrecargas y asegurar constancia.',
-      },
-      features: [
-        {
-          pt: '🏛️ Hábitos distribuídos nos 4 pilares: Corpo, Mente, Missão e Espírito',
-          en: '🏛️ Habits split into 4 pillars: Body, Mind, Mission, and Spirit',
-          es: '🏛️ Hábitos divididos en 4 pilares: Cuerpo, Mente, Misión y Espíritu',
-        },
-        {
-          pt: '⚡ Marcação rápida de Feito (✓) ou Falhou (✕) com histórico de 7 dias',
-          en: '⚡ Quick check-in for Done (✓) or Failed (✕) with 7-day history',
-          es: '⚡ Marcado rápido de Cumplido (✓) o Fallado (✕) con historial de 7 días',
-        },
-        {
-          pt: '⚠️ Alerta de Negligência Inteligente caso deixe hábitos parados',
-          en: '⚠️ Intelligent Neglect Alert if you abandon active habits',
-          es: '⚠️ Alerta de Negligencia Inteligente si dejas hábitos desatendidos',
-        },
-      ],
-      tip: {
-        pt: 'Não tente ativar 10 hábitos de uma vez. Comece com 2 a 3 essenciais e mantenha a constância.',
-        en: "Don't activate 10 habits at once. Start with 2 to 3 vital habits and maintain consistency.",
-        es: 'No actives 10 hábitos a la vez. Empieza con 2 o 3 hábitos esenciales y sé constante.',
-      },
-    },
-    {
-      id: 'ops',
-      icon: '⚔️',
-      badge: {
-        pt: '3. EXECUÇÃO NO MUNDO REAL',
-        en: '3. REAL-WORLD EXECUTION',
-        es: '3. EJECUCIÓN EN EL MUNDO REAL',
-      },
-      title: {
-        pt: 'Operações & Projetos Estratégicos',
-        en: 'Operations & Strategic Projects',
-        es: 'Operaciones y Proyectos Estratégicos',
-      },
-      desc: {
-        pt: 'Homens sem missão caem em tentação. Na aba Operações você cria tarefas diárias priorizadas e organiza projetos de 30 a 90 dias com os 6 modelos prontos da Forja.',
-        en: 'Men without a mission fall into temptation. In the Operations tab you create prioritized daily tasks and organize 30 to 90-day projects using the Forge ready templates.',
-        es: 'Los hombres sin misión caen en tentación. En Operaciones creas tareas diarias priorizadas y organizas proyectos de 30 a 90 días con las plantillas de la Forja.',
-      },
-      features: [
-        {
-          pt: '🎯 Gestão de tarefas por prioridade (Alta, Média, Baixa) e horários',
-          en: '🎯 Task management by priority (High, Medium, Low) and schedule',
-          es: '🎯 Gestión de tareas por prioridad (Alta, Media, Baja) y horario',
-        },
-        {
-          pt: '📁 6 Modelos Prontos: Shape Blindado, Negócio Digital, Leitura, etc.',
-          en: '📁 6 Ready Templates: Armor Physique, Digital Business, Mastery Reading, etc.',
-          es: '📁 6 Plantillas Listas: Físico Blindado, Negocio Digital, Lectura, etc.',
-        },
-        {
-          pt: '📅 Recurso "Adiar com Honra" para reorganizar prazos sem perder o foco',
-          en: '📅 "Postpone with Honor" feature to reschedule deadlines without losing focus',
-          es: '📅 Recurso "Posponer con Honor" para reprogramar plazos sin perder el foco',
-        },
-      ],
-      tip: {
-        pt: 'Defina pelo menos 1 tarefa de alta prioridade na noite anterior para já acordar no ataque.',
-        en: 'Set at least 1 high-priority task the night before so you wake up on the offensive.',
-        es: 'Define al menos 1 tarea de alta prioridad la noche anterior para despertar al ataque.',
-      },
-    },
-    {
-      id: 'enemy_lib',
-      icon: '🛡️',
-      badge: {
-        pt: '4. CIÊNCIA & BLINDAGEM MENTAL',
-        en: '4. SCIENCE & MENTAL SHIELDING',
-        es: '4. CIENCIA Y BLINDAJE MENTAL',
-      },
-      title: {
-        pt: 'Dossiê do Inimigo & Biblioteca Estoica',
-        en: 'Enemy Dossier & Stoic Library',
-        es: 'Dossier del Enemigo y Biblioteca Estoica',
-      },
-      desc: {
-        pt: 'Entenda a neurobiologia por trás do vício. Na aba Inimigo, consulte artigos médicos sobre DEIP, dessensibilização e Death Grip. Na Biblioteca, encontre lições práticas, citações estoicas e respiração tática.',
-        en: 'Understand the neuroscience behind addiction. In the Enemy tab, review clinical articles on PIED, desensitization, and Death Grip. In the Library, unlock 21 lessons, Stoic meditations, and tactical breathing.',
-        es: 'Comprende la neurociencia detrás del vicio. En la pestaña Enemigo, consulta artículos clínicos sobre DEIP y Death Grip. En la Biblioteca, desbloquea 21 lecciones, meditaciones estoicas y respiración guiada.',
-      },
-      features: [
-        {
-          pt: '🧠 Quadro clínico e cronograma de restauração neural dos receptores D2',
-          en: '🧠 Clinical board & neural timeline of D2 receptor restoration',
-          es: '🧠 Cuadro clínico y cronología de restauración de receptores D2',
-        },
-        {
-          pt: '📚 21 Lições de combate progressivas desbloqueadas por patamar',
-          en: '📚 21 Progressive combat lessons unlocked by tier',
-          es: '📚 21 Lecciones de combate progresivas desbloqueadas por rango',
-        },
-        {
-          pt: '🌬️ 3 Programas de Respiração Guiada (Combate, Foco e Sono Reparador)',
-          en: '🌬️ 3 Guided Breathing Programs (Combat, Focus, and Restful Sleep)',
-          es: '🌬️ 3 Programas de Respiración Guiada (Combate, Enfoque y Sueño Reparador)',
-        },
-      ],
-      tip: {
-        pt: 'Quando sua mente hesitar, estude a ciência médica do vício e lembre-se do preço biológico.',
-        en: 'When your mind wavers, study the medical science of addiction and remember the biological cost.',
-        es: 'Cuando tu mente dude, estudia la ciencia médica del vicio y recuerda el coste biológico.',
-      },
-    },
-    {
-      id: 'sos',
-      icon: '🚨',
-      badge: {
-        pt: '5. BLINDAGEM DE EMERGÊNCIA',
-        en: '5. EMERGENCY PROTOCOL',
-        es: '5. PROTOCOLO DE EMERGENCIA',
-      },
-      title: {
-        pt: 'Botão Flutuante S.O.S de Emergência',
-        en: 'Floating Red S.O.S Button',
-        es: 'Botón Flotante Rojo S.O.S de Pánico',
-      },
-      desc: {
-        pt: 'Em qualquer lugar do app, você terá o botão vermelho S.O.S sempre à vista. Quando a urgência parecer insuportável, não lute sozinho no escuro: aperte imediatamente para ativar o protocolo de resgate neural.',
-        en: 'Anywhere in the app, the red S.O.S button remains pinned within reach. When the urge feels overwhelming, do not fight in the dark: tap it immediately to trigger the neural rescue protocol.',
-        es: 'En cualquier parte de la app, el botón rojo S.O.S estará siempre a tu alcance. Cuando la tentación parezca incontrolable, no luches a oscuras: tócalo de inmediato para activar el rescate neural.',
-      },
-      features: [
-        {
-          pt: '🚨 Interrupção de padrão com respiração 4-4-4-4 e frequências sonoras',
-          en: '🚨 Pattern interruption with 4-4-4-4 box breathing and acoustic tones',
-          es: '🚨 Interrupción de patrones con respiración 4-4-4-4 y frecuencias sonoras',
-        },
-        {
-          pt: '🛡️ Registro de gatilhos e cálculo automático do seu Mapa de Risco',
-          en: '🛡️ Trigger logging and automatic calculation of your Risk Map',
-          es: '🛡️ Registro de detonantes y cálculo automático de tu Mapa de Riesgo',
-        },
-        {
-          pt: '👑 Cada tentação vencida no S.O.S registra uma vitória no seu histórico',
-          en: '👑 Every urge conquered via S.O.S records a victory in your war stats',
-          es: '👑 Cada tentación vencida en el S.O.S registra una victoria en tu historial',
-        },
-      ],
-      tip: {
-        pt: 'Vencer uma crise de 5 minutos preserva meses de honra. O botão S.O.S é sua arma definitiva.',
-        en: 'Conquering a 5-minute crisis preserves months of honor. The S.O.S button is your ultimate weapon.',
-        es: 'Vencer una crisis de 5 minutos preserva meses de honor. El botón S.O.S es tu arma definitiva.',
-      },
-    },
-  ],
+  skipBtn: { pt: 'Pular Tour', en: 'Skip Tour', es: 'Saltar Tour' },
+  prevBtn: { pt: 'Anterior', en: 'Previous', es: 'Anterior' },
+  nextBtn: { pt: 'Próximo', en: 'Next', es: 'Siguiente' },
+  finishBtn: { pt: 'COMEÇAR A BATALHA', en: 'ENTER THE BATTLE', es: 'COMENZAR LA BATALLA' },
+  tipPrefix: { pt: 'DIRETRIZ DE COMBATE', en: 'COMBAT DIRECTIVE', es: 'DIRECTRIZ DE COMBATE' },
 };
 
 export default function AppTourModal({ onClose }) {
-  const { S } = useApp();
+  const { S, tab, setTab } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const l = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = TOUR_I18N;
-  const slides = tx.slides;
+  const steps = TOUR_STEPS;
 
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const slide = slides[currentIdx];
-  const isFirst = currentIdx === 0;
-  const isLast = currentIdx === slides.length - 1;
+  const [stepIdx, setStepIdx] = useState(0);
+  const [targetRect, setTargetRect] = useState(null);
+  const [placement, setPlacement] = useState('bottom'); // 'bottom' | 'top' | 'center'
+  const step = steps[stepIdx];
+  const isFirst = stepIdx === 0;
+  const isLast = stepIdx === steps.length - 1;
+
+  // Atualiza a posição do spotlight e da setinha
+  const updateTargetPosition = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    let el = document.querySelector(step.selector);
+    if (!el && step.fallbackSelector) {
+      el = document.querySelector(step.fallbackSelector);
+    }
+
+    if (el) {
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) {}
+
+      const rect = el.getBoundingClientRect();
+      const padding = 8;
+      const spotRect = {
+        top: Math.max(0, rect.top - padding),
+        left: Math.max(0, rect.left - padding),
+        width: Math.min(window.innerWidth, rect.width + padding * 2),
+        height: rect.height + padding * 2,
+        centerX: rect.left + rect.width / 2,
+        centerY: rect.top + rect.height / 2,
+        rawTop: rect.top,
+        rawBottom: rect.bottom,
+      };
+
+      setTargetRect(spotRect);
+
+      // Decide se o card e a setinha ficam acima ou abaixo do elemento
+      const windowHeight = window.innerHeight;
+      const spaceBelow = windowHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      if (spaceBelow >= 300) {
+        setPlacement('bottom'); // Card embaixo, setinha aponta para CIMA (▲)
+      } else if (spaceAbove >= 280) {
+        setPlacement('top');    // Card em cima, setinha aponta para BAIXO (▼)
+      } else {
+        setPlacement('center'); // Centralizado se não houver espaço seguro
+      }
+    } else {
+      setTargetRect(null);
+      setPlacement('center');
+    }
+  }, [step]);
+
+  // Troca de aba quando a etapa exige e atualiza posição após renderização
+  useEffect(() => {
+    if (step.tab && tab !== step.tab) {
+      setTab(step.tab);
+    }
+
+    const timer1 = setTimeout(updateTargetPosition, 180);
+    const timer2 = setTimeout(updateTargetPosition, 450);
+
+    window.addEventListener('resize', updateTargetPosition);
+    window.addEventListener('scroll', updateTargetPosition, true);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      window.removeEventListener('resize', updateTargetPosition);
+      window.removeEventListener('scroll', updateTargetPosition, true);
+    };
+  }, [stepIdx, step, tab, setTab, updateTargetPosition]);
 
   const handleFinish = () => {
     try { AF.seal(); } catch (e) {}
@@ -305,164 +287,186 @@ export default function AppTourModal({ onClose }) {
     if (isLast) {
       handleFinish();
     } else {
-      setCurrentIdx((prev) => prev + 1);
+      setStepIdx((prev) => prev + 1);
     }
   };
 
   const handlePrev = () => {
     try { AF.click(); } catch (e) {}
     if (!isFirst) {
-      setCurrentIdx((prev) => prev - 1);
+      setStepIdx((prev) => prev - 1);
     }
   };
 
   const handleJump = (idx) => {
     try { AF.click(); } catch (e) {}
-    setCurrentIdx(idx);
+    setStepIdx(idx);
   };
 
   return (
-    <div className="relative w-full max-w-xl mx-auto rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#090604] border-2 border-gold/50 p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.95)] text-ink overflow-hidden max-h-[90vh] flex flex-col select-none">
-      {/* Brilho Superior Dourado */}
-      <div className="pointer-events-none absolute left-1/2 -top-12 -translate-x-1/2 h-28 w-80 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.25)_0%,transparent_75%)]" />
-
-      {/* CABEÇALHO */}
-      <div className="relative z-10 flex items-start justify-between gap-3 pb-3 border-b border-gold/20 flex-none">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex-none p-2 rounded-xl bg-gold/15 border border-gold/40 text-gold shadow-sm">
-            <Compass size={22} className="text-gold animate-spin-slow" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-display text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 font-black truncate">
-                {tx.headerTitle[l]}
-              </span>
-              <span className="rounded-full border border-gold/40 bg-gold/10 px-2 py-0.5 text-[9.5px] font-mono text-gold font-extrabold uppercase shadow-sm">
-                {tx.stepLabel[l]} {currentIdx + 1} {tx.ofLabel[l]} {slides.length}
-              </span>
-            </div>
-            <p className="text-[11px] sm:text-xs font-mono text-amber-200/70 truncate mt-0.5">
-              {tx.headerSub[l]}
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleFinish}
-          aria-label={tx.skipBtn[l]}
-          className="flex-none flex items-center gap-1 px-2.5 py-1 rounded-lg border border-line bg-surface2 text-muted hover:text-gold hover:border-gold/40 text-xs font-mono transition-colors cursor-pointer"
-        >
-          <span>{tx.skipBtn[l]}</span>
-          <X size={14} />
-        </button>
-      </div>
-
-      {/* BARRA DE PROGRESSO SLIDE */}
-      <div className="relative z-10 w-full bg-surface2 h-1.5 rounded-full overflow-hidden my-3">
+    <div className="fixed inset-0 z-50 pointer-events-auto flex items-center justify-center overflow-hidden select-none">
+      {/* 1. MÁSCARA ESCURA COM RECORTE / SPOTLIGHT ILUMINADO SOBRE O ELEMENTO */}
+      {targetRect ? (
         <div 
-          className="h-full bg-gradient-to-r from-amber-500 to-gold transition-all duration-300 rounded-full"
-          style={{ width: `${((currentIdx + 1) / slides.length) * 100}%` }}
+          className="fixed pointer-events-none transition-all duration-300 rounded-xl"
+          style={{
+            top: targetRect.top,
+            left: targetRect.left,
+            width: targetRect.width,
+            height: targetRect.height,
+            boxShadow: '0 0 0 9999px rgba(8, 8, 10, 0.82), 0 0 25px rgba(245, 158, 11, 0.7)',
+            border: '2px solid rgba(245, 158, 11, 0.9)',
+          }}
         />
-      </div>
+      ) : (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-[2px] pointer-events-none" />
+      )}
 
-      {/* CORPO DO SLIDE (ROLÁVEL SUAVE) */}
-      <div className="relative z-10 flex-1 overflow-y-auto pr-1 my-1 space-y-3.5 text-left">
-        {/* CARD PRINCIPAL DO RECURSO */}
-        <div className="rounded-xl border border-gold/30 bg-black/40 p-4 sm:p-5 shadow-sm relative overflow-hidden">
-          <div className="flex items-start justify-between gap-3 mb-2.5 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl sm:text-3xl flex-none" role="img">{slide.icon}</span>
-              <div>
-                <span className="text-[10px] font-mono text-gold font-extrabold uppercase tracking-wider block">
-                  {slide.badge[l]}
+      {/* 2. CARD DO TOUR POSICIONADO COM A SETINHA APONTANDO PARA O ELEMENTO */}
+      <div 
+        className="fixed z-50 w-[94vw] max-w-lg transition-all duration-300"
+        style={
+          targetRect && placement === 'bottom'
+            ? {
+                top: Math.min(window.innerHeight - 380, targetRect.top + targetRect.height + 16),
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }
+            : targetRect && placement === 'top'
+            ? {
+                bottom: Math.min(window.innerHeight - 100, (window.innerHeight - targetRect.top) + 16),
+                left: '50%',
+                transform: 'translateX(-50%)',
+              }
+            : {
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }
+        }
+      >
+        {/* SETINHA APONTANDO PARA CIMA (Quando o card está embaixo do elemento) */}
+        {targetRect && placement === 'bottom' && (
+          <div className="flex flex-col items-center -mb-1 animate-bounce">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-[#141414] font-mono text-[10px] sm:text-xs font-black tracking-wider shadow-lg border border-white/20">
+              <span>{step.arrowLabel[l]}</span>
+            </div>
+            <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-b-[12px] border-b-gold drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)]" />
+          </div>
+        )}
+
+        {/* CORPO PRINCIPAL DO CARD */}
+        <div className="relative rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#090604] border-2 border-gold/60 p-4 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.95)] text-ink overflow-hidden">
+          {/* Brilho Superior Dourado */}
+          <div className="pointer-events-none absolute left-1/2 -top-10 -translate-x-1/2 h-20 w-64 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.25)_0%,transparent_75%)]" />
+
+          {/* CABEÇALHO */}
+          <div className="relative z-10 flex items-start justify-between gap-3 pb-2.5 border-b border-gold/20">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-2xl sm:text-3xl flex-none" role="img">{step.icon}</span>
+              <div className="min-w-0">
+                <span className="text-[10px] font-mono text-gold font-extrabold uppercase tracking-wider block truncate">
+                  {step.badge[l]}
                 </span>
-                <h3 className="font-display text-base sm:text-lg font-bold text-ink leading-tight">
-                  {slide.title[l]}
+                <h3 className="font-display text-sm sm:text-base font-bold text-ink leading-tight truncate">
+                  {step.title[l]}
                 </h3>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleFinish}
+              className="flex-none flex items-center gap-1 px-2 py-0.5 rounded-lg border border-line bg-surface2 text-muted hover:text-gold hover:border-gold/40 text-[11px] font-mono transition-colors cursor-pointer"
+            >
+              <span>{tx.skipBtn[l]}</span>
+              <X size={13} />
+            </button>
           </div>
 
-          <p className="text-xs sm:text-[13px] text-ink/90 leading-relaxed mb-3.5">
-            {slide.desc[l]}
+          {/* BARRA DE PROGRESSO */}
+          <div className="relative z-10 w-full bg-surface2 h-1 rounded-full overflow-hidden my-2.5">
+            <div 
+              className="h-full bg-gradient-to-r from-amber-500 to-gold transition-all duration-300 rounded-full"
+              style={{ width: `${((stepIdx + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+
+          {/* TEXTO EXPLICATIVO */}
+          <p className="relative z-10 text-xs sm:text-[13px] text-ink/90 leading-relaxed mb-3">
+            {step.desc[l]}
           </p>
 
-          {/* LISTA DE DESTAQUES */}
-          <div className="space-y-2 mb-3.5">
-            {slide.features.map((feat, i) => (
-              <div 
-                key={i}
-                className="flex items-start gap-2 p-2 rounded-lg bg-surface2/70 border border-line/60 text-xs text-muted"
-              >
-                <span className="text-ink font-medium leading-relaxed">
-                  {feat[l]}
-                </span>
-              </div>
-            ))}
-          </div>
-
           {/* DICA DE COMBATE */}
-          <div className="p-3 rounded-lg border border-gold/30 bg-gold/5 flex items-start gap-2 text-xs">
-            <span className="text-base flex-none">💡</span>
+          <div className="relative z-10 p-2.5 rounded-lg border border-gold/30 bg-gold/5 flex items-start gap-2 text-xs mb-3.5">
+            <span className="text-sm flex-none mt-0.5">💡</span>
             <div>
-              <span className="font-mono text-[10px] font-extrabold text-gold block uppercase tracking-wider">
+              <span className="font-mono text-[9.5px] font-extrabold text-gold block uppercase tracking-wider">
                 {tx.tipPrefix[l]}
               </span>
-              <p className="text-gold2 leading-relaxed text-[11.5px] sm:text-xs mt-0.5">
-                {slide.tip[l]}
+              <p className="text-gold2 leading-tight text-[11px] sm:text-xs mt-0.5">
+                {step.tip[l]}
               </p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* RODAPÉ COM CONTROLES */}
-      <div className="relative z-10 pt-3 border-t border-gold/20 flex flex-col sm:flex-row items-center justify-between gap-3 flex-none">
-        {/* INDICADOR DE BOLINHAS */}
-        <div className="flex items-center gap-1.5 order-2 sm:order-1">
-          {slides.map((s, idx) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => handleJump(idx)}
-              className={`h-2 transition-all rounded-full cursor-pointer ${
-                idx === currentIdx
-                  ? 'w-6 bg-gold shadow-sm'
-                  : 'w-2 bg-line hover:bg-muted'
-              }`}
-              title={`${tx.stepLabel[l]} ${idx + 1}`}
-              aria-label={`${tx.stepLabel[l]} ${idx + 1}`}
-            />
-          ))}
+          {/* RODAPÉ: BOTÕES E NAVEGAÇÃO */}
+          <div className="relative z-10 pt-2 border-t border-gold/20 flex items-center justify-between gap-2">
+            {/* INDICADOR DE BOLINHAS */}
+            <div className="flex items-center gap-1">
+              {steps.map((s, idx) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleJump(idx)}
+                  className={`h-1.5 transition-all rounded-full cursor-pointer ${
+                    idx === stepIdx
+                      ? 'w-5 bg-gold shadow-sm'
+                      : 'w-1.5 bg-line hover:bg-muted'
+                  }`}
+                  aria-label={`Passo ${idx + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* BOTÕES DE CONTROLE */}
+            <div className="flex items-center gap-1.5">
+              {!isFirst && (
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="px-2.5 py-1.5 rounded-lg border border-line bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  <ArrowLeft size={13} />
+                  <span>{tx.prevBtn[l]}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleNext}
+                className={`py-1.5 px-3.5 rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer ${
+                  isLast
+                    ? 'bg-gradient-to-r from-amber-500 via-gold to-amber-400 text-[#141414] font-black hover:brightness-110 active:scale-95'
+                    : 'btn-gold'
+                }`}
+              >
+                <span>{isLast ? tx.finishBtn[l] : tx.nextBtn[l]}</span>
+                {isLast ? <Check size={13} strokeWidth={3} /> : <ArrowRight size={13} />}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* BOTÕES ANTERIOR E PRÓXIMO */}
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-end order-1 sm:order-2">
-          {!isFirst && (
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="flex-1 sm:flex-none px-3.5 py-2 rounded-lg border border-line bg-surface2 text-muted hover:text-ink hover:border-gold/40 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <ArrowLeft size={14} />
-              <span>{tx.prevBtn[l]}</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={handleNext}
-            className={`flex-1 sm:flex-none py-2 px-4 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer ${
-              isLast
-                ? 'bg-gradient-to-r from-amber-500 via-gold to-amber-400 text-[#141414] font-extrabold hover:brightness-110 active:scale-95'
-                : 'btn-gold'
-            }`}
-          >
-            <span>{isLast ? tx.finishBtn[l] : tx.nextBtn[l]}</span>
-            {isLast ? <Check size={14} strokeWidth={3} /> : <ArrowRight size={14} />}
-          </button>
-        </div>
+        {/* SETINHA APONTANDO PARA BAIXO (Quando o card está em cima do elemento) */}
+        {targetRect && placement === 'top' && (
+          <div className="flex flex-col items-center -mt-1 animate-bounce">
+            <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-gold drop-shadow-[0_4px_8px_rgba(245,158,11,0.5)]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold text-[#141414] font-mono text-[10px] sm:text-xs font-black tracking-wider shadow-lg border border-white/20 mt-0.5">
+              <span>{step.arrowLabel[l]}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
