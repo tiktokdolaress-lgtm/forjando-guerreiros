@@ -318,8 +318,6 @@ export default function QgView() {
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const [ciDate, setCiDate] = useState(today());
-  const [showBioEffects, setShowBioEffects] = useState(false);
-  const [showTacticsAccordion, setShowTacticsAccordion] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [pactAxiomIdx, setPactAxiomIdx] = useState(0);
@@ -895,125 +893,6 @@ export default function QgView() {
     );
   };
 
-  const renderForgeLevel = (isMobile = false) => (
-    <Card className="py-3 px-3.5 sm:py-4 sm:px-5">
-      <div className="flex items-center justify-between gap-2">
-        <K className="mb-0">{t('tier')} — {tier.icon} {tier.name}</K>
-        <span className="text-[10px] font-mono text-muted">{d}d</span>
-      </div>
-      <div className="my-2">
-        <Bar pct={lvlPct} />
-      </div>
-      <div className="flex justify-between text-[11px] font-extrabold tracking-[.06em] text-muted">
-        <span className="truncate">{lvlTxt}</span>
-      </div>
-      {goalMeta && (
-        <div className="mt-1 text-[10.5px] font-bold text-gold2 truncate">
-          {d >= goalMeta.d ? t('goal_done') + goalMeta.icon + ' ' + goalMeta.n + '!' : t('goal_next') + goalMeta.icon + ' ' + goalMeta.n + t('goal_in') + goalMeta.d + t('goal_days') + (goalMeta.d - d) + t('goal_close')}
-        </div>
-      )}
-      {tier.reward && <div className="mt-0.5 text-[10.5px] font-bold text-gold2 truncate">{t('reward_l')}{tier.reward}</div>}
-
-      {/* Efeitos biológicos ativos neste marco */}
-      {bioData && bioData.perks && bioData.perks.length > 0 && (
-        <div className="mt-2.5 pt-2 border-t border-line/60">
-          {isMobile ? (
-            <div>
-              <button
-                type="button"
-                onClick={() => setShowBioEffects((v) => !v)}
-                className="w-full flex items-center justify-between text-left py-1 text-gold hover:text-gold2 transition-colors cursor-pointer"
-              >
-                <span className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] flex items-center gap-1.5">
-                  <Zap size={12} className="text-gold flex-none" />
-                  <span>{bioData.header} ({bioData.perks.length})</span>
-                </span>
-                <span className="text-muted text-xs flex items-center gap-0.5">
-                  {showBioEffects ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                </span>
-              </button>
-              {showBioEffects && (
-                <div className="flex flex-col gap-1.5 mt-2">
-                  {bioData.perks.map((perk, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 rounded-r border border-line bg-surface2 px-2.5 py-1.5 text-left text-[11px] font-medium text-ink">
-                      <ShieldCheck size={12} className="flex-none text-gold" />
-                      <span className="truncate">{perk}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <div className="mb-2 flex items-center gap-1.5">
-                <Zap size={13} className="text-gold flex-none" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-gold2">
-                  {bioData.header}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-                {bioData.perks.map((perk, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 rounded-r border border-line bg-surface2 px-2.5 py-1.5 text-left text-[11px] font-medium text-ink">
-                    <ShieldCheck size={12} className="flex-none text-gold" />
-                    <span className="truncate">{perk}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </Card>
-  );
-
-  const renderTacticalProtocol = () => (
-    <Card className="border-gold/20 bg-surface2/80 p-3.5">
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-1.5">
-          <Compass size={14} className="text-gold" />
-          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-gold2">
-            {tac.title[curLang]}
-          </span>
-        </div>
-        <span className="text-[9.5px] font-mono font-bold text-gold/80 px-2 py-0.5 rounded bg-gold/10 border border-gold/20">
-          QG ATIVO
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
-        <div className="rounded-r border border-danger/30 bg-danger/5 p-2.5">
-          <div className="flex items-center gap-1.5 text-danger font-bold text-[10.5px] uppercase tracking-wider mb-1">
-            <ShieldAlert size={13} />
-            <span>{tac.riskTitle[curLang]}</span>
-          </div>
-          <p className="text-[11px] text-muted leading-tight">
-            {tac.riskDesc[curLang]}
-          </p>
-        </div>
-
-        <div className="rounded-r border border-gold/30 bg-gold/5 p-2.5">
-          <div className="flex items-center gap-1.5 text-gold font-bold text-[10.5px] uppercase tracking-wider mb-1">
-            <Target size={13} />
-            <span>{tac.goldenRuleTitle[curLang]}</span>
-          </div>
-          <p className="text-[11px] text-muted leading-tight">
-            {tac.goldenRuleDesc[curLang]}
-          </p>
-        </div>
-
-        <div className="rounded-r border border-ok/30 bg-ok/5 p-2.5">
-          <div className="flex items-center gap-1.5 text-ok font-bold text-[10.5px] uppercase tracking-wider mb-1">
-            <Flame size={13} />
-            <span>{tac.energyTitle[curLang]}</span>
-          </div>
-          <p className="text-[11px] text-muted leading-tight">
-            {tac.energyDesc[curLang]}
-          </p>
-        </div>
-      </div>
-    </Card>
-  );
-
   const renderDailyCheckin = () => (
     <Card className="w-full max-w-full overflow-hidden">
       <K>{t('checkin')}{L.modeA(S) ? t('two_pil') : ''}</K>
@@ -1583,95 +1462,6 @@ export default function QgView() {
             </span>
           </button>
         )}
-
-        {/* 6. EVOLUÇÃO BIOLÓGICA & PROTOCOLO TÁTICO (Acordeão Elegante e Minimalista) */}
-        <Card className="p-3 bg-[#131318] border-line/70">
-          <button
-            type="button"
-            onClick={() => setShowTacticsAccordion((v) => !v)}
-            className="w-full flex items-center justify-between text-left cursor-pointer"
-          >
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="grid h-6 w-6 place-items-center rounded-lg bg-gold/15 text-gold text-xs flex-none">
-                🧬
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-[#EDE5D5] truncate">
-                  {curLang === 'en' ? 'Biological Evolution & Tactics' : curLang === 'es' ? 'Evolución Biológica y Táctica' : 'Evolução Biológica & Protocolo'}
-                </span>
-                <span className="text-[10px] text-gold/80 font-mono truncate">
-                  {curLang === 'en' ? 'Phase' : curLang === 'es' ? 'Fase' : 'Fase'} {tier.name} · {Math.min(100, Math.max(7, Math.round((d / 90) * 100)))}% {curLang === 'en' ? 'Reset' : curLang === 'es' ? 'Restauración' : 'Restauração'}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-muted flex-none pl-2">
-              <span className="text-[10px] uppercase font-bold text-gold/70 hidden sm:inline">
-                {showTacticsAccordion ? (curLang === 'en' ? 'Close' : curLang === 'es' ? 'Cerrar' : 'Fechar') : (curLang === 'en' ? 'Explore' : curLang === 'es' ? 'Explorar' : 'Explorar')}
-              </span>
-              {showTacticsAccordion ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} />}
-            </div>
-          </button>
-
-          {showTacticsAccordion && (
-            <div className="mt-3 pt-3 border-t border-line/60 flex flex-col gap-3">
-              {/* Efeitos Ativos */}
-              {bioData && bioData.perks && bioData.perks.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[9.5px] font-mono uppercase font-black tracking-wider text-muted">
-                    {curLang === 'en' ? 'Active Neurochemical Effects:' : curLang === 'es' ? 'Efectos Neuroquímicos Activos:' : 'Efeitos Neuroquímicos Deste Marco:'}
-                  </span>
-                  {bioData.perks.map((perk, idx) => (
-                    <div key={idx} className="flex items-start gap-2 rounded-lg border border-line/50 bg-surface px-2.5 py-1.5 text-left text-[11px] text-[#EDE5D5]">
-                      <span className="text-gold text-xs flex-none mt-0.5">✦</span>
-                      <span className="leading-snug">{perk}</span>
-                    </div>
-                  ))}
-                  {/* Barra de dopamina */}
-                  <div className="mt-1 pt-1.5">
-                    <div className="flex items-center justify-between text-[9px] font-bold text-muted mb-1">
-                      <span>{curLang === 'en' ? 'Dopamine Receptors Rewiring' : curLang === 'es' ? 'Reprogramación de Dopamina' : 'Receptores de Dopamina'}</span>
-                      <span className="font-mono text-gold">{Math.min(100, Math.max(7, Math.round((d / 90) * 100)))}%</span>
-                    </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#202028]">
-                      <div 
-                        className="h-full rounded-full bg-gradient-to-r from-danger via-amber-500 to-gold transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(7, Math.round((d / 90) * 100)))}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Regras Táticas */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-line/50">
-                <span className="text-[9.5px] font-mono uppercase font-black tracking-wider text-muted">
-                  {curLang === 'en' ? 'Tactical Survival Rules:' : curLang === 'es' ? 'Reglas Tácticas de Supervivencia:' : 'Regras Táticas de Combate:'}
-                </span>
-                <div className="rounded border border-danger/30 bg-danger/5 p-2">
-                  <div className="flex items-center gap-1.5 text-danger font-bold text-[10px] uppercase tracking-wider mb-0.5">
-                    <ShieldAlert size={12} />
-                    <span>{tac.riskTitle[curLang]}</span>
-                  </div>
-                  <p className="text-[10.5px] text-muted leading-tight">{tac.riskDesc[curLang]}</p>
-                </div>
-                <div className="rounded border border-gold/30 bg-gold/5 p-2">
-                  <div className="flex items-center gap-1.5 text-gold font-bold text-[10px] uppercase tracking-wider mb-0.5">
-                    <Target size={12} />
-                    <span>{tac.goldenRuleTitle[curLang]}</span>
-                  </div>
-                  <p className="text-[10.5px] text-muted leading-tight">{tac.goldenRuleDesc[curLang]}</p>
-                </div>
-                <div className="rounded border border-ok/30 bg-ok/5 p-2">
-                  <div className="flex items-center gap-1.5 text-ok font-bold text-[10px] uppercase tracking-wider mb-0.5">
-                    <Flame size={12} />
-                    <span>{tac.energyTitle[curLang]}</span>
-                  </div>
-                  <p className="text-[10.5px] text-muted leading-tight">{tac.energyDesc[curLang]}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
       </div>
     );
   };
@@ -1685,11 +1475,9 @@ export default function QgView() {
 
       {/* NO DESKTOP: GRID EM DUAS COLUNAS PERFEITAMENTE BALANCEADO */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-3.5 items-start">
-        {/* Coluna Esquerda Desktop: As 3 Torres 3D dos Pilares com Frase do Dia Integrada, Nível e Protocolo Tático */}
+        {/* Coluna Esquerda Desktop: As 3 Torres 3D dos Pilares com Frase do Dia e Relógio 24h Integrados */}
         <div className="lg:col-span-7 flex flex-col gap-3.5">
           {renderPillars3DTowers(true)}
-          {renderForgeLevel(false)}
-          {renderTacticalProtocol()}
         </div>
 
         {/* Coluna Direita Desktop: Registro Diário de Combate, Botão de Hábitos da Forja e Operações */}

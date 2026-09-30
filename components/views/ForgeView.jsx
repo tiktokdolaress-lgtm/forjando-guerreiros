@@ -1,11 +1,11 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2 } from 'lucide-react';
+import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target, RefreshCw, Swords } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { Card, K, Empty } from '@/components/ui';
-import { FORGE_RULES, DEFAULT_HABITS, TIERS } from '@/lib/data';
-import { cxHabits, cxTiers } from '@/lib/content-i18n';
+import { Card, K, Empty, Bar } from '@/components/ui';
+import { FORGE_RULES, DEFAULT_HABITS, TIERS, METAS } from '@/lib/data';
+import { cxHabits, cxTiers, cx } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
 import { today, fdmy, dstr, fmtD, setLocaleLang } from '@/lib/utils';
@@ -21,6 +21,205 @@ const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
     </div>
   ),
 });
+
+/* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
+const BIO_EFFECTS_I18N = {
+  header: {
+    pt: 'EFEITOS BIOLÓGICOS & MENTAIS ATIVOS NESTE MARCO:',
+    en: 'ACTIVE BIOLOGICAL & MENTAL EFFECTS AT THIS MILESTONE:',
+    es: 'EFECTOS BIOLÓGICOS Y MENTALES ACTIVOS EN ESTE HITO:',
+  },
+  tiers: [
+    {
+      min: 0, max: 3,
+      perks: {
+        pt: ['Quebra do ciclo automático', 'Redução do pico de cortisol', 'Recuperação inicial da dopamina'],
+        en: ['Automatic loop broken', 'Cortisol spike reduction', 'Initial dopamine recovery'],
+        es: ['Ruptura del ciclo automático', 'Reducción del pico de cortisol', 'Recuperación inicial de dopamina'],
+      }
+    },
+    {
+      min: 4, max: 7,
+      perks: {
+        pt: ['Pico natural de testosterona (+45%)', 'Aumento de energia física', 'Fim gradual da névoa mental'],
+        en: ['Natural testosterone surge (+45%)', 'Boost in physical energy', 'Gradual end of brain fog'],
+        es: ['Pico natural de testosterona (+45%)', 'Aumento de energía física', 'Fin gradual de la niebla mental'],
+      }
+    },
+    {
+      min: 8, max: 14,
+      perks: {
+        pt: ['Sono profundo restaurador', 'Vontade e assertividade reforçadas', 'Olhar firme e redução da timidez'],
+        en: ['Deep restorative sleep', 'Enhanced willpower & assertiveness', 'Steady gaze and less shyness'],
+        es: ['Sueño profundo y reparador', 'Voluntad y asertividad reforzadas', 'Mirada firme y menos timidez'],
+      }
+    },
+    {
+      min: 15, max: 30,
+      perks: {
+        pt: ['Receptores de dopamina rebalanceados', 'Redução drástica de ansiedade social', 'Magnetismo pessoal e foco aguçado'],
+        en: ['Rebalanced dopamine receptors', 'Drastic drop in social anxiety', 'Personal magnetism & sharp focus'],
+        es: ['Receptores de dopamina equilibrados', 'Reducción drástica de ansiedad social', 'Magnetismo personal y enfoque agudo'],
+      }
+    },
+    {
+      min: 31, max: 60,
+      perks: {
+        pt: ['Controle absoluto de pensamentos invasivos', 'Aura de respeito natural', 'Vitalidade transmutada em criação'],
+        en: ['Total control over invasive thoughts', 'Aura of natural respect', 'Vitality transmuted into creation'],
+        es: ['Control total sobre pensamientos intrusivos', 'Aura de respeto natural', 'Vitalidad transmutada en creación'],
+      }
+    },
+    {
+      min: 61, max: 90,
+      perks: {
+        pt: ['Superação da flatline (platô)', 'Alta performance física e cognitiva', 'Autodomínio e disciplina inabaláveis'],
+        en: ['Flatline conquered', 'High physical & cognitive performance', 'Unshakable self-mastery and discipline'],
+        es: ['Superación de la flatline (meseta)', 'Alto rendimiento físico y cognitivo', 'Autodominio y disciplina inquebrantables'],
+      }
+    },
+    {
+      min: 91, max: 120,
+      perks: {
+        pt: ['Blindagem neural contra recaídas tardias', 'Foco cirúrgico em metas de vida e carreira', 'Paz mental profunda e presença inabalável'],
+        en: ['Neural shield against late-stage relapses', 'Surgical focus on life & career goals', 'Deep mental peace and unshakable presence'],
+        es: ['Blindaje neural contra recaídas tardías', 'Enfoque quirúrgico en metas de vida y carrera', 'Paz mental profunda y presencia inquebrantable'],
+      }
+    },
+    {
+      min: 121, max: 180,
+      perks: {
+        pt: ['Aço de Damasco mental: 6 meses limpo', 'Cérebro completamente reconfigurado', 'Fogo criativo alimentando novos impérios'],
+        en: ['Mental Damascus steel: 6 months clean', 'Brain fully rewired and reset', 'Creative fire fueling new empires'],
+        es: ['Acero de Damasco mental: 6 meses limpio', 'Cerebro completamente reconfigurado', 'Fuego creativo alimentando nuevos imperios'],
+      }
+    },
+    {
+      min: 181, max: 270,
+      perks: {
+        pt: ['Transmutação seminal em força física e patrimônio', 'Aura magnética e liderança natural', 'Zero necessidade de aprovação externa'],
+        en: ['Seminal transmutation into wealth & physical power', 'Magnetic aura and natural leadership', 'Zero need for external validation'],
+        es: ['Transmutación seminal en riqueza y fuerza física', 'Aura magnética y liderazgo natural', 'Cero necesidad de aprobación externa'],
+      }
+    },
+    {
+      min: 271, max: 365,
+      perks: {
+        pt: ['1 Ano Completo: soberania absoluta da mente', 'Poder transformador de legado e exemplo', 'O homem forjado que você prometeu se tornar'],
+        en: ['1 Full Year: absolute mind sovereignty', 'Transformative power of legacy and example', 'The forged man you swore to become'],
+        es: ['1 Año Completo: soberanía mental absoluta', 'Poder transformador de legado y ejemplo', 'El hombre forjado que prometiste ser'],
+      }
+    },
+    {
+      min: 366, max: 9999,
+      perks: {
+        pt: ['Mito vivo: 2+ anos de disciplina suprema', 'Panteão dos mestres inquebrantáveis', 'Caráter de aço eterno'],
+        en: ['Living myth: 2+ years of supreme discipline', 'Pantheon of unshakable masters', 'Eternal steel character'],
+        es: ['Mito vivo: 2+ años de disciplina suprema', 'Panteón de maestros inquebrantables', 'Carácter de acero eterno'],
+      }
+    },
+  ]
+};
+
+/* Textos Trilíngues do Bloco de Protocolo Tático */
+const TACTICAL_BLOCK_I18N = {
+  title: {
+    pt: 'PROTOCOLO TÁTICO & BLINDAGEM DO GUERREIRO',
+    en: 'TACTICAL PROTOCOL & WARRIOR SHIELDING',
+    es: 'PROTOCOLO TÁCTICO Y BLINDAJE DEL GUERRERO',
+  },
+  riskTitle: {
+    pt: 'ZONA DE RISCO ELEVADO',
+    en: 'HIGH RISK ZONE',
+    es: 'ZONA DE ALTO RIESGO',
+  },
+  riskDesc: {
+    pt: 'Noite / Cansaço (22h - 01h). Mantenha as telas fora do quarto.',
+    en: 'Night / Fatigue (10 PM - 1 AM). Keep screens away from bed.',
+    es: 'Noche / Cansancio (22h - 01h). Mantén las pantallas fuera del cuarto.',
+  },
+  goldenRuleTitle: {
+    pt: 'REGRA DE CONDUTA',
+    en: 'RULE OF CONDUCT',
+    es: 'REGLA DE CONDUCTA',
+  },
+  goldenRuleDesc: {
+    pt: 'A tentação dura 10 minutos. O arrependimento dura dias inteiros.',
+    en: 'The urge lasts 10 minutes. Regret lingers for days.',
+    es: 'La tentación dura 10 minutos. El arrepentimiento dura días enteros.',
+  },
+  energyTitle: {
+    pt: 'ENERGIA VITAL',
+    en: 'VITAL ENERGY',
+    es: 'ENERGÍA VITAL',
+  },
+  energyDesc: {
+    pt: 'Transmute o fogo interno em treino, estudo e trabalho.',
+    en: 'Transmute inner fire into training, studying, and building.',
+    es: 'Transmuta el fuego interno en entrenamiento, estudio y trabajo.',
+  },
+};
+
+/* Lemas Táticos Dinâmicos da Forja (Rotativos / Vencer o Hoje) */
+export const FORGE_AXIOMS_I18N = {
+  badge: {
+    pt: 'FOCO TÁTICO DA FORJA · VENÇA O HOJE',
+    en: 'TACTICAL FORGE FOCUS · CONQUER TODAY',
+    es: 'ENFOQUE TÁCTICO DE LA FORJA · VENCE EL HOY',
+  },
+  tooltip: {
+    pt: 'Clique para alternar o lema tático',
+    en: 'Click to rotate tactical focus',
+    es: 'Haz clic para cambiar el lema táctico',
+  },
+};
+
+export const FORGE_TACTICAL_AXIOMS = [
+  {
+    pt: 'Vença o hoje · Hoje é o que importa',
+    en: 'Conquer today · Today is what matters',
+    es: 'Vence el hoy · Hoy es lo que importa',
+  },
+  {
+    pt: 'O amanhã ainda não existe · Foco total no agora',
+    en: 'Tomorrow does not exist yet · Total focus on now',
+    es: 'El mañana aún no existe · Enfoque total en el ahora',
+  },
+  {
+    pt: 'Apenas as próximas 24h · Mantenha a honra inabalável',
+    en: 'Only the next 24h · Keep your honor unshakable',
+    es: 'Solo las próximas 24h · Mantén el honor inquebrantable',
+  },
+  {
+    pt: 'Um dia limpo por vez forja o império',
+    en: 'One clean day at a time builds the empire',
+    es: 'Un día limpio a la vez forja el imperio',
+  },
+  {
+    pt: 'Chegue invicto ao final deste dia',
+    en: 'Finish this day undefeated',
+    es: 'Llega invicto al final de este día',
+  },
+  {
+    pt: 'A vitória de hoje garante o amanhã',
+    en: "Today's victory secures tomorrow",
+    es: 'La victoria de hoy asegura el mañana',
+  },
+  {
+    pt: 'Sua única missão é honrar o dia de hoje',
+    en: 'Your sole mission is to honor today',
+    es: 'Tu única misión es honrar el día de hoy',
+  },
+];
+
+function getBioPerksI18n(days, lang) {
+  const currentLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
+  const found = BIO_EFFECTS_I18N.tiers.find((b) => days >= b.min && days <= b.max) || BIO_EFFECTS_I18N.tiers[0];
+  return {
+    header: BIO_EFFECTS_I18N.header[currentLang] || BIO_EFFECTS_I18N.header.pt,
+    perks: found.perks[currentLang] || found.perks.pt,
+  };
+}
 
 const FORGE_CATEGORIES = [
   { id: 'active', label: 'Protocolo Ativo', icon: Flame },
@@ -309,6 +508,24 @@ export default function ForgeView() {
   const [selectedArmorIdx, setSelectedArmorIdx] = useState(0);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
 
+  // Alternância automática dos lemas táticos da Forja a cada 10 segundos
+  const [forgeAxiomIdx, setForgeAxiomIdx] = useState(0);
+
+  useEffect(() => {
+    const axiomTimer = setInterval(() => {
+      setForgeAxiomIdx((prev) => (prev + 1) % FORGE_TACTICAL_AXIOMS.length);
+    }, 10000);
+    return () => clearInterval(axiomTimer);
+  }, []);
+
+  const curForgeAxiomObj = FORGE_TACTICAL_AXIOMS[forgeAxiomIdx % FORGE_TACTICAL_AXIOMS.length] || FORGE_TACTICAL_AXIOMS[0];
+  const curForgeAxiom = curForgeAxiomObj[curLang] || curForgeAxiomObj.pt;
+
+  const handleNextForgeAxiom = () => {
+    try { AF.click(); } catch (e) {}
+    setForgeAxiomIdx((prev) => (prev + 1) % FORGE_TACTICAL_AXIOMS.length);
+  };
+
   /* Tiers e Regras Traduzidas */
   const CURRENT_TIERS = cxTiers(curLang, TIERS);
   const CURRENT_RULES = cxTiers(curLang, FORGE_RULES);
@@ -340,6 +557,105 @@ export default function ForgeView() {
   const activeCount = activeIds.length;
   const fd = L.fDone(S, today());
   const ff = L.fFailed(S, today());
+
+  /* Nível Atual, Metas e Efeitos Biológicos */
+  const tier = CURRENT_TIERS.find((x) => x.min === L.tierNow(S).min) || L.tierNow(S);
+  const nt = CURRENT_TIERS.find((x) => x.min > d) || null;
+  const lvlPct = nt ? Math.min(100, ((d - tier.min) / (nt.min - tier.min)) * 100) : 100;
+  const lvlTxt = nt ? <>{t('lvl_a')}<b className="text-gold">{nt.min - d}{t('dayw')}</b>{t('lvl_b')}{nt.icon} {nt.name}</> : t('lvl_max');
+  const MT = (m) => (m ? Object.assign({}, m, cx(lang, 'metas', m.d) || {}) : m);
+  const goalMeta = MT(METAS.find((m) => m.d === S.goal));
+  const bioData = getBioPerksI18n(d, lang);
+  const tac = TACTICAL_BLOCK_I18N;
+
+  const renderForgeLevel = () => (
+    <Card className="py-3 px-3.5 sm:py-4 sm:px-5 border-amber-600/30 bg-surface2/60 w-full min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <K className="mb-0 text-xs sm:text-sm font-bold text-ink">{t('tier')} — {tier.icon} {tier.name}</K>
+        <span className="text-[10px] font-mono text-muted">{d}d</span>
+      </div>
+      <div className="my-2">
+        <Bar pct={lvlPct} />
+      </div>
+      <div className="flex justify-between text-[11px] font-extrabold tracking-[.06em] text-muted">
+        <span className="truncate">{lvlTxt}</span>
+      </div>
+      {goalMeta && (
+        <div className="mt-1 text-[10.5px] font-bold text-gold2 truncate">
+          {d >= goalMeta.d ? t('goal_done') + goalMeta.icon + ' ' + goalMeta.n + '!' : t('goal_next') + goalMeta.icon + ' ' + goalMeta.n + t('goal_in') + goalMeta.d + t('goal_days') + (goalMeta.d - d) + t('goal_close')}
+        </div>
+      )}
+      {tier.reward && <div className="mt-0.5 text-[10.5px] font-bold text-gold2 truncate">{t('reward_l')}{tier.reward}</div>}
+
+      {/* Efeitos biológicos ativos neste marco */}
+      {bioData && bioData.perks && bioData.perks.length > 0 && (
+        <div className="mt-2.5 pt-2 border-t border-line/60">
+          <div className="mb-2 flex items-center gap-1.5">
+            <Zap size={13} className="text-gold flex-none" />
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-gold2">
+              {bioData.header}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+            {bioData.perks.map((perk, idx) => (
+              <div key={idx} className="flex items-center gap-1.5 rounded-r border border-line bg-surface px-2.5 py-1.5 text-left text-[11px] font-medium text-ink">
+                <ShieldCheck size={12} className="flex-none text-gold" />
+                <span className="truncate">{perk}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+
+  const renderTacticalProtocol = () => (
+    <Card className="border-gold/20 bg-surface2/80 p-3.5 w-full min-w-0">
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-1.5">
+          <Compass size={14} className="text-gold" />
+          <span className="text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-gold2">
+            {tac.title[curLang]}
+          </span>
+        </div>
+        <span className="text-[9.5px] font-mono font-bold text-gold/80 px-2 py-0.5 rounded bg-gold/10 border border-gold/20">
+          FORJA ATIVA
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left">
+        <div className="rounded-r border border-danger/30 bg-danger/5 p-2.5">
+          <div className="flex items-center gap-1.5 text-danger font-bold text-[10.5px] uppercase tracking-wider mb-1">
+            <ShieldAlert size={13} />
+            <span>{tac.riskTitle[curLang]}</span>
+          </div>
+          <p className="text-[11px] text-muted leading-tight">
+            {tac.riskDesc[curLang]}
+          </p>
+        </div>
+
+        <div className="rounded-r border border-gold/30 bg-gold/5 p-2.5">
+          <div className="flex items-center gap-1.5 text-gold font-bold text-[10.5px] uppercase tracking-wider mb-1">
+            <Target size={13} />
+            <span>{tac.goldenRuleTitle[curLang]}</span>
+          </div>
+          <p className="text-[11px] text-muted leading-tight">
+            {tac.goldenRuleDesc[curLang]}
+          </p>
+        </div>
+
+        <div className="rounded-r border border-ok/30 bg-ok/5 p-2.5">
+          <div className="flex items-center gap-1.5 text-ok font-bold text-[10.5px] uppercase tracking-wider mb-1">
+            <Flame size={13} />
+            <span>{tac.energyTitle[curLang]}</span>
+          </div>
+          <p className="text-[11px] text-muted leading-tight">
+            {tac.energyDesc[curLang]}
+          </p>
+        </div>
+      </div>
+    </Card>
+  );
 
   /* Identificar se o hábito é customizado pelo usuário */
   const isCustomHabit = (id) => {
@@ -755,6 +1071,35 @@ export default function ForgeView() {
         })}
       </div>
 
+      {/* BANNER DINÂMICO DE FOCO TÁTICO DA FORJA (Vença o Hoje - Transferido para A Forja) */}
+      <div
+        onClick={handleNextForgeAxiom}
+        className="w-full p-2.5 sm:p-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-surface2 to-amber-950/30 flex items-center justify-between gap-2.5 cursor-pointer hover:border-amber-400/50 transition-all select-none group shadow-sm"
+        title={FORGE_AXIOMS_I18N.tooltip[curLang]}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+            <Swords size={14} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-400/90">
+                {FORGE_AXIOMS_I18N.badge[curLang]}
+              </span>
+              <span className="text-[8.5px] font-mono text-muted/80">
+                ({(forgeAxiomIdx % FORGE_TACTICAL_AXIOMS.length) + 1}/{FORGE_TACTICAL_AXIOMS.length})
+              </span>
+            </div>
+            <p className="text-xs sm:text-[13px] font-semibold italic text-[#f3ead2] group-hover:text-amber-200 transition-colors truncate">
+              "{curForgeAxiom}"
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 shrink-0 text-amber-400/60 group-hover:text-amber-300 transition-colors pr-1">
+          <RefreshCw size={12} className="transition-transform group-hover:rotate-180 duration-500" />
+        </div>
+      </div>
+
       {/* 1. PROTOCOLO ATIVO */}
       {activeCategory === 'active' && (
         <div id="tour-forge-habits" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
@@ -1070,6 +1415,12 @@ export default function ForgeView() {
                 </div>
               </Card>
             )}
+          </div>
+
+          {/* EFEITOS BIOLÓGICOS E PROTOCOLO TÁTICO TRANSFERIDOS DO QG */}
+          <div className="flex flex-col gap-3.5 w-full min-w-0 pt-2">
+            {renderForgeLevel()}
+            {renderTacticalProtocol()}
           </div>
         </div>
       )}
@@ -1436,6 +1787,12 @@ export default function ForgeView() {
                 </div>
               );
             })()}
+          </div>
+
+          {/* EFEITOS BIOLÓGICOS E PROTOCOLO TÁTICO TRANSFERIDOS DO QG */}
+          <div className="flex flex-col gap-3.5 w-full min-w-0 pt-2">
+            {renderForgeLevel()}
+            {renderTacticalProtocol()}
           </div>
         </div>
       )}
