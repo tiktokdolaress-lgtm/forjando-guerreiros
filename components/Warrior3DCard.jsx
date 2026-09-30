@@ -475,7 +475,7 @@ export default function Warrior3DCard({
                 ) : null}
                 :
               </span>
-              <p className="text-[11px] sm:text-[12px] font-semibold italic text-[#f3ead2] group-hover:text-amber-200 transition-colors line-clamp-2 leading-tight">
+              <p className="text-[11px] sm:text-[12px] font-semibold italic text-[#f3ead2] group-hover:text-amber-200 transition-colors leading-snug break-words">
                 "{dailyQuote}"
               </p>
             </div>
@@ -486,51 +486,55 @@ export default function Warrior3DCard({
         )}
 
         {/* LINHA TÁTICA: CONTADOR DAS 24 HORAS & LEMAS MOTIVACIONAIS PARA VENCER O DIA */}
-        <div className="mt-1.5 flex flex-col gap-1 p-1.5 sm:p-2 rounded-lg bg-black/60 border border-amber-500/30 select-none shadow-sm">
-          {/* Linha Superior: Tempo Restante + Frase Motivacional para Vencer o Dia + Percentual */}
-          <div className="flex items-center justify-between gap-1.5 text-[9.5px] sm:text-[10.5px] font-mono">
+        <div className="mt-1.5 flex flex-col gap-1.5 p-2 sm:p-2.5 rounded-lg bg-black/60 border border-amber-500/35 select-none shadow-sm">
+          {/* Linha 1: Tempo Restante + Barra de Progresso + Percentual do Dia */}
+          <div className="flex items-center justify-between gap-2 text-[10px] sm:text-[11px] font-mono">
             {/* Esquerda: Tempo restante */}
-            <div className="flex items-center gap-1 font-bold text-amber-300 shrink-0">
-              <span className="text-[10.5px]">⏳</span>
-              <span>
+            <div className="flex items-center gap-1.5 font-bold text-amber-300 shrink-0">
+              <span className="text-xs">⏳</span>
+              <span className="tracking-tight">
                 {curLang === 'en'
-                  ? `${dayTime.remHours}h ${dayTime.remMins}m left`
+                  ? `${dayTime.remHours}h ${dayTime.remMins}m left today`
                   : curLang === 'es'
-                  ? `${dayTime.remHours}h ${dayTime.remMins}m rest.`
+                  ? `${dayTime.remHours}h ${dayTime.remMins}m restantes hoy`
                   : `${dayTime.remHours}h ${dayTime.remMins}m restantes hoje`}
               </span>
             </div>
 
-            {/* Centro: Frase Motivacional Tática para Vencer o Dia (Alterna a cada 9s ou ao tocar) */}
-            <div
-              onClick={handleNextBattleAxiom}
-              role="button"
-              tabIndex={0}
-              title={curLang === 'en' ? 'Click to rotate battle mantra to conquer today' : curLang === 'es' ? 'Haz clic para cambiar el lema para vencer el día' : 'Clique para alternar a frase para vencer o dia'}
-              className="flex items-center justify-center gap-1 font-bold text-amber-200 hover:text-amber-100 tracking-wide truncate cursor-pointer transition-colors px-1 group/axiom flex-1 min-w-0"
-            >
-              <span className="text-[9px] text-amber-400 shrink-0">⚔️</span>
-              <span className="italic truncate text-[10px] sm:text-[11px] text-[#f7eed6] group-hover/axiom:text-gold transition-colors">
-                "{curBattleAxiom}"
-              </span>
-              <RefreshCw size={9} className="text-amber-400/60 group-hover/axiom:rotate-180 transition-transform shrink-0 hidden xs:inline" />
+            {/* Centro: Barra de progresso ultra fina metálica */}
+            <div className="flex-1 h-1.5 rounded-full bg-[#181410] border border-amber-900/60 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+                style={{ width: `${dayTime.dayPct}%` }}
+              />
             </div>
 
             {/* Direita: Percentual do dia decorrido */}
             <div className="font-extrabold text-gold shrink-0 flex items-center gap-0.5">
               <span>{dayTime.dayPct}%</span>
-              <span className="text-stone-400/80 font-normal text-[8.5px] sm:text-[9.5px] hidden xs:inline">
+              <span className="text-stone-400/80 font-normal text-[9px] sm:text-[10px]">
                 {curLang === 'en' ? 'of day' : curLang === 'es' ? 'del día' : 'do dia'}
               </span>
             </div>
           </div>
 
-          {/* Linha Inferior: Barra de progresso ultra fina metálica */}
-          <div className="w-full h-1.5 rounded-full bg-[#181410] border border-amber-900/50 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
-              style={{ width: `${dayTime.dayPct}%` }}
-            />
+          {/* Linha 2: Frase Motivacional Tática Completa com Largura Total (Sem cortes ou truncamentos) */}
+          <div
+            onClick={handleNextBattleAxiom}
+            role="button"
+            tabIndex={0}
+            title={curLang === 'en' ? 'Click to rotate motivational phrase to conquer today' : curLang === 'es' ? 'Haz clic para cambiar la frase para vencer el día' : 'Clique para alternar a frase para vencer o dia'}
+            className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-amber-500/10 border border-amber-500/25 hover:border-amber-400/50 cursor-pointer transition-all active:scale-[0.99] group/axiom"
+          >
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-xs text-amber-400 shrink-0">⚔️</span>
+              <span className="text-[10.5px] sm:text-[11.5px] font-semibold italic text-[#f7eed6] group-hover/axiom:text-gold leading-tight break-words">
+                "{curBattleAxiom}"
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-amber-400/60 group-hover/axiom:text-amber-300 shrink-0 pl-1">
+              <RefreshCw size={10} className="transition-transform group-hover/axiom:rotate-180 duration-500" />
+            </div>
           </div>
         </div>
       </div>
