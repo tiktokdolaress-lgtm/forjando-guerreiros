@@ -4,6 +4,8 @@ import { mergeS, progressDays, tierNow, currentStreak, sosWins } from '@/lib/log
 import { CURRENT_APP_VERSION } from '@/lib/changelog';
 import { inMemoryFeedbacks } from '@/app/api/feedback/route';
 
+export const dynamic = 'force-dynamic';
+
 const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
 
 export async function GET(req) {

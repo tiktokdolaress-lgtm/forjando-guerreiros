@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 /* Devolve o preço DA REGIÃO do visitante (mesma trava geográfica do checkout).
    Assim o paywall mostra uma moeda só — nunca as duas. */
 export async function GET(req) {
