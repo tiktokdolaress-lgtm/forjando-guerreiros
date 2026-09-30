@@ -61,6 +61,7 @@ const I18N = {
   projDelayedPostponed: { pt: 'Projeto atrasado: tarefa vinculada foi adiada', en: 'Project delayed: linked task was postponed', es: 'Proyecto retrasado: tarea vinculada fue pospuesta' },
   projDelayedOverdue: { pt: 'Projeto atrasado: tarefa vinculada está atrasada', en: 'Project delayed: linked task is overdue', es: 'Proyecto retrasado: tarea vinculada está atrasada' },
   projDelayedDeadline: { pt: 'Projeto atrasado: prazo final ultrapassado', en: 'Project delayed: deadline exceeded', es: 'Proyecto retrasado: plazo final superado' },
+  selectedProjectBadge: { pt: 'PROJETO SELECIONADO', en: 'SELECTED PROJECT', es: 'PROYECTO SELECCIONADO' },
   toastPostponed: { pt: '⏳ Operação adiada!', en: '⏳ Operation postponed!', es: '⏳ ¡Operación pospuesta!' },
   toastPostponeRemoved: { pt: '✓ Adiamento removido!', en: '✓ Postponement removed!', es: '✓ ¡Aplazamiento removido!' },
   btnPostponeAction: { pt: 'Adiar', en: 'Postpone', es: 'Posponer' },
@@ -316,7 +317,7 @@ const I18N = {
 };
 
 export default function OpsView() {
-  const { S, update, toast, openModal, closeModal } = useApp();
+  const { S, update, toast, openModal, closeModal, opsTarget, setOpsTarget } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = I18N;
@@ -326,6 +327,48 @@ export default function OpsView() {
   const [projFilter, setProjFilter] = useState('ativos'); // 'ativos', 'concluidos', 'arquivados'
   const [showTemplates, setShowTemplates] = useState(false);
   const [expandedProjIds, setExpandedProjIds] = useState({});
+  const [highlightedProjId, setHighlightedProjId] = useState(null);
+
+  // Deep-link para projetos ou abas vindo do QG / Agenda Operacional
+  useEffect(() => {
+    if (!opsTarget) return;
+    if (opsTarget.tab === 'projects') {
+      setActiveMainTab('projects');
+      if (opsTarget.projectId) {
+        const pId = String(opsTarget.projectId);
+        const p = (S?.projects || []).find((x) => String(x.id) === pId);
+        if (p) {
+          if (p.archived) setProjFilter('arquivados');
+          else if (p.status === 'concluido') setProjFilter('concluidos');
+          else setProjFilter('ativos');
+        }
+        setExpandedProjIds((prev) => ({ ...prev, [pId]: true }));
+        setHighlightedProjId(pId);
+
+        const timerScroll = setTimeout(() => {
+          const el = document.getElementById(`project-card-${pId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 120);
+
+        const timerHighlight = setTimeout(() => {
+          setHighlightedProjId((prev) => (String(prev) === pId ? null : prev));
+        }, 4500);
+
+        if (setOpsTarget) setOpsTarget(null);
+        return () => {
+          clearTimeout(timerScroll);
+          clearTimeout(timerHighlight);
+        };
+      } else {
+        if (setOpsTarget) setOpsTarget(null);
+      }
+    } else if (opsTarget.tab === 'tasks') {
+      setActiveMainTab('tasks');
+      if (setOpsTarget) setOpsTarget(null);
+    }
+  }, [opsTarget, S?.projects, setOpsTarget]);
 
   const toggleExpandProject = (projId) => {
     setExpandedProjIds((prev) => ({
@@ -2852,8 +2895,11 @@ export default function OpsView() {
                 return (
                   <Card
                     key={proj.id}
+                    id={`project-card-${proj.id}`}
                     className={`p-3.5 sm:p-4 border transition-all flex flex-col justify-between ${
-                      isArchived
+                      String(highlightedProjId) === String(proj.id)
+                        ? 'border-gold ring-2 ring-gold/90 bg-gold/10 shadow-[0_0_25px_rgba(212,175,55,0.35)] scale-[1.01]'
+                        : isArchived
                         ? 'border-line bg-surface/30 opacity-60'
                         : isCompleted
                         ? 'border-line/40 bg-surface/50 opacity-75'
@@ -2872,6 +2918,12 @@ export default function OpsView() {
                               {catObj && (
                                 <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-surface border border-line text-muted font-bold">
                                   {catObj.label[curLang] || catObj.label.pt}
+                                </span>
+                              )}
+                              {String(highlightedProjId) === String(proj.id) && (
+                                <span className="text-[9.5px] font-mono px-2 py-0.2 rounded bg-gold text-[#121214] font-black animate-pulse flex items-center gap-1 shadow-sm">
+                                  <span>⚡</span>
+                                  <span>{tx.selectedProjectBadge[curLang]}</span>
                                 </span>
                               )}
                               {proj.days && (

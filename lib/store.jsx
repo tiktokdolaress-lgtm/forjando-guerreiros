@@ -30,6 +30,7 @@ export function AppProvider({ children }) {
   const [S, setS] = useState(() => loadLocal(null));
   const [phase, setPhase] = useState('boot');       // boot | auth | lock | onboard | app
   const [tab, setTab] = useState('qg');
+  const [opsTarget, setOpsTarget] = useState(null); // { tab: 'projects' | 'tasks' | 'archive', projectId?: string | number, timestamp?: number }
   const [toastMsg, setToastMsg] = useState(null);
   const [modal, setModal] = useState(null);         // {node, cls}
   const [auth, setAuth] = useState({ email: '', userId: null });
@@ -228,12 +229,19 @@ export function AppProvider({ children }) {
 
   const t = useCallback((k) => translate(SRef.current, k), []);
 
+  const navigateToProject = useCallback((projectId) => {
+    AF.click();
+    setOpsTarget({ tab: 'projects', projectId: projectId ? String(projectId) : null, timestamp: Date.now() });
+    setTab('ops');
+  }, []);
+
   const value = useMemo(() => ({
     S, phase, setPhase, tab, setTab, toast, toastMsg,
     openModal, closeModal, confirmBox, modal,
     update, enterApp, auth, setAuth, authRef, t, AF,
     sub, subChecking, refreshSub,
-  }), [S, phase, tab, toast, toastMsg, modal, openModal, closeModal, confirmBox, update, enterApp, auth, t, sub, subChecking, refreshSub]);
+    opsTarget, setOpsTarget, navigateToProject,
+  }), [S, phase, tab, toast, toastMsg, modal, openModal, closeModal, confirmBox, update, enterApp, auth, t, sub, subChecking, refreshSub, opsTarget, navigateToProject]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

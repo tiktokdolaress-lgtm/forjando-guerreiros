@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, Trophy, CalendarDays, Flame, ShieldCheck, Droplets, Hand, HeartPulse, Check, X, Zap, Sparkles, ShieldAlert, Target, Compass, MoreVertical, LayoutDashboard, ChevronDown, ChevronUp, Clock, Link as LinkIcon, Eye, Play } from 'lucide-react';
+import { RefreshCw, Trophy, CalendarDays, Flame, ShieldCheck, Droplets, Hand, HeartPulse, Check, X, Zap, Sparkles, ShieldAlert, Target, Compass, MoreVertical, LayoutDashboard, ChevronDown, ChevronUp, Clock, Link as LinkIcon, Eye, Play, ArrowRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Bar, Chk, Empty } from '@/components/ui';
 import { METAS, NEXTF, FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS, QUOTES } from '@/lib/data';
@@ -314,7 +314,7 @@ const BATTLE_24H_I18N = {
 };
 
 export default function QgView() {
-  const { S, update, t, openModal, closeModal, toast, setTab } = useApp();
+  const { S, update, t, openModal, closeModal, toast, setTab, navigateToProject } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const [ciDate, setCiDate] = useState(today());
@@ -1018,11 +1018,22 @@ export default function QgView() {
     const renderItemRow = (item, isCompletedSection = false) => {
       const isTask = item.type === 'task';
       const isHabit = item.type === 'habit';
+      const isProject = item.type === 'project';
+
+      const handleRowClick = () => {
+        if (isProject) {
+          if (navigateToProject) navigateToProject(item.originalId);
+          else setTab('ops');
+        }
+      };
 
       return (
         <div
           key={item.id}
+          onClick={handleRowClick}
           className={`group flex items-center justify-between gap-2 p-2 rounded-lg border text-left text-xs transition-all ${
+            isProject ? 'cursor-pointer hover:border-gold/60 hover:bg-gold/5' : ''
+          } ${
             item.done
               ? 'border-ok/30 bg-ok/5 opacity-70'
               : item.status === 'overdue'
@@ -1067,9 +1078,19 @@ export default function QgView() {
                     : (curLang === 'en' ? 'Project' : curLang === 'es' ? 'Proyecto' : 'Projeto')}
                 </span>
                 {item.projectName && (
-                  <span className="truncate border-l border-line/60 pl-1.5 text-muted">
-                    🏛️ {item.projectName}
-                  </span>
+                  <button
+                    type="button"
+                    title={curLang === 'en' ? 'Open linked project' : curLang === 'es' ? 'Abrir proyecto vinculado' : 'Abrir projeto vinculado'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (item.projectId && navigateToProject) navigateToProject(item.projectId);
+                      else if (navigateToProject) navigateToProject();
+                      else setTab('ops');
+                    }}
+                    className="truncate border-l border-line/60 pl-1.5 text-muted hover:text-gold transition-colors flex items-center gap-1 cursor-pointer group/proj text-left"
+                  >
+                    <span className="truncate group-hover/proj:underline">🏛️ {item.projectName}</span>
+                  </button>
                 )}
                 {item.status === 'soon' && !item.done && (
                   <span className="text-gold font-bold font-mono">
@@ -1090,7 +1111,8 @@ export default function QgView() {
                     ? (curLang === 'en' ? 'Unmark task' : curLang === 'es' ? 'Desmarcar tarea' : 'Desmarcar tarefa')
                     : (curLang === 'en' ? 'Complete operation' : curLang === 'es' ? 'Completar operación' : 'Concluir operação')
                 }
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   update((s) => {
                     const tt = (s.tasks || []).find((y) => String(y.id) === String(item.originalId));
                     if (!tt) return;
@@ -1128,6 +1150,7 @@ export default function QgView() {
                     : (curLang === 'en' ? 'Mark in Forge' : curLang === 'es' ? 'Marcar en la Forja' : 'Marcar na Forja')
                 }
                 onClick={(e) => {
+                  e.stopPropagation();
                   toggleHabitDone(item.originalId, e);
                   toast(
                     item.done
@@ -1146,10 +1169,17 @@ export default function QgView() {
             ) : (
               <button
                 type="button"
-                onClick={() => { AF.click(); setTab('ops'); }}
-                className="px-2 py-1 rounded text-[10px] font-bold text-gold border border-gold/30 hover:bg-gold/10 transition-colors cursor-pointer"
+                title={curLang === 'en' ? 'Open project in Projects tab' : curLang === 'es' ? 'Abrir proyecto en pestaña Proyectos' : 'Abrir projeto na aba Projetos'}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (navigateToProject) navigateToProject(item.originalId);
+                  else setTab('ops');
+                }}
+                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg text-[10px] font-bold text-gold bg-gold/10 border border-gold/40 hover:bg-gold hover:text-[#121214] transition-all cursor-pointer shadow-sm active:scale-95 flex-none"
               >
-                {curLang === 'en' ? 'VIEW' : curLang === 'es' ? 'VER' : 'VER'}
+                <span className="text-xs">🏛️</span>
+                <span>{curLang === 'en' ? 'VIEW PROJECT' : curLang === 'es' ? 'VER PROYECTO' : 'VER PROJETO'}</span>
+                <ArrowRight size={11} className="hidden sm:inline-block" />
               </button>
             )}
           </div>
@@ -1293,22 +1323,33 @@ export default function QgView() {
         )}
 
         {/* Barra de Ações Operacionais */}
-        <div className="mt-2.5 pt-2 border-t border-line/60 flex items-center justify-between gap-2">
+        <div className="mt-2.5 pt-2 border-t border-line/60 grid grid-cols-3 gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => { AF.click(); setTab('ops'); }}
-            className="flex-1 py-1.5 px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
+            className="py-1.5 px-1.5 sm:px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[10px] sm:text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
           >
             <span>🎯</span>
-            <span className="truncate">{curLang === 'en' ? '+ Manage Operations' : curLang === 'es' ? '+ Gestionar Operaciones' : '+ Gerenciar Operações'}</span>
+            <span className="truncate">{curLang === 'en' ? 'Operations' : curLang === 'es' ? 'Operaciones' : 'Operações'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (navigateToProject) navigateToProject();
+              else { AF.click(); setTab('ops'); }
+            }}
+            className="py-1.5 px-1.5 sm:px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[10px] sm:text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>🏛️</span>
+            <span className="truncate">{curLang === 'en' ? 'Projects' : curLang === 'es' ? 'Proyectos' : 'Projetos'}</span>
           </button>
           <button
             type="button"
             onClick={() => { AF.click(); setTab('forge'); }}
-            className="flex-1 py-1.5 px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
+            className="py-1.5 px-1.5 sm:px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[10px] sm:text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
           >
             <span>🔨</span>
-            <span className="truncate">{curLang === 'en' ? '+ Forge Habits' : curLang === 'es' ? '+ Hábitos de la Forja' : '+ Hábitos da Forja'}</span>
+            <span className="truncate">{curLang === 'en' ? 'Forge Habits' : curLang === 'es' ? 'La Forja' : 'A Forja'}</span>
           </button>
         </div>
       </div>
