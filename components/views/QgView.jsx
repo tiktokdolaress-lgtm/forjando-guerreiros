@@ -322,6 +322,7 @@ export default function QgView() {
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [pactAxiomIdx, setPactAxiomIdx] = useState(0);
   const [showCompletedInSchedule, setShowCompletedInSchedule] = useState(false);
+  const [pillarsOpen, setPillarsOpen] = useState(false);
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
@@ -896,12 +897,20 @@ export default function QgView() {
 
   const renderDailyCheckin = () => (
     <Card className="w-full max-w-full overflow-hidden">
-      <K>{t('checkin')}{L.modeA(S) ? t('two_pil') : ''}</K>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <K className="mb-0">{t('checkin')}{L.modeA(S) ? t('two_pil') : ''}</K>
+        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+          cView.ok ? 'border-gold/40 bg-gold/20 text-gold' : 'border-line bg-surface2 text-muted'
+        }`}>
+          {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
+        </span>
+      </div>
+
       <div className="mb-2.5 flex items-center justify-between gap-2 overflow-hidden w-full">
         <button
           type="button"
           className="chip-dim flex-none px-2.5 py-1 text-[11px] whitespace-nowrap"
-          onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); }}
+          onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
           title={t('prev_d')}
         >
           ◀ {t('prev_d')}
@@ -917,6 +926,7 @@ export default function QgView() {
           📅 {ciDate === today() ? `${t('today_b')} (${fdmy(today())})` : `${t('today_b')} · Voltar para Hoje`}
         </button>
       </div>
+
       {ciDate !== today() && (
         <div className="chip mb-2 cursor-default flex items-center justify-between text-gold border-gold/40 text-[11px]">
           <span>{t('editing_r')}{fdmy(ciDate)}</span>
@@ -929,19 +939,62 @@ export default function QgView() {
           </button>
         </div>
       )}
-      <div className="flex flex-col gap-2">
-        {L.pillars(S).map((k) => {
-          const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-          const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-          return (
-            <Chk key={k} on={!!cView[k]} failed={!cView[k] && failTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cView[k], ciDate)}>
-              {t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3')}
-            </Chk>
-          );
-        })}
-      </div>
+
+      {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
+      <button
+        type="button"
+        onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
+        className={`w-full mb-2 p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99] ${
+          cView.ok
+            ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
+            : 'border-line/80 bg-surface hover:border-gold/40'
+        }`}
+      >
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <span className="text-base flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className={`text-[11.5px] font-bold leading-snug truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
+              {cView.ok
+                ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
+                : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
+            </span>
+            <span className="text-[10px] text-muted truncate">
+              {pillarsOpen
+                ? (curLang === 'en' ? 'Tap to hide pillars' : curLang === 'es' ? 'Toca para ocultar pilares' : 'Toque para ocultar os pilares')
+                : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir e registrar os 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-none">
+          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+            cView.ok
+              ? 'border-gold/40 bg-gold/25 text-gold'
+              : 'border-line bg-surface2 text-muted'
+          }`}>
+            {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
+          </span>
+          {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
+        </div>
+      </button>
+
+      {/* OS 3 PILARES (ABREM SOMENTE AO TOCAR) */}
+      {pillarsOpen && (
+        <div className="flex flex-col gap-2 pt-0.5 pb-1">
+          {L.pillars(S).map((k) => {
+            const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+            const failTypes = String(cView.fail || '').split('+').filter(Boolean);
+            return (
+              <Chk key={k} on={!!cView[k]} failed={!cView[k] && failTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cView[k], ciDate)}>
+                {t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3')}
+              </Chk>
+            );
+          })}
+        </div>
+      )}
+
       {ciDate === today()
-        ? <button className="btn-red btn-big mt-3" onClick={failFlow}>{t('fail')}</button>
+        ? <button className="btn-red btn-big mt-2" onClick={failFlow}>{t('fail')}</button>
         : <p className="fnote mt-1">{t('retro')}</p>}
     </Card>
   );
@@ -1380,7 +1433,7 @@ export default function QgView() {
               <button
                 type="button"
                 className="text-[10px] text-muted hover:text-gold px-2 py-0.5 rounded border border-line/60 bg-surface2 font-semibold transition-colors"
-                onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); }}
+                onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
                 title={t('prev_d')}
               >
                 ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
@@ -1397,96 +1450,136 @@ export default function QgView() {
             </div>
           </div>
 
-          {/* OS 3 ESCUDOS INTERATIVOS TÁTEIS */}
-          <div className="flex flex-col gap-2">
-            {L.pillars(S).map((k) => {
-              const isChecked = !!cView[k];
-              const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-              const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-              const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+          {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
+          <button
+            type="button"
+            onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
+            className={`w-full mb-2 p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer active:scale-[0.99] ${
+              cView.ok
+                ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
+                : 'border-line/90 bg-surface hover:border-gold/40'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <span className="text-base sm:text-lg flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className={`text-xs font-bold leading-tight truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
+                  {cView.ok
+                    ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
+                    : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
+                </span>
+                <span className="text-[10px] text-muted truncate mt-0.5">
+                  {pillarsOpen
+                    ? (curLang === 'en' ? 'Tap to hide the 3 pillars' : curLang === 'es' ? 'Toca para ocultar los 3 pilares' : 'Toque para ocultar os 3 pilares')
+                    : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir y registrar los 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
+                </span>
+              </div>
+            </div>
 
-              const SHIELD_DATA = {
-                r: {
-                  icon: '🛡️',
-                  title: curLang === 'en' ? 'Semen Retention Maintained' : curLang === 'es' ? 'Retención Seminal Mantenida' : 'Retenção Seminal Mantida',
-                  sub: curLang === 'en' ? 'Vital energy preserved (No ejaculation)' : curLang === 'es' ? 'Energía vital preservada (Sin eyaculación)' : 'Energia vital preservada (Sem ejaculação)',
-                },
-                p: {
-                  icon: '👁️',
-                  title: curLang === 'en' ? 'Zero Pornography' : curLang === 'es' ? 'Cero Pornografía' : 'Zero Pornografia',
-                  sub: curLang === 'en' ? 'Mind guarded, clean gaze' : curLang === 'es' ? 'Mente blindada, mirada limpia' : 'Mente blindada, olhar firme e limpo',
-                },
-                m: {
-                  icon: '⚡',
-                  title: curLang === 'en' ? 'Unshakable Self-Mastery' : curLang === 'es' ? 'Autodominio Inquebrantable' : 'Autodomínio Inabalável',
-                  sub: curLang === 'en' ? 'Zero masturbation, impulse conquered' : curLang === 'es' ? 'Cero masturbación, impulso dominado' : 'Zero masturbação, soberania sobre o impulso',
-                },
-              };
-
-              const item = SHIELD_DATA[k] || { icon: '⚔️', title: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), sub: '' };
-
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setCI(k, !isChecked, ciDate)}
-                  className={`group flex items-center justify-between rounded-xl border p-2 sm:p-3 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
-                    isChecked
-                      ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
-                      : isFailed
-                      ? 'border-danger/60 bg-danger/10'
-                      : 'border-line/70 bg-surface2/60 hover:border-gold/40'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                    <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
-                      isChecked
-                        ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
-                        : isFailed
-                        ? 'border-danger bg-danger/20 text-danger'
-                        : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50'
-                    }`}>
-                      {isChecked ? '✓' : item.icon}
-                    </span>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className={`text-xs font-bold leading-tight truncate ${
-                        isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
-                      }`}>
-                        {item.title}
-                      </span>
-                      <span className="text-[9.5px] text-muted truncate mt-0.5">
-                        {item.sub}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center flex-none pl-1.5 sm:pl-2">
-                    {isChecked ? (
-                      <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
-                        BLINDADO
-                      </span>
-                    ) : isFailed ? (
-                      <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
-                        FALHOU
-                      </span>
-                    ) : (
-                      <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
-                        MARCAR
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Selo de Vitória Se Hoje For 100% Blindado */}
-          {cView.ok && (
-            <div className="mt-2.5 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
-              <span className="flex-none">🏆</span>
-              <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
-                {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
+            <div className="flex items-center gap-1.5 flex-none">
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+                cView.ok
+                  ? 'border-gold/40 bg-gold/25 text-gold'
+                  : 'border-line bg-surface2 text-muted'
+              }`}>
+                {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
               </span>
+              {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
+            </div>
+          </button>
+
+          {/* OS 3 ESCUDOS INTERATIVOS TÁTEIS (EXIBIDOS APENAS QUANDO ABERTO PELO TOQUE) */}
+          {pillarsOpen && (
+            <div className="flex flex-col gap-2 pt-0.5 pb-1">
+              {L.pillars(S).map((k) => {
+                const isChecked = !!cView[k];
+                const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+                const failTypes = String(cView.fail || '').split('+').filter(Boolean);
+                const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+
+                const SHIELD_DATA = {
+                  r: {
+                    icon: '🛡️',
+                    title: curLang === 'en' ? 'Semen Retention Maintained' : curLang === 'es' ? 'Retención Seminal Mantenida' : 'Retenção Seminal Mantida',
+                    sub: curLang === 'en' ? 'Vital energy preserved (No ejaculation)' : curLang === 'es' ? 'Energía vital preservada (Sin eyaculación)' : 'Energia vital preservada (Sem ejaculação)',
+                  },
+                  p: {
+                    icon: '👁️',
+                    title: curLang === 'en' ? 'Zero Pornography' : curLang === 'es' ? 'Cero Pornografía' : 'Zero Pornografia',
+                    sub: curLang === 'en' ? 'Mind guarded, clean gaze' : curLang === 'es' ? 'Mente blindada, mirada limpia' : 'Mente blindada, olhar firme e limpo',
+                  },
+                  m: {
+                    icon: '⚡',
+                    title: curLang === 'en' ? 'Unshakable Self-Mastery' : curLang === 'es' ? 'Autodominio Inquebrantable' : 'Autodomínio Inabalável',
+                    sub: curLang === 'en' ? 'Zero masturbation, impulse conquered' : curLang === 'es' ? 'Cero masturbación, impulso dominado' : 'Zero masturbação, soberania sobre o impulso',
+                  },
+                };
+
+                const item = SHIELD_DATA[k] || { icon: '⚔️', title: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), sub: '' };
+
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setCI(k, !isChecked, ciDate)}
+                    className={`group flex items-center justify-between rounded-xl border p-2 sm:p-3 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
+                      isChecked
+                        ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
+                        : isFailed
+                        ? 'border-danger/60 bg-danger/10'
+                        : 'border-line/70 bg-surface2/60 hover:border-gold/40'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+                      <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
+                        isChecked
+                          ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
+                          : isFailed
+                          ? 'border-danger bg-danger/20 text-danger'
+                          : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50'
+                      }`}>
+                        {isChecked ? '✓' : item.icon}
+                      </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className={`text-xs font-bold leading-tight truncate ${
+                          isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
+                        }`}>
+                          {item.title}
+                        </span>
+                        <span className="text-[9.5px] text-muted truncate mt-0.5">
+                          {item.sub}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center flex-none pl-1.5 sm:pl-2">
+                      {isChecked ? (
+                        <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
+                          BLINDADO
+                        </span>
+                      ) : isFailed ? (
+                        <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
+                          FALHOU
+                        </span>
+                      ) : (
+                        <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
+                          MARCAR
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* Selo de Vitória Se Hoje For 100% Blindado */}
+              {cView.ok && (
+                <div className="mt-1 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
+                  <span className="flex-none">🏆</span>
+                  <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
+                    {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
