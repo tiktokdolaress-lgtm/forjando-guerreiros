@@ -321,6 +321,7 @@ export default function QgView() {
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [pactAxiomIdx, setPactAxiomIdx] = useState(0);
+  const [showCompletedInSchedule, setShowCompletedInSchedule] = useState(false);
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
@@ -1000,43 +1001,165 @@ export default function QgView() {
     </Card>
   );
 
-  const renderTasksToday = () => (
-    <Card className="flex-1 flex flex-col justify-between">
-      <div>
-        <K>🎯 {t('tasksToday')} — {openTasks.length}{t('pend_w')}</K>
-        {openTasks.length ? (
-          <div className="flex flex-col gap-2 mt-1">
-            {openTasks.map((x) => (
-              <button key={x.id} className="flex items-center gap-2.5 rounded-r border border-line bg-surface2 p-2.5 text-left text-[13px] font-semibold" onClick={() => { update((s) => { const tt = s.tasks.find((y) => y.id == x.id); if (!tt) return; if ((tt.rep || 'unica') === 'unica') tt.done = !tt.done; else { const dd = today(); tt.doneDates = tt.doneDates || []; const i = tt.doneDates.indexOf(dd); if (i >= 0) tt.doneDates.splice(i, 1); else tt.doneDates.push(dd); } }); AF.click(); }}>
-                <span className={`h-2.5 w-2.5 flex-none rounded-full ${{ alta: 'bg-danger', media: 'bg-gold', baixa: 'bg-muted' }[x.pri] || 'bg-muted'}`} />
-                <span className="min-w-0 flex-1 truncate">{x.txt}</span>
-                {x.time && <span className="font-mono text-[11px] text-gold2">{x.time}</span>}
-                <span className="grid h-[20px] w-[20px] flex-none place-items-center rounded-md border border-[#3c3c46] text-transparent">✓</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="py-4 text-center">
-            <Empty>{t('eo1')}<b className="text-gold">{t('ops_b')}</b>.</Empty>
-          </div>
-        )}
-      </div>
-      <button className="btn-ghost w-full text-xs mt-2 py-1.5" onClick={() => { AF.click(); setTab('ops'); }}>
-        + Gerenciar Operações
-      </button>
-    </Card>
-  );
-
-  /* MINI CARD: AGENDA OPERACIONAL DE HOJE (Tarefas, Projetos e Hábitos com Horário) */
+  /* MINI CARD: AGENDA OPERACIONAL DE HOJE (Tarefas, Hábitos da Forja e Projetos) */
   const renderCombatScheduleMiniCard = () => {
     const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
     const totalCount = timelineItems.length;
-    const completedCount = timelineItems.filter((x) => x.done).length;
-    const pendingCount = totalCount - completedCount;
+    const completedItems = timelineItems.filter((x) => x.done);
+    const pendingItems = timelineItems.filter((x) => !x.done);
+    const completedCount = completedItems.length;
+    const pendingCount = pendingItems.length;
+
+    // Fila Operacional Dinâmica: quando marca uma missão, ela sai imediatamente e a próxima da fila entra
+    const MAX_VISIBLE_PENDING = 5;
+    const visiblePending = pendingItems.slice(0, MAX_VISIBLE_PENDING);
+    const remainingPendingCount = Math.max(0, pendingItems.length - MAX_VISIBLE_PENDING);
+
+    const renderItemRow = (item, isCompletedSection = false) => {
+      const isTask = item.type === 'task';
+      const isHabit = item.type === 'habit';
+
+      return (
+        <div
+          key={item.id}
+          className={`group flex items-center justify-between gap-2 p-2 rounded-lg border text-left text-xs transition-all ${
+            item.done
+              ? 'border-ok/30 bg-ok/5 opacity-70'
+              : item.status === 'overdue'
+              ? 'border-danger/40 bg-danger/5 hover:border-danger/60'
+              : item.status === 'soon'
+              ? 'border-gold/60 bg-gold/10 shadow-[0_0_12px_rgba(212,175,55,0.15)] animate-pulse'
+              : 'border-line/70 bg-[#16161D] hover:border-gold/40'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            {/* Badge do Horário / Tipo */}
+            <div className="flex flex-col items-center flex-none">
+              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold tracking-tight ${
+                item.done
+                  ? 'text-muted bg-surface'
+                  : item.status === 'soon'
+                  ? 'bg-gold text-[#121214] font-black'
+                  : 'bg-gold/15 text-gold border border-gold/30'
+              }`}>
+                {item.time}
+              </span>
+            </div>
+
+            {/* Ícone e Nome da Tarefa/Hábito/Projeto */}
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-xs flex-none">{item.icon}</span>
+                <span className={`font-bold truncate text-[12px] sm:text-[12.5px] ${
+                  item.done ? 'line-through text-muted' : 'text-[#EDE5D5] group-hover:text-gold'
+                }`}>
+                  {item.title}
+                </span>
+              </div>
+
+              {/* Subtítulo com tipo ou projeto vinculado */}
+              <div className="flex items-center gap-2 text-[9.5px] text-muted truncate mt-0.5">
+                <span className="uppercase font-semibold tracking-wider text-gold/80">
+                  {isTask
+                    ? (curLang === 'en' ? 'Task' : curLang === 'es' ? 'Tarea' : 'Tarefa')
+                    : isHabit
+                    ? (curLang === 'en' ? 'Forge Habit' : curLang === 'es' ? 'Hábito Forja' : 'Hábito da Forja')
+                    : (curLang === 'en' ? 'Project' : curLang === 'es' ? 'Proyecto' : 'Projeto')}
+                </span>
+                {item.projectName && (
+                  <span className="truncate border-l border-line/60 pl-1.5 text-muted">
+                    🏛️ {item.projectName}
+                  </span>
+                )}
+                {item.status === 'soon' && !item.done && (
+                  <span className="text-gold font-bold font-mono">
+                    ⚡ {curLang === 'en' ? 'NOW' : curLang === 'es' ? 'AHORA' : 'AGORA'}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Ação: Marcar Tarefa / Hábito diretamente do Card */}
+          <div className="flex items-center flex-none pl-1">
+            {isTask ? (
+              <button
+                type="button"
+                title={
+                  item.done
+                    ? (curLang === 'en' ? 'Unmark task' : curLang === 'es' ? 'Desmarcar tarea' : 'Desmarcar tarefa')
+                    : (curLang === 'en' ? 'Complete operation' : curLang === 'es' ? 'Completar operación' : 'Concluir operação')
+                }
+                onClick={() => {
+                  update((s) => {
+                    const tt = (s.tasks || []).find((y) => String(y.id) === String(item.originalId));
+                    if (!tt) return;
+                    if ((tt.rep || 'unica') === 'unica') {
+                      tt.done = !tt.done;
+                    } else {
+                      const dd = today();
+                      tt.doneDates = tt.doneDates || [];
+                      const idx = tt.doneDates.indexOf(dd);
+                      if (idx >= 0) tt.doneDates.splice(idx, 1);
+                      else tt.doneDates.push(dd);
+                    }
+                  });
+                  AF.click();
+                  toast(
+                    item.done
+                      ? (curLang === 'en' ? '↩ Mission unmarked' : curLang === 'es' ? '↩ Operación desmarcada' : '↩ Operação desmarcada')
+                      : (curLang === 'en' ? '⚔️ Mission accomplished with honor!' : curLang === 'es' ? '⚔️ ¡Operación cumplida con honor!' : '⚔️ Operação cumprida com honra!')
+                  );
+                }}
+                className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                  item.done
+                    ? 'border-ok bg-ok text-[#121214] shadow-sm'
+                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                }`}
+              >
+                <Check size={14} strokeWidth={item.done ? 3 : 2} />
+              </button>
+            ) : isHabit ? (
+              <button
+                type="button"
+                title={
+                  item.done
+                    ? (curLang === 'en' ? 'Habit completed' : curLang === 'es' ? 'Hábito cumplido' : 'Hábito cumprido')
+                    : (curLang === 'en' ? 'Mark in Forge' : curLang === 'es' ? 'Marcar en la Forja' : 'Marcar na Forja')
+                }
+                onClick={(e) => {
+                  toggleHabitDone(item.originalId, e);
+                  toast(
+                    item.done
+                      ? (curLang === 'en' ? '↩ Habit unmarked' : curLang === 'es' ? '↩ Hábito desmarcado' : '↩ Hábito desmarcado')
+                      : (curLang === 'en' ? '🔨 Habit forged for today!' : curLang === 'es' ? '🔨 ¡Hábito forjado hoy!' : '🔨 Hábito forjado hoje!')
+                  );
+                }}
+                className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                  item.done
+                    ? 'border-gold bg-gold text-[#121214] shadow-sm'
+                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                }`}
+              >
+                <Check size={14} strokeWidth={item.done ? 3 : 2} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { AF.click(); setTab('ops'); }}
+                className="px-2 py-1 rounded text-[10px] font-bold text-gold border border-gold/30 hover:bg-gold/10 transition-colors cursor-pointer"
+              >
+                {curLang === 'en' ? 'VIEW' : curLang === 'es' ? 'VER' : 'VER'}
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="rounded-xl border border-gold/40 bg-gradient-to-br from-[#181721] via-[#14141A] to-[#0E0E12] p-3 sm:p-3.5 shadow-md w-full max-w-full overflow-hidden transition-all">
-        {/* Cabeçalho do Mini Card */}
+        {/* Cabeçalho do Card Agenda Operacional */}
         <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-line/60">
           <div className="flex items-center gap-2 min-w-0">
             <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold/15 text-gold text-sm flex-none border border-gold/30">
@@ -1045,203 +1168,149 @@ export default function QgView() {
             <div className="flex flex-col min-w-0">
               <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#F2ECE0] truncate flex items-center gap-1.5">
                 {curLang === 'en' ? "TODAY'S COMBAT SCHEDULE" : curLang === 'es' ? 'CRONOGRAMA DE OPERACIONES' : 'AGENDA OPERACIONAL DE HOJE'}
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-ping flex-none" />
+                {pendingCount > 0 && (
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-ping flex-none" />
+                )}
               </span>
               <span className="text-[9.5px] text-muted truncate">
                 {curLang === 'en'
-                  ? 'Missions, habits & projects with set time'
+                  ? 'Active missions, forge habits & projects'
                   : curLang === 'es'
-                  ? 'Misiones, hábitos y proyectos con horario'
-                  : 'Missões, hábitos e projetos com horário'}
+                  ? 'Misiones activas, hábitos de la forja y proyectos'
+                  : 'Missões ativas, hábitos da forja e projetos'}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 flex-none">
             {totalCount > 0 ? (
-              <span className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold border ${
+              <span className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold border transition-colors ${
                 pendingCount === 0
                   ? 'border-ok/40 bg-ok/10 text-ok'
                   : 'border-gold/40 bg-gold/10 text-gold'
               }`}>
-                {completedCount}/{totalCount} {curLang === 'en' ? 'DONE' : curLang === 'es' ? 'LISTOS' : 'CUMPRIDOS'}
+                {completedCount}/{totalCount} {curLang === 'en' ? 'DONE' : curLang === 'es' ? 'CUMPLIDOS' : 'CUMPRIDOS'}
               </span>
             ) : (
               <span className="px-2 py-0.5 rounded text-[9.5px] font-mono font-semibold border border-line text-muted">
-                {curLang === 'en' ? 'NO SCHEDULE' : curLang === 'es' ? 'SIN HORARIOS' : 'SEM HORÁRIOS'}
+                {curLang === 'en' ? 'NO OPERATIONS' : curLang === 'es' ? 'SIN OPERACIONES' : 'SEM OPERAÇÕES'}
               </span>
             )}
           </div>
         </div>
 
-        {/* Lista de Itens com Horário */}
-        {totalCount > 0 ? (
+        {/* Lista de Itens Pendentes (Ao marcar, o item sai e o próximo da fila entra automaticamente) */}
+        {visiblePending.length > 0 ? (
           <div className="flex flex-col gap-1.5">
-            {timelineItems.map((item) => {
-              const isTask = item.type === 'task';
-              const isHabit = item.type === 'habit';
+            {visiblePending.map((item) => renderItemRow(item, false))}
 
-              return (
-                <div
-                  key={item.id}
-                  className={`group flex items-center justify-between gap-2 p-2 rounded-lg border text-left text-xs transition-all ${
-                    item.done
-                      ? 'border-ok/30 bg-ok/5 opacity-70'
-                      : item.status === 'overdue'
-                      ? 'border-danger/40 bg-danger/5 hover:border-danger/60'
-                      : item.status === 'soon'
-                      ? 'border-gold/60 bg-gold/10 shadow-[0_0_12px_rgba(212,175,55,0.15)] animate-pulse'
-                      : 'border-line/70 bg-[#16161D] hover:border-gold/40'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    {/* Badge do Horário */}
-                    <div className="flex flex-col items-center flex-none">
-                      <span className={`px-1.5 py-0.5 rounded font-mono text-[10.5px] font-extrabold tracking-tight ${
-                        item.done
-                          ? 'text-muted bg-surface'
-                          : item.status === 'soon'
-                          ? 'bg-gold text-[#121214] font-black'
-                          : 'bg-gold/15 text-gold border border-gold/30'
-                      }`}>
-                        {item.time}
-                      </span>
-                    </div>
-
-                    {/* Ícone e Nome da Tarefa/Hábito/Projeto */}
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-xs flex-none">{item.icon}</span>
-                        <span className={`font-bold truncate text-[12px] sm:text-[12.5px] ${
-                          item.done ? 'line-through text-muted' : 'text-[#EDE5D5] group-hover:text-gold'
-                        }`}>
-                          {item.title}
-                        </span>
-                      </div>
-
-                      {/* Subtítulo com tipo ou projeto vinculado */}
-                      <div className="flex items-center gap-2 text-[9.5px] text-muted truncate mt-0.5">
-                        <span className="uppercase font-semibold tracking-wider text-gold/80">
-                          {isTask
-                            ? (curLang === 'en' ? 'Task' : curLang === 'es' ? 'Tarea' : 'Tarefa')
-                            : isHabit
-                            ? (curLang === 'en' ? 'Habit' : curLang === 'es' ? 'Hábito' : 'Hábito')
-                            : (curLang === 'en' ? 'Project' : curLang === 'es' ? 'Proyecto' : 'Projeto')}
-                        </span>
-                        {item.projectName && (
-                          <span className="truncate border-l border-line/60 pl-1.5 text-muted">
-                            🏛️ {item.projectName}
-                          </span>
-                        )}
-                        {item.status === 'soon' && !item.done && (
-                          <span className="text-gold font-bold font-mono">
-                            ⚡ {curLang === 'en' ? 'NOW' : curLang === 'es' ? 'AHORA' : 'AGORA'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ação: Marcar Tarefa / Hábito diretamente do Mini Card */}
-                  <div className="flex items-center flex-none pl-1">
-                    {isTask ? (
-                      <button
-                        type="button"
-                        title={
-                          item.done
-                            ? (curLang === 'en' ? 'Unmark task' : curLang === 'es' ? 'Desmarcar tarea' : 'Desmarcar tarefa')
-                            : (curLang === 'en' ? 'Complete operation' : curLang === 'es' ? 'Completar operación' : 'Concluir operação')
-                        }
-                        onClick={() => {
-                          update((s) => {
-                            const tt = (s.tasks || []).find((y) => String(y.id) === String(item.originalId));
-                            if (!tt) return;
-                            if ((tt.rep || 'unica') === 'unica') {
-                              tt.done = !tt.done;
-                            } else {
-                              const dd = today();
-                              tt.doneDates = tt.doneDates || [];
-                              const idx = tt.doneDates.indexOf(dd);
-                              if (idx >= 0) tt.doneDates.splice(idx, 1);
-                              else tt.doneDates.push(dd);
-                            }
-                          });
-                          AF.click();
-                          toast(
-                            item.done
-                              ? (curLang === 'en' ? '↩ Mission unmarked' : curLang === 'es' ? '↩ Operación desmarcada' : '↩ Operação desmarcada')
-                              : (curLang === 'en' ? '⚔️ Mission accomplished with honor!' : curLang === 'es' ? '⚔️ ¡Operación cumplida con honor!' : '⚔️ Operação cumprida com honra!')
-                          );
-                        }}
-                        className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                          item.done
-                            ? 'border-ok bg-ok text-[#121214] shadow-sm'
-                            : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
-                        }`}
-                      >
-                        <Check size={14} strokeWidth={item.done ? 3 : 2} />
-                      </button>
-                    ) : isHabit ? (
-                      <button
-                        type="button"
-                        title={
-                          item.done
-                            ? (curLang === 'en' ? 'Habit completed' : curLang === 'es' ? 'Hábito cumplido' : 'Hábito cumprido')
-                            : (curLang === 'en' ? 'Mark in Forge' : curLang === 'es' ? 'Marcar en la Forja' : 'Marcar na Forja')
-                        }
-                        onClick={(e) => toggleHabitDone(item.originalId, e)}
-                        className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                          item.done
-                            ? 'border-gold bg-gold text-[#121214] shadow-sm'
-                            : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
-                        }`}
-                      >
-                        <Check size={14} strokeWidth={item.done ? 3 : 2} />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => { AF.click(); setTab('ops'); }}
-                        className="px-2 py-1 rounded text-[10px] font-bold text-gold border border-gold/30 hover:bg-gold/10 transition-colors"
-                      >
-                        {curLang === 'en' ? 'VIEW' : curLang === 'es' ? 'VER' : 'VER'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {/* Aviso tático de itens que aguardam na fila de hoje */}
+            {remainingPendingCount > 0 && (
+              <div className="mt-1 flex items-center justify-between px-2.5 py-1 rounded bg-[#101015] border border-line/40 text-[9.5px] text-muted font-mono">
+                <span className="flex items-center gap-1 truncate">
+                  <span>⏳</span>
+                  <span className="truncate">
+                    +{remainingPendingCount} {curLang === 'en' ? 'more missions in queue for today' : curLang === 'es' ? 'más operaciones en cola para hoy' : 'missões na fila para hoje'}
+                  </span>
+                </span>
+                <span className="text-gold/80 font-bold shrink-0 pl-1">
+                  {curLang === 'en' ? 'COMPLETE TO UNLOCK' : curLang === 'es' ? 'COMPLETA PARA AVANZAR' : 'CONCLUA PARA AVANÇAR'}
+                </span>
+              </div>
+            )}
+          </div>
+        ) : totalCount > 0 ? (
+          /* Estado de Honra: 100% das Operações Concluídas */
+          <div className="py-4 px-3 rounded-lg bg-ok/10 border border-ok/30 flex flex-col items-center justify-center text-center gap-1.5">
+            <span className="text-2xl">⚔️</span>
+            <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-ok">
+              {curLang === 'en' ? 'ALL MISSIONS ACCOMPLISHED TODAY!' : curLang === 'es' ? '¡TODAS LAS OPERACIONES CUMPLIDAS HOY!' : 'TODAS AS MISSÕES CUMPRIDAS HOJE!'}
+            </span>
+            <p className="text-[11px] text-muted max-w-sm leading-tight">
+              {curLang === 'en'
+                ? 'Unshakable discipline. No procrastination was left standing in the last 24 hours.'
+                : curLang === 'es'
+                ? 'Disciplina inquebrantable. Ninguna procrastinación quedó en pie en las últimas 24 horas.'
+                : 'Disciplina inabalável. Nenhuma procrastinação sobrou de pé nas últimas 24 horas.'}
+            </p>
           </div>
         ) : (
-          <div className="py-2.5 px-3 rounded-lg bg-surface2/60 border border-line/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-center sm:text-left">
+          /* Nenhuma missão no dia */
+          <div className="py-3 px-3 rounded-lg bg-surface2/60 border border-line/50 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-center sm:text-left">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-muted text-sm flex-none">🔔</span>
               <p className="text-[11px] text-muted leading-snug">
                 {curLang === 'en'
-                  ? 'No tasks or habits with scheduled times for today. Add times to receive dual alerts!'
+                  ? 'No tasks or habits scheduled for today. Add missions to build momentum!'
                   : curLang === 'es'
-                  ? 'Sin tareas o hábitos con horario para hoy. ¡Agrega horarios para recibir alertas dobles!'
-                  : 'Nenhuma tarefa ou hábito com horário definido para hoje. Defina horários para receber alertas duplos!'}
+                  ? 'Sin tareas o hábitos programados para hoy. ¡Agrega misiones para avanzar!'
+                  : 'Nenhuma tarefa ou hábito agendado para hoje. Adicione missões para entrar em ritmo de guerra!'}
               </p>
             </div>
             <div className="flex items-center gap-1.5 flex-none">
               <button
                 type="button"
                 onClick={() => { AF.click(); setTab('ops'); }}
-                className="px-2 py-1 rounded border border-gold/30 bg-gold/10 text-gold text-[10.5px] font-bold hover:bg-gold/20 transition-all cursor-pointer whitespace-nowrap"
+                className="px-2.5 py-1 rounded border border-gold/30 bg-gold/10 text-gold text-[10.5px] font-bold hover:bg-gold/20 transition-all cursor-pointer whitespace-nowrap"
               >
-                + {curLang === 'en' ? 'Add Task Time' : curLang === 'es' ? 'Horario Tarea' : 'Horário em Tarefa'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { AF.click(); setTab('forge'); }}
-                className="px-2 py-1 rounded border border-line bg-surface text-muted hover:text-ink text-[10.5px] font-semibold transition-all cursor-pointer whitespace-nowrap"
-              >
-                + {curLang === 'en' ? 'Habit Time' : curLang === 'es' ? 'Horario Hábito' : 'Horário em Hábito'}
+                + {curLang === 'en' ? 'New Task' : curLang === 'es' ? 'Nueva Tarea' : 'Nova Tarefa'}
               </button>
             </div>
           </div>
         )}
+
+        {/* Seção de Concluídas do Dia (Para conferência ou desmarcação acidental) */}
+        {completedCount > 0 && (
+          <div className="mt-2 pt-2 border-t border-line/50 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowCompletedInSchedule((prev) => !prev)}
+              className="flex items-center justify-between w-full text-[10px] sm:text-[10.5px] font-bold text-muted hover:text-gold transition-colors py-0.5 cursor-pointer select-none"
+            >
+              <span className="flex items-center gap-1.5">
+                <Check size={12} className="text-ok" />
+                <span>
+                  {showCompletedInSchedule
+                    ? (curLang === 'en' ? 'Hide completed missions' : curLang === 'es' ? 'Ocultar operaciones cumplidas' : 'Ocultar missões concluídas')
+                    : (curLang === 'en'
+                        ? `View completed missions (${completedCount})`
+                        : curLang === 'es'
+                        ? `Ver operaciones cumplidas (${completedCount})`
+                        : `Ver missões concluídas (${completedCount})`)}
+                </span>
+              </span>
+              <span className="text-xs font-mono">
+                {showCompletedInSchedule ? '▲' : '▼'}
+              </span>
+            </button>
+
+            {showCompletedInSchedule && (
+              <div className="flex flex-col gap-1 mt-1 pl-1 border-l-2 border-ok/30">
+                {completedItems.map((item) => renderItemRow(item, true))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Barra de Ações Operacionais */}
+        <div className="mt-2.5 pt-2 border-t border-line/60 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => { AF.click(); setTab('ops'); }}
+            className="flex-1 py-1.5 px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>🎯</span>
+            <span className="truncate">{curLang === 'en' ? '+ Manage Operations' : curLang === 'es' ? '+ Gestionar Operaciones' : '+ Gerenciar Operações'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { AF.click(); setTab('forge'); }}
+            className="flex-1 py-1.5 px-2 rounded-lg bg-surface hover:bg-surface2 border border-line text-muted hover:text-ink text-[11px] font-bold transition-all text-center flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>🔨</span>
+            <span className="truncate">{curLang === 'en' ? '+ Forge Habits' : curLang === 'es' ? '+ Hábitos de la Forja' : '+ Hábitos da Forja'}</span>
+          </button>
+        </div>
       </div>
     );
   };
@@ -1395,80 +1464,15 @@ export default function QgView() {
           )}
         </div>
 
-        {/* MINI CARD TÁTICO: AGENDA OPERACIONAL DE HOJE (Tarefas, Hábitos e Projetos com Horário) */}
+        {/* AGENDA OPERACIONAL DE HOJE (Único hub de missões, hábitos e projetos) */}
         {renderCombatScheduleMiniCard()}
-
-        {/* 4. BOTÃO TÁTICO: MARCAR HÁBITOS (Direto para A Forja) */}
-        <button
-          type="button"
-          onClick={() => { AF.click(); setTab('forge'); }}
-          className="group w-full flex items-center justify-between p-3 sm:p-3.5 rounded-xl border border-gold/40 bg-gradient-to-r from-gold/15 via-[#16151D] to-surface hover:border-gold transition-all active:scale-[0.98] shadow-sm cursor-pointer select-none"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="grid h-9 w-9 flex-none place-items-center rounded-lg bg-gold/20 text-gold border border-gold/30 group-hover:scale-105 transition-transform text-base">
-              🔨
-            </div>
-            <div className="flex flex-col text-left min-w-0">
-              <span className="text-xs sm:text-sm font-extrabold text-[#F3EAD2] group-hover:text-gold transition-colors truncate">
-                {curLang === 'en' ? 'Forge Discipline Habits' : curLang === 'es' ? 'Hábitos de la Forja' : 'Hábitos da Forja'}
-              </span>
-              <span className="text-[10px] sm:text-[10.5px] text-muted truncate">
-                {totalHabits === 0
-                  ? (curLang === 'en' ? 'Tap to configure habits in Forge' : curLang === 'es' ? 'Toca para configurar hábitos en la Forja' : 'Toque para gerenciar hábitos na Forja')
-                  : pendingHabits > 0
-                  ? (curLang === 'en'
-                      ? `${pendingHabits} ${pendingHabits === 1 ? 'habit pending' : 'habits pending'} to mark today`
-                      : curLang === 'es'
-                      ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendiente' : 'hábitos pendientes'} para marcar hoy`
-                      : `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`)
-                  : (curLang === 'en'
-                      ? 'All habits completed today! Honor preserved.'
-                      : curLang === 'es'
-                      ? '¡Todos los hábitos cumplidos hoy! Honor preservado.'
-                      : 'Todos os hábitos cumpridos hoje! Honra mantida.')}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-none pl-2">
-            <span className={`rounded-md px-2 sm:px-2.5 py-1 text-[9.5px] sm:text-[10.5px] font-black uppercase tracking-wider font-mono ${
-              pendingHabits > 0
-                ? 'bg-gold text-[#121214] shadow-sm animate-pulse'
-                : 'bg-ok/20 text-ok border border-ok/40'
-            }`}>
-              {totalHabits === 0
-                ? (curLang === 'en' ? 'CONFIGURE' : 'CONFIGURAR')
-                : pendingHabits > 0
-                ? (curLang === 'en' ? `${pendingHabits} TO MARK` : curLang === 'es' ? `${pendingHabits} POR MARCAR` : `${pendingHabits} A MARCAR`)
-                : (curLang === 'en' ? '100% FORGED' : '100% FORJADO')}
-            </span>
-            <span className="text-gold text-xs font-bold flex-none group-hover:translate-x-0.5 transition-transform">➔</span>
-          </div>
-        </button>
-
-        {/* 5. ATALHO COMPACTO PARA OPERAÇÕES DO DIA (Se houver pendentes) */}
-        {pendingTasksCount > 0 && (
-          <button
-            type="button"
-            onClick={() => { AF.click(); setTab('ops'); }}
-            className="flex items-center justify-between rounded-lg border border-gold/30 bg-gold/5 px-3 py-2 text-xs font-bold text-gold hover:bg-gold/10 transition-all cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <Target size={14} className="text-gold" />
-              <span>🎯 {pendingTasksCount} {curLang === 'en' ? 'daily tasks pending' : curLang === 'es' ? 'operaciones pendientes' : 'operações pendentes hoje'}</span>
-            </div>
-            <span className="text-[11px] font-semibold text-gold2">
-              {curLang === 'en' ? 'Open Missions →' : curLang === 'es' ? 'Ver Misiones →' : 'Ver Missões →'}
-            </span>
-          </button>
-        )}
       </div>
     );
   };
 
   return (
     <div className="grid gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-12 lg:pb-6">
-      {/* NO MOBILE: OPÇÃO A (Super Otimizada, 3 Torres 3D, Botão Tático para Hábitos da Forja) */}
+      {/* NO MOBILE: OPÇÃO A (Super Otimizada, 3 Torres 3D, Agenda Operacional) */}
       <div className="lg:hidden w-full min-w-0 max-w-full">
         {renderMobileOneScreen()}
       </div>
@@ -1480,55 +1484,10 @@ export default function QgView() {
           {renderPillars3DTowers(true)}
         </div>
 
-        {/* Coluna Direita Desktop: Registro Diário de Combate, Botão de Hábitos da Forja e Operações */}
+        {/* Coluna Direita Desktop: Registro Diário de Combate e Agenda Operacional de Hoje */}
         <div className="lg:col-span-5 flex flex-col gap-3.5">
           {renderDailyCheckin()}
-          {/* Botão Tático de Hábitos da Forja (Desktop) */}
-          <button
-            type="button"
-            onClick={() => { AF.click(); setTab('forge'); }}
-            className="group w-full flex items-center justify-between p-3.5 rounded-xl border border-gold/40 bg-gradient-to-r from-gold/15 via-[#16151D] to-surface hover:border-gold transition-all active:scale-[0.98] shadow-sm cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="grid h-10 w-10 flex-none place-items-center rounded-lg bg-gold/20 text-gold border border-gold/30 group-hover:scale-105 transition-transform text-lg">
-                🔨
-              </div>
-              <div className="flex flex-col text-left min-w-0">
-                <span className="text-sm font-extrabold text-[#F3EAD2] group-hover:text-gold transition-colors truncate">
-                  {curLang === 'en' ? 'Forge Discipline Habits' : curLang === 'es' ? 'Hábitos de la Forja' : 'Hábitos da Forja'}
-                </span>
-                <span className="text-xs text-muted truncate">
-                  {totalHabits === 0
-                    ? (curLang === 'en' ? 'Configure your daily habits in Forge' : curLang === 'es' ? 'Configurar hábitos en la Forja' : 'Toque para gerenciar hábitos na Forja')
-                    : pendingHabits > 0
-                    ? (curLang === 'en'
-                        ? `${pendingHabits} ${pendingHabits === 1 ? 'habit pending' : 'habits pending'} to mark today`
-                        : curLang === 'es'
-                        ? `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendiente' : 'hábitos pendientes'} para marcar hoy`
-                        : `${pendingHabits} ${pendingHabits === 1 ? 'hábito pendente' : 'hábitos pendentes'} para marcar hoje`)
-                    : (curLang === 'en'
-                        ? 'All habits completed today! Honor preserved.'
-                        : curLang === 'es'
-                        ? '¡Todos los hábitos cumplidos hoy! Honor preservado.'
-                        : 'Todos os hábitos cumpridos hoje! Honra mantida.')}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-none pl-2">
-              <span className={`rounded-md px-2.5 py-1 text-xs font-black uppercase tracking-wider font-mono ${
-                pendingHabits > 0 ? 'bg-gold text-[#121214] shadow-sm animate-pulse' : 'bg-ok/20 text-ok border border-ok/40'
-              }`}>
-                {totalHabits === 0
-                  ? (curLang === 'en' ? 'CONFIGURE' : 'CONFIGURAR')
-                  : pendingHabits > 0
-                  ? (curLang === 'en' ? `${pendingHabits} TO MARK` : curLang === 'es' ? `${pendingHabits} POR MARCAR` : `${pendingHabits} A MARCAR`)
-                  : (curLang === 'en' ? '100% FORGED' : '100% FORJADO')}
-              </span>
-              <span className="text-gold text-sm font-bold flex-none group-hover:translate-x-0.5 transition-transform">➔</span>
-            </div>
-          </button>
           {renderCombatScheduleMiniCard()}
-          {renderTasksToday()}
         </div>
       </div>
 
