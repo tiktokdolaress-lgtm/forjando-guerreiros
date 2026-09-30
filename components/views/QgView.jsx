@@ -362,13 +362,8 @@ export default function QgView() {
   const mantra = mantraPool[S.phraseIdx % mantraPool.length];
   const pornFree = S.lastPorn ? Math.max(0, L.daysBetweenSafe(S.lastPorn)) : d;
   const mastFree = S.lastMast ? Math.max(0, L.daysBetweenSafe(S.lastMast)) : d;
-  const archivedProjIds = new Set(
-    (S.projects || []).filter((p) => p && p.archived).map((p) => String(p.id))
-  );
   const isTaskActive = (x) => {
     if (!x || x.archived) return false;
-    const pId = x.projectId != null ? x.projectId : x.proj;
-    if (pId != null && archivedProjIds.has(String(pId))) return false;
     return true;
   };
   const openTasks = (S.tasks || [])

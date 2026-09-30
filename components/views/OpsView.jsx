@@ -380,16 +380,10 @@ export default function OpsView() {
 
   const tasks = S.tasks || [];
   const projects = S.projects || [];
-  const archivedProjectIds = useMemo(() => new Set(
-    (S.projects || []).filter((p) => p && p.archived).map((p) => String(p.id))
-  ), [S.projects]);
-
   const isTaskActive = useCallback((t) => {
     if (!t || t.archived) return false;
-    const pId = t.projectId != null ? t.projectId : t.proj;
-    if (pId != null && archivedProjectIds.has(String(pId))) return false;
     return true;
-  }, [archivedProjectIds]);
+  }, []);
 
   const todayTasks = tasks.filter((x) => isTaskActive(x) && L.repDue(x, today()));
   const completedToday = todayTasks.filter((x) => L.isDone(x, today())).length;
@@ -812,8 +806,10 @@ export default function OpsView() {
                   onChange={(e) => setProjectId(e.target.value)}
                 >
                   <option value="">{tx.optNoProject[curLang]}</option>
-                  {projects.filter((p) => !p.archived).map((p) => (
-                    <option key={p.id} value={p.id}>{p.title}</option>
+                  {projects.filter((p) => !p.archived || String(p.id) === String(projectId)).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}{p.archived ? ` (${curLang === 'en' ? 'Archived' : curLang === 'es' ? 'Archivado' : 'Arquivado'})` : ''}
+                    </option>
                   ))}
                 </select>
               </div>
