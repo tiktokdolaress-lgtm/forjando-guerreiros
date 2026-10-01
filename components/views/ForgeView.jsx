@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { Card, K, Empty, Bar } from '@/components/ui';
-import { FORGE_RULES, DEFAULT_HABITS, TIERS, METAS } from '@/lib/data';
+import { Card, K, Empty } from '@/components/ui';
+import { FORGE_RULES, DEFAULT_HABITS, TIERS } from '@/lib/data';
 import { cxHabits, cxTiers, cx } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
@@ -488,56 +488,8 @@ export default function ForgeView() {
   const fd = L.fDone(S, today());
   const ff = L.fFailed(S, today());
 
-  /* Nível Atual, Metas e Efeitos Biológicos */
-  const tier = CURRENT_TIERS.find((x) => x.min === L.tierNow(S).min) || L.tierNow(S);
-  const nt = CURRENT_TIERS.find((x) => x.min > d) || null;
-  const lvlPct = nt ? Math.min(100, ((d - tier.min) / (nt.min - tier.min)) * 100) : 100;
-  const lvlTxt = nt ? <>{t('lvl_a')}<b className="text-gold">{nt.min - d}{t('dayw')}</b>{t('lvl_b')}{nt.icon} {nt.name}</> : t('lvl_max');
-  const MT = (m) => (m ? Object.assign({}, m, cx(lang, 'metas', m.d) || {}) : m);
-  const goalMeta = MT(METAS.find((m) => m.d === S.goal));
-  const bioData = getBioPerksI18n(d, lang);
+  /* Protocolo Tático de Conduta */
   const tac = TACTICAL_BLOCK_I18N;
-
-  const renderForgeLevel = () => (
-    <Card className="py-3 px-3.5 sm:py-4 sm:px-5 border-amber-600/30 bg-surface2/60 w-full min-w-0">
-      <div className="flex items-center justify-between gap-2">
-        <K className="mb-0 text-xs sm:text-sm font-bold text-ink">{t('tier')} — {tier.icon} {tier.name}</K>
-        <span className="text-[10px] font-mono text-muted">{d}d</span>
-      </div>
-      <div className="my-2">
-        <Bar pct={lvlPct} />
-      </div>
-      <div className="flex justify-between text-[11px] font-extrabold tracking-[.06em] text-muted">
-        <span className="truncate">{lvlTxt}</span>
-      </div>
-      {goalMeta && (
-        <div className="mt-1 text-[10.5px] font-bold text-gold2 truncate">
-          {d >= goalMeta.d ? t('goal_done') + goalMeta.icon + ' ' + goalMeta.n + '!' : t('goal_next') + goalMeta.icon + ' ' + goalMeta.n + t('goal_in') + goalMeta.d + t('goal_days') + (goalMeta.d - d) + t('goal_close')}
-        </div>
-      )}
-      {tier.reward && <div className="mt-0.5 text-[10.5px] font-bold text-gold2 truncate">{t('reward_l')}{tier.reward}</div>}
-
-      {/* Efeitos biológicos ativos neste marco */}
-      {bioData && bioData.perks && bioData.perks.length > 0 && (
-        <div className="mt-2.5 pt-2 border-t border-line/60">
-          <div className="mb-2 flex items-center gap-1.5">
-            <Zap size={13} className="text-gold flex-none" />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-gold2">
-              {bioData.header}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-            {bioData.perks.map((perk, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 rounded-r border border-line bg-surface px-2.5 py-1.5 text-left text-[11px] font-medium text-ink">
-                <ShieldCheck size={12} className="flex-none text-gold" />
-                <span className="truncate">{perk}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </Card>
-  );
 
   const renderTacticalProtocol = () => (
     <Card className="border-gold/20 bg-surface2/80 p-3.5 w-full min-w-0">
@@ -1317,12 +1269,6 @@ export default function ForgeView() {
               </Card>
             )}
           </div>
-
-          {/* EFEITOS BIOLÓGICOS E PROTOCOLO TÁTICO TRANSFERIDOS DO QG */}
-          <div className="flex flex-col gap-3.5 w-full min-w-0 pt-2">
-            {renderForgeLevel()}
-            {renderTacticalProtocol()}
-          </div>
         </div>
       )}
 
@@ -1647,7 +1593,7 @@ export default function ForgeView() {
                     </p>
 
                     {selTier.reward && (
-                      <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2.5 text-left mb-3">
+                      <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2.5 text-left mb-2">
                         <span className="text-[9px] font-mono text-amber-400 font-bold uppercase block">
                           🎁 {curLang === 'en' ? 'WAR REWARD' : curLang === 'es' ? 'RECOMPENSA DE GUERRA' : 'RECOMPENSA DE GUERRA'}:
                         </span>
@@ -1656,6 +1602,33 @@ export default function ForgeView() {
                         </span>
                       </div>
                     )}
+
+                    {/* Efeitos Biológicos e Mentais deste Marco */}
+                    {(() => {
+                      const bio = getBioPerksI18n(selTier.min, curLang);
+                      if (!bio || !bio.perks || !bio.perks.length) return null;
+                      return (
+                        <div className="rounded-lg border border-amber-500/30 bg-black/40 p-2 text-left mb-3">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Zap size={12} className="text-gold flex-none" />
+                            <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gold2">
+                              {bio.header}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                            {bio.perks.map((perk, pIdx) => (
+                              <div
+                                key={pIdx}
+                                className="flex items-center gap-1 rounded bg-[#18110b] border border-amber-900/40 px-1.5 py-1 text-left text-[10px] sm:text-[10.5px] font-medium text-[#EDE5D5]"
+                              >
+                                <ShieldCheck size={11} className="flex-none text-gold" />
+                                <span className="truncate">{perk}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {isUnlocked ? (
                       <button
@@ -1688,12 +1661,6 @@ export default function ForgeView() {
                 </div>
               );
             })()}
-          </div>
-
-          {/* EFEITOS BIOLÓGICOS E PROTOCOLO TÁTICO TRANSFERIDOS DO QG */}
-          <div className="flex flex-col gap-3.5 w-full min-w-0 pt-2">
-            {renderForgeLevel()}
-            {renderTacticalProtocol()}
           </div>
         </div>
       )}
@@ -1752,6 +1719,9 @@ export default function ForgeView() {
               })}
             </div>
           </Card>
+
+          {/* Diretrizes Táticas de Conduta e Blindagem */}
+          {renderTacticalProtocol()}
 
           {/* Seção de Hábitos Arquivados */}
           <Card className="p-3.5 sm:p-4 border-line w-full max-w-full min-w-0 overflow-hidden">

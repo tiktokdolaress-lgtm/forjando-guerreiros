@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ShieldCheck, Award, Flame, X, Sparkles, ChevronRight, Lock, CheckCircle2, Play } from 'lucide-react';
+import { ShieldCheck, Award, Flame, X, Sparkles, ChevronRight, Lock, CheckCircle2, Play, Zap } from 'lucide-react';
 import { AF } from '@/lib/audio';
+import { getBioPerksI18n } from '@/lib/data';
 
 const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
   ssr: false,
@@ -177,7 +178,7 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
 
               {/* Recompensa */}
               {selectedTier.reward && (
-                <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2 text-left mb-3">
+                <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2 text-left mb-2">
                   <span className="text-[9px] font-mono text-amber-400 font-bold uppercase block">
                     🎁 {TXT.reward[curLang]}:
                   </span>
@@ -186,6 +187,33 @@ export default function WarriorEvolutionGalleryModal({ tiers, currentTier, curre
                   </span>
                 </div>
               )}
+
+              {/* Efeitos Biológicos e Mentais deste Marco */}
+              {(() => {
+                const bio = getBioPerksI18n(selectedTier.min, curLang);
+                if (!bio || !bio.perks || !bio.perks.length) return null;
+                return (
+                  <div className="rounded-lg border border-amber-500/30 bg-black/40 p-2 text-left mb-3">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Zap size={12} className="text-gold flex-none" />
+                      <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gold2">
+                        {bio.header}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
+                      {bio.perks.map((perk, pIdx) => (
+                        <div
+                          key={pIdx}
+                          className="flex items-center gap-1 rounded bg-[#18110b] border border-amber-900/40 px-1.5 py-1 text-left text-[10px] sm:text-[10.5px] font-medium text-[#EDE5D5]"
+                        >
+                          <ShieldCheck size={11} className="flex-none text-gold" />
+                          <span className="truncate">{perk}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Botão de Testar a Celebração de Subida de Nível (Desbloqueado vs Bloqueado) */}
               {isUnlocked ? (
