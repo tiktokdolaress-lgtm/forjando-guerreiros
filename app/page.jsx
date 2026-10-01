@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Flame, Siren, BookOpen, ChartNoAxesColumn, RefreshCw, Sword, HeartCrack, Droplet, Castle, CheckCircle2, Lock, Handshake, Volume2, Sparkles } from 'lucide-react';
+import { ShieldCheck, Flame, Siren, BookOpen, ChartNoAxesColumn, RefreshCw, Sword, HeartCrack, Droplet, Castle, CheckCircle2, Lock, Volume2, Sparkles, Skull, Target, Globe, Smartphone } from 'lucide-react';
 import PriceTag from '@/components/landing/PriceTag';
 import PricingSection from '@/components/landing/PricingSection';
 import Faq from '@/components/landing/Faq';
@@ -37,21 +37,21 @@ export default function Landing() {
   ];
 
   const RECURSOS = [
-    [Castle, L('rec1t', 'QG do Guerreiro'), L('rec1d', 'Contador de dias, pureza, patamares (Recruta → Lenda) e linha do tempo de vitórias × quedas.')],
-    [Sword, L('rec2t', 'A Forja'), L('rec2d', '20 hábitos de elite + personalizados, com slots liberados por patamar e histórico de 7 dias.')],
-    [Siren, L('rec3t', 'Protocolo S.O.S'), L('rec3d', '5 minutos guiados contra o impulso: choque térmico, respiração 4×4 com som e exaustão física.')],
-    [Handshake, L('rec7t', 'Pacto de Sangue & Guardião'), L('rec7d', 'Convide um irmão de armas de confiança por link criptografado. Check-ins mútuos e alertas de combate.')],
-    [Volume2, L('rec8t', 'Áudio Tático & Foco'), L('rec8d', 'Respiração quadrada 4×4 guiada com áudio sintetizado, sons de combate e feedback sonoro imersivo.')],
-    [Sparkles, L('rec9t', 'Onboarding & Calibração Ágil'), L('rec9d', 'Entrada rápida com atalhos de 1 toque (Hoje, Ontem, 3d, 7d) para calibrar contadores sem complicação.')],
-    [BookOpen, L('rec4t', 'Diário de Bordo'), L('rec4d', 'Humor, vitórias, desafios, desabafos de queda e caderno de notas com busca e tags.')],
-    [ChartNoAxesColumn, L('rec5t', 'Relatórios de Combate'), L('rec5d', 'Mapa de calor mensal, consistência da Forja, KPIs e histórico de intervenções vencidas.')],
-    [RefreshCw, L('rec6t', 'Sincronização em Nuvem'), L('rec6d', 'Marque no celular, veja no PC. Login protegido e dados 100% privados por usuário (RLS).')],
+    [Castle, L('rec1t', 'QG do Guerreiro'), L('rec1d', '3 Monólitos 3D com contadores em tempo real, mantra diário das 24h e blindagem dos 3 escudos (Retenção, Zero Pornô e Autodomínio).')],
+    [Sword, L('rec2t', 'A Forja & Bio-Benefícios'), L('rec2d', '20 hábitos de elite + personalizados, desbloqueio de armaduras e bio-benefícios ativos em cada marco (+45% Testosterona, Foco Laser, Córtex pré-frontal).')],
+    [Skull, L('rec7t', 'O Inimigo Revelado (Dossiê Científico)'), L('rec7d', 'Evidências médicas sobre DEIP (Disfunção Erétil Induzida por Pornografia), dessensibilização de dopamina, Síndrome do Death Grip e cronograma neural de recuperação.')],
+    [Target, L('rec8t', 'Missões & Operações Táticas'), L('rec8d', 'Gestão ágil de projetos e tarefas táticas (Corpo, Mente, Finanças, Carreira), com prioridades, repetições e arquivamento independente.')],
+    [Siren, L('rec3t', 'Protocolo S.O.S de Emergência'), L('rec3d', '5 minutos guiados contra o impulso: choque térmico, respiração 4×4 com áudio sintetizado e exaustão física.')],
+    [BookOpen, L('rec4t', 'Diário de Bordo & Notas de Campo'), L('rec4d', 'Registro diário de humor, vitórias, desafios e desabafos de queda, além de caderno de notas categorizado com tags e busca.')],
+    [ChartNoAxesColumn, L('rec5t', 'Relatórios de Combate & KPIs'), L('rec5d', 'Taxa de vitória, sequências ativas (streaks), consistência na forja e histórico de intervenções vencidas.')],
+    [Globe, L('rec9t', '100% Multilíngue (3 Idiomas)'), L('rec9d', 'Disponível integralmente em Português, Inglês e Espanhol em todas as telas, relatórios e notificações.')],
+    [Smartphone, L('rec6t', 'Multiplataforma Celular + PC via Navegador'), L('rec6d', 'Funciona direto no navegador de qualquer dispositivo (celular, computador ou tablet). É um PWA instalável com sincronização na nuvem em tempo real.')],
   ];
 
   const PASSOS = [
     ['1', L('how1t', 'CRIE SUA CONTA'), L('how1d', 'Login protegido por e-mail e senha. Onboarding de guerra calibra seus contadores e seu porquê.')],
     ['2', L('how2t', 'TRAVE A GUERRA DIÁRIA'), L('how2d', 'Marque os pilares, forje hábitos e, se o impulso apertar, acione o S.O.S de 5 minutos.')],
-    ['3', L('how3t', 'EVOLUA DE PATAMAR'), L('how3d', 'De Recruta a Lenda: streaks, pureza, relatórios e recompensas medem sua transformação.')],
+    ['3', L('how3t', 'EVOLUA DE PATAMAR'), L('how3d', 'De Neófito a Patriarca: armaduras medievais, bio-benefícios, pureza e relatórios medem sua transformação.')],
   ];
 
   /* ⚠️ PLACEHOLDERS: substitua por depoimentos REAIS com autorização por escrito antes de publicar.
@@ -64,9 +64,10 @@ export default function Landing() {
 
   const BENEFICIOS = [
     L('pr_f1', 'Todos os módulos desbloqueados'),
-    L('pr_f2', 'Sincronização celular + PC em tempo real'),
+    L('pr_f2', 'Sincronização celular + PC via navegador em tempo real'),
     L('pr_f3', 'Protocolo S.O.S ilimitado'),
     L('pr_f4', 'Relatórios e histórico completos'),
+    L('pr_f6', 'Disponível em 3 Idiomas (PT · EN · ES)'),
     L('pr_f5', 'Cancelamento em 1 clique, sem multa'),
   ];
 
@@ -122,12 +123,15 @@ export default function Landing() {
       {/* HERO */}
       <section className="relative overflow-hidden px-5 pb-16 pt-20 text-center">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,200,70,.10),transparent_65%)]" />
+        <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-gold shadow-sm">
+          <span>🌐 {L('hero_badge', '3 Idiomas (PT · EN · ES) • PC & Mobile via Navegador (PWA)')}</span>
+        </div>
         <p className="k2 mb-4 tracking-[.3em] text-gold2">{L('kick', 'RETENÇÃO · DISCIPLINA · TRANSMUTAÇÃO')}</p>
         <h1 className="mx-auto max-w-4xl font-display text-[clamp(44px,7vw,84px)] leading-[.95] tracking-wide">
           {L('h1a', 'VENÇA O VÍCIO.')}<br /><span className="bg-gradient-to-r from-[#FFE79A] via-gold to-gold2 bg-clip-text text-transparent">{L('h1b', 'RECONQUISTE SUA ENERGIA.')}</span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-muted">
-          {L('hero_sub', 'O QG digital de quem declarou guerra à pornografia e ao desperdício de energia vital: check-in diário dos 3 pilares, hábitos de elite, protocolo de emergência contra o impulso e relatórios de combate — tudo sincronizado entre celular e PC.')}
+          {L('hero_sub', 'O QG digital de quem declarou guerra à pornografia e ao desperdício de energia vital: check-in diário dos 3 pilares, hábitos de elite, bio-benefícios da retenção, protocolo S.O.S contra o impulso, dossiê científico e operações táticas — tudo sincronizado entre celular e PC direto no navegador.')}
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link href="/app" className="btn-gold px-8 py-4 text-[15px]">{L('cta_start', '⚔️ COMEÇAR MEUS 7 DIAS GRÁTIS')}</Link>

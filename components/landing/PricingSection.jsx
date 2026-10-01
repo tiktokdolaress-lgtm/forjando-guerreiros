@@ -25,10 +25,10 @@ export default function PricingSection({ lang = 'pt' }) {
 
   const BENEFICIOS = [
     L('pr_f1', 'Todos os módulos desbloqueados'),
-    L('pr_f2', 'Sincronização celular + PC em tempo real'),
+    L('pr_f2', 'Sincronização celular + PC via navegador em tempo real'),
     L('pr_f3', 'Protocolo S.O.S ilimitado'),
     L('pr_f4', 'Relatórios e histórico completos'),
-    L('pr_f6', 'Pacto de Batalhas & Parceria entre Guerreiros'),
+    L('pr_f6', 'Disponível em 3 Idiomas (PT · EN · ES)'),
     L('pr_f5', 'Cancelamento em 1 clique, sem multa'),
   ];
 
