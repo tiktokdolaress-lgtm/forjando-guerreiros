@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target, RefreshCw, Swords } from 'lucide-react';
+import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty, Bar } from '@/components/ui';
 import { FORGE_RULES, DEFAULT_HABITS, TIERS, METAS } from '@/lib/data';
@@ -159,58 +159,6 @@ const TACTICAL_BLOCK_I18N = {
     es: 'Transmuta el fuego interno en entrenamiento, estudio y trabajo.',
   },
 };
-
-/* Lemas Táticos Dinâmicos da Forja (Rotativos / Vencer o Hoje) */
-export const FORGE_AXIOMS_I18N = {
-  badge: {
-    pt: 'FOCO TÁTICO DA FORJA · VENÇA O HOJE',
-    en: 'TACTICAL FORGE FOCUS · CONQUER TODAY',
-    es: 'ENFOQUE TÁCTICO DE LA FORJA · VENCE EL HOY',
-  },
-  tooltip: {
-    pt: 'Clique para alternar o lema tático',
-    en: 'Click to rotate tactical focus',
-    es: 'Haz clic para cambiar el lema táctico',
-  },
-};
-
-export const FORGE_TACTICAL_AXIOMS = [
-  {
-    pt: 'Vença o hoje · Hoje é o que importa',
-    en: 'Conquer today · Today is what matters',
-    es: 'Vence el hoy · Hoy es lo que importa',
-  },
-  {
-    pt: 'O amanhã ainda não existe · Foco total no agora',
-    en: 'Tomorrow does not exist yet · Total focus on now',
-    es: 'El mañana aún no existe · Enfoque total en el ahora',
-  },
-  {
-    pt: 'Apenas as próximas 24h · Mantenha a honra inabalável',
-    en: 'Only the next 24h · Keep your honor unshakable',
-    es: 'Solo las próximas 24h · Mantén el honor inquebrantable',
-  },
-  {
-    pt: 'Um dia limpo por vez forja o império',
-    en: 'One clean day at a time builds the empire',
-    es: 'Un día limpio a la vez forja el imperio',
-  },
-  {
-    pt: 'Chegue invicto ao final deste dia',
-    en: 'Finish this day undefeated',
-    es: 'Llega invicto al final de este día',
-  },
-  {
-    pt: 'A vitória de hoje garante o amanhã',
-    en: "Today's victory secures tomorrow",
-    es: 'La victoria de hoy asegura el mañana',
-  },
-  {
-    pt: 'Sua única missão é honrar o dia de hoje',
-    en: 'Your sole mission is to honor today',
-    es: 'Tu única misión es honrar el día de hoy',
-  },
-];
 
 function getBioPerksI18n(days, lang) {
   const currentLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
@@ -507,24 +455,6 @@ export default function ForgeView() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedArmorIdx, setSelectedArmorIdx] = useState(0);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
-
-  // Alternância automática dos lemas táticos da Forja a cada 10 segundos
-  const [forgeAxiomIdx, setForgeAxiomIdx] = useState(0);
-
-  useEffect(() => {
-    const axiomTimer = setInterval(() => {
-      setForgeAxiomIdx((prev) => (prev + 1) % FORGE_TACTICAL_AXIOMS.length);
-    }, 10000);
-    return () => clearInterval(axiomTimer);
-  }, []);
-
-  const curForgeAxiomObj = FORGE_TACTICAL_AXIOMS[forgeAxiomIdx % FORGE_TACTICAL_AXIOMS.length] || FORGE_TACTICAL_AXIOMS[0];
-  const curForgeAxiom = curForgeAxiomObj[curLang] || curForgeAxiomObj.pt;
-
-  const handleNextForgeAxiom = () => {
-    try { AF.click(); } catch (e) {}
-    setForgeAxiomIdx((prev) => (prev + 1) % FORGE_TACTICAL_AXIOMS.length);
-  };
 
   /* Tiers e Regras Traduzidas */
   const CURRENT_TIERS = cxTiers(curLang, TIERS);
@@ -1069,35 +999,6 @@ export default function ForgeView() {
             </button>
           );
         })}
-      </div>
-
-      {/* BANNER DINÂMICO DE FOCO TÁTICO DA FORJA (Vença o Hoje - Transferido para A Forja) */}
-      <div
-        onClick={handleNextForgeAxiom}
-        className="w-full p-2.5 sm:p-3 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-950/40 via-surface2 to-amber-950/30 flex items-center justify-between gap-2.5 cursor-pointer hover:border-amber-400/50 transition-all select-none group shadow-sm"
-        title={FORGE_AXIOMS_I18N.tooltip[curLang]}
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
-            <Swords size={14} />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-widest text-amber-400/90">
-                {FORGE_AXIOMS_I18N.badge[curLang]}
-              </span>
-              <span className="text-[8.5px] font-mono text-muted/80">
-                ({(forgeAxiomIdx % FORGE_TACTICAL_AXIOMS.length) + 1}/{FORGE_TACTICAL_AXIOMS.length})
-              </span>
-            </div>
-            <p className="text-xs sm:text-[13px] font-semibold italic text-[#f3ead2] group-hover:text-amber-200 transition-colors truncate">
-              "{curForgeAxiom}"
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 shrink-0 text-amber-400/60 group-hover:text-amber-300 transition-colors pr-1">
-          <RefreshCw size={12} className="transition-transform group-hover:rotate-180 duration-500" />
-        </div>
       </div>
 
       {/* 1. PROTOCOLO ATIVO */}
