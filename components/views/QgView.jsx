@@ -212,6 +212,35 @@ function useLiveTimer(startDateStr, daysTotal) {
   return time;
 }
 
+/* Carga Tática do Dia & Bateria Mobile (Trilíngue: PT, EN, ES) */
+const TACTICAL_ENERGY_I18N = {
+  title: {
+    pt: 'CARGA TÁTICA DO DIA',
+    en: "TODAY'S TACTICAL CHARGE",
+    es: 'CARGA TÁCTICA DEL DÍA',
+  },
+  subFull: {
+    pt: '🏆 Blindagem Máxima Atingida · Honra Intacta',
+    en: '🏆 Maximum Shielding Achieved · Honor Intact',
+    es: '🏆 Blindaje Máximo Alcanzado · Honor Intacto',
+  },
+  subAdvanced: {
+    pt: '⚔️ Forja em Combate · Ritmo Implacável',
+    en: '⚔️ Forge in Combat · Relentless Pace',
+    es: '⚔️ Forja en Combate · Ritmo Implacable',
+  },
+  subStarting: {
+    pt: '🛡️ Primeiras Barreiras Erguidas · Mantenha a Linha',
+    en: '🛡️ First Barriers Raised · Hold the Line',
+    es: '🛡️ Primeras Barreras Levantadas · Mantén la Línea',
+  },
+  subZero: {
+    pt: '🔥 Batalha Iniciada · Vença o Hoje',
+    en: '🔥 Battle Begun · Conquer Today',
+    es: '🔥 Batalla Iniciada · Vence el Hoy',
+  },
+};
+
 /* Batalha das 24 Horas & Pacto de Honra de Hoje (Trilíngue: PT, EN, ES) */
 const BATTLE_24H_I18N = {
   cardTitle: {
@@ -1049,6 +1078,91 @@ export default function QgView() {
     </Card>
   );
 
+  /* CARGA TÁTICA DO DIA: Barra de Energia / Foco de Batalha com Feedback Visual e Háptico */
+  const renderDailyTacticalEnergy = () => {
+    const tTx = TACTICAL_ENERGY_I18N;
+    const reqPil = L.pillars(S);
+    const donePil = reqPil.filter((k) => !!cView[k]).length;
+    const totPil = reqPil.length || 3;
+
+    const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
+    const totMissions = timelineItems.length;
+    const doneMissions = timelineItems.filter((i) => i.done).length;
+
+    const totalWeight = totPil + totMissions;
+    const doneWeight = donePil + doneMissions;
+    const energyPct = totalWeight > 0 ? Math.round((doneWeight / totalWeight) * 100) : 0;
+
+    const statusText =
+      energyPct >= 100
+        ? tTx.subFull[curLang]
+        : energyPct >= 60
+        ? tTx.subAdvanced[curLang]
+        : energyPct > 0
+        ? tTx.subStarting[curLang]
+        : tTx.subZero[curLang];
+
+    return (
+      <div className="w-full rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-2.5 sm:p-3 shadow-sm select-none transition-all">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm flex-none animate-pulse">⚡</span>
+            <span className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-[#F2ECE0] truncate">
+              {tTx.title[curLang]}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-none">
+            <div className="flex items-center gap-1 text-[9px] font-mono text-muted">
+              <span className="px-1.5 py-0.2 rounded bg-surface2 border border-line/60">
+                🛡️ {donePil}/{totPil}
+              </span>
+              {totMissions > 0 && (
+                <span className="px-1.5 py-0.2 rounded bg-surface2 border border-line/60">
+                  🎯 {doneMissions}/{totMissions}
+                </span>
+              )}
+            </div>
+            <span
+              className={`text-xs font-mono font-black px-1.5 py-0.5 rounded border transition-colors ${
+                energyPct >= 100
+                  ? 'border-ok/50 bg-ok/15 text-ok shadow-[0_0_8px_rgba(74,222,128,0.25)]'
+                  : energyPct > 0
+                  ? 'border-gold/50 bg-gold/15 text-gold'
+                  : 'border-line bg-surface text-muted'
+              }`}
+            >
+              {energyPct}%
+            </span>
+          </div>
+        </div>
+
+        {/* Barra de Progresso Tático Suave */}
+        <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#0D0D12] border border-line/70">
+          <div
+            className={`h-full transition-all duration-700 ease-out rounded-full ${
+              energyPct >= 100
+                ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]'
+                : energyPct > 0
+                ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400'
+                : 'bg-transparent'
+            }`}
+            style={{ width: `${Math.max(energyPct, 2)}%` }}
+          />
+        </div>
+
+        <div className="mt-1.5 flex items-center justify-between text-[9.5px] text-muted leading-tight">
+          <span className="truncate text-gold/90 font-medium">
+            {statusText}
+          </span>
+          <span className="text-[9px] font-mono text-muted/70 flex-none pl-1">
+            {doneWeight}/{totalWeight}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   /* MINI CARD: AGENDA OPERACIONAL DE HOJE (Tarefas, Hábitos da Forja e Projetos) */
   const renderCombatScheduleMiniCard = () => {
     const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
@@ -1079,7 +1193,7 @@ export default function QgView() {
         <div
           key={item.id}
           onClick={handleRowClick}
-          className={`group flex items-center justify-between gap-2 p-2 rounded-lg border text-left text-xs transition-all ${
+          className={`group flex items-center justify-between gap-2.5 p-2 sm:p-2.5 min-h-[48px] rounded-xl border text-left text-xs transition-all duration-150 active:scale-[0.98] select-none ${
             isProject ? 'cursor-pointer hover:border-gold/60 hover:bg-gold/5' : ''
           } ${
             item.done
@@ -1181,10 +1295,10 @@ export default function QgView() {
                       : (curLang === 'en' ? '⚔️ Mission accomplished with honor!' : curLang === 'es' ? '⚔️ ¡Operación cumplida con honor!' : '⚔️ Operação cumprida com honra!')
                   );
                 }}
-                className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
                   item.done
                     ? 'border-ok bg-ok text-[#121214] shadow-sm'
-                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
                 }`}
               >
                 <Check size={14} strokeWidth={item.done ? 3 : 2} />
@@ -1206,10 +1320,10 @@ export default function QgView() {
                       : (curLang === 'en' ? '🔨 Habit forged for today!' : curLang === 'es' ? '🔨 ¡Hábito forjado hoy!' : '🔨 Hábito forjado hoje!')
                   );
                 }}
-                className={`grid h-7 w-7 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
                   item.done
                     ? 'border-gold bg-gold text-[#121214] shadow-sm'
-                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold active:scale-95'
+                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
                 }`}
               >
                 <Check size={14} strokeWidth={item.done ? 3 : 2} />
@@ -1223,7 +1337,7 @@ export default function QgView() {
                   if (navigateToProject) navigateToProject(item.originalId);
                   else setTab('ops');
                 }}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg text-[10px] font-bold text-gold bg-gold/10 border border-gold/40 hover:bg-gold hover:text-[#121214] transition-all cursor-pointer shadow-sm active:scale-95 flex-none"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 min-h-[34px] rounded-lg text-[10px] font-bold text-gold bg-gold/10 border border-gold/40 hover:bg-gold hover:text-[#121214] transition-all duration-150 cursor-pointer shadow-sm active:scale-95 flex-none select-none"
               >
                 <span className="text-xs">🏛️</span>
                 <span>{curLang === 'en' ? 'VIEW PROJECT' : curLang === 'es' ? 'VER PROYECTO' : 'VER PROJETO'}</span>
@@ -1410,6 +1524,9 @@ export default function QgView() {
       <div className="flex flex-col gap-3 w-full min-w-0 max-w-full">
         {/* 1. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro com Frase do Dia e Contador 24h Integrados) */}
         {renderPillars3DTowers(false)}
+
+        {/* CARGA TÁTICA DO DIA: Bateria & Foco de Batalha em Tempo Real */}
+        {renderDailyTacticalEnergy()}
 
         {/* 2. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
         <div className="rounded-xl border border-line/80 bg-[#15151C] p-2.5 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0">
@@ -1615,6 +1732,7 @@ export default function QgView() {
 
         {/* Coluna Direita Desktop: Registro Diário de Combate e Agenda Operacional de Hoje */}
         <div className="lg:col-span-5 flex flex-col gap-3.5">
+          {renderDailyTacticalEnergy()}
           {renderDailyCheckin()}
           {renderCombatScheduleMiniCard()}
         </div>
