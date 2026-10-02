@@ -21,7 +21,7 @@ import { useApp } from '@/lib/store';
 import { DOSSIER, DOSSIER_TABLE } from '@/lib/data';
 import { AF } from '@/lib/audio';
 import { cx, cxDossier, cxTable } from '@/lib/content-i18n';
-import L from '@/lib/logic';
+import * as L from '@/lib/logic';
 
 /* =========================================================================
    DICIONÁRIO TRILÍNGUE — O INIMIGO REVELADO (PADRÃO DA FORJA)
@@ -76,7 +76,7 @@ export default function EnemyView() {
   const tx = (k, fb) => (ENEMY_I18N[k] && ENEMY_I18N[k][curLang]) || fb;
   const T = (id, fb) => cx(lang, 'enemy', id) || fb;
 
-  const streak = L.currentStreak(S);
+  const streak = (L && typeof L.currentStreak === 'function' && S ? L.currentStreak(S) : (S && S.streak) || 0) || 0;
   const doss = cxDossier(lang, DOSSIER);
   const rows = cxTable(lang, DOSSIER_TABLE);
 
