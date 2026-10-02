@@ -908,7 +908,7 @@ export default function QgView() {
             pillarsData={pillarsData}
             lvlPct={lvlPct}
             lvlTxt={lvlTxt}
-            onGoToArmors={() => setTab && setTab('forge')}
+            onGoToArmors={() => setShowEvolutionGallery(true)}
             dailyQuote={mantra}
             onNextQuote={nextMantra}
             quoteIdx={(S.phraseIdx % mantraPool.length) + 1}

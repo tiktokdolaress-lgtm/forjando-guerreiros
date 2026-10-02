@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
@@ -10,17 +9,7 @@ import * as L from '@/lib/logic';
 import { AF } from '@/lib/audio';
 import { today, fdmy, dstr, fmtD, setLocaleLang } from '@/lib/utils';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
-import ErrorBoundary from '@/components/ErrorBoundary';
-
-const Warrior3DCanvas = dynamic(() => import('@/components/Warrior3DCanvas'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[240px] w-full flex flex-col items-center justify-center gap-2 text-amber-400 font-mono text-xs">
-      <div className="h-8 w-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-      <span>3D...</span>
-    </div>
-  ),
-});
+import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -171,9 +160,7 @@ function getBioPerksI18n(days, lang) {
 
 const FORGE_CATEGORIES = [
   { id: 'active', label: 'Protocolo Ativo', icon: Flame },
-  { id: 'reserve', label: 'Reserva da Forja', icon: Sparkles },
-  { id: 'armors', label: 'Armaduras Medievais', icon: Shield },
-  { id: 'rules', label: 'Regras & Slots', icon: ShieldCheck },
+  { id: 'reserve', label: 'Reserva & Arsenal', icon: Sparkles },
 ];
 
 /* Categorias / Pilares da Masculinidade Trilíngues */
@@ -188,6 +175,10 @@ const PILLARS_I18N = {
 
 /* Textos Traduzidos dos Botões e Ações */
 const LABELS_I18N = {
+  viewDetails: { pt: 'Detalhes & Histórico 7D', en: 'Details & 7D History', es: 'Detalles e Historial 7D' },
+  hideDetails: { pt: 'Ocultar Detalhes', en: 'Hide Details', es: 'Ocultar Detalles' },
+  forgeProtocolTitle: { pt: 'PROTOCOLO DA FORJA', en: 'FORGE PROTOCOL', es: 'PROTOCOLO DE LA FORJA' },
+  forgeReserveHeader: { pt: 'BANCO DE RESERVA & ARSENAL', en: 'RESERVE HABIT ARSENAL', es: 'BANCO DE RESERVA Y ARSENAL' },
   viewBenefit: { pt: 'VER BENEFÍCIOS & PROTEÇÃO', en: 'VIEW BENEFITS & PROTECTION', es: 'VER BENEFICIOS Y PROTECCIÓN' },
   hideBenefit: { pt: 'OCULTAR BENEFÍCIOS', en: 'HIDE BENEFITS', es: 'OCULTAR BENEFICIOS' },
   viewHistory: { pt: 'HISTÓRICO DOS ÚLTIMOS 7 DIAS', en: 'LAST 7 DAYS HISTORY', es: 'HISTORIAL DE LOS ÚLTIMOS 7 DÍAS' },
@@ -450,15 +441,17 @@ export default function ForgeView() {
 
   const [selectedPillar, setSelectedPillar] = useState('all');
   const [openBenefitId, setOpenBenefitId] = useState(null);
-  const [openHistoryId, setOpenHistoryId] = useState(null);
+  const [openDetailsId, setOpenDetailsId] = useState(null);
+  const [showRulesTable, setShowRulesTable] = useState(false);
+  const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [activeCategory, setActiveCategory] = useState('active');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [selectedArmorIdx, setSelectedArmorIdx] = useState(0);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
 
   /* Tiers e Regras Traduzidas */
   const CURRENT_TIERS = cxTiers(curLang, TIERS);
   const CURRENT_RULES = cxTiers(curLang, FORGE_RULES);
+  const curTier = CURRENT_TIERS.find((x) => x.min === L.tierNow(S).min) || L.tierNow(S);
 
   /* Carrega todos os hábitos do usuário */
   const ALLH = cxHabits(curLang, L.allH(S));
@@ -915,88 +908,108 @@ export default function ForgeView() {
 
   return (
     <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden">
-      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
-      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
-        {FORGE_CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
-          const isSelected = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                AF.click();
-                setActiveCategory(cat.id);
-              }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
-                isSelected
-                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
-                  : 'text-muted hover:text-ink hover:bg-surface/50'
-              }`}
-            >
-              <Icon size={14} className="flex-none" />
-              <span className="truncate">
-                {cat.id === 'active' ? (curLang === 'en' ? 'Protocol' : curLang === 'es' ? 'Protocolo' : 'Protocolo') :
-                 cat.id === 'reserve' ? (curLang === 'en' ? 'Reserve' : curLang === 'es' ? 'Reserva' : 'Reserva') :
-                 cat.id === 'armors' ? (curLang === 'en' ? 'Armors' : curLang === 'es' ? 'Armaduras' : 'Armaduras') :
-                 (curLang === 'en' ? 'Slots' : curLang === 'es' ? 'Reglas' : 'Regras')}
-              </span>
-              {cat.id === 'active' && (
-                <span className={`text-[9.5px] px-1.5 py-0.2 rounded font-mono font-bold flex-none ${
-                  isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold'
-                }`}>
-                  {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots}
+      {/* NAVEGAÇÃO DA FORJA: 2 SUB-ABAS ESSENCIAIS + ACESSO RÁPIDO ÀS ARMADURAS E REGRAS */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full max-w-full min-w-0 select-none">
+        {/* 2 Sub-Abas Principais */}
+        <div className="flex-1 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1.5">
+          {FORGE_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isSelected = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setActiveCategory(cat.id);
+                }}
+                className={`flex-1 min-w-0 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+                  isSelected
+                    ? 'bg-gold text-[#141414] shadow-sm font-black'
+                    : 'text-muted hover:text-ink hover:bg-surface/50'
+                }`}
+              >
+                <Icon size={14} className="flex-none" />
+                <span className="truncate">
+                  {cat.id === 'active'
+                    ? (curLang === 'en' ? 'Active Protocol' : curLang === 'es' ? 'Protocolo Activo' : 'Protocolo Ativo')
+                    : (curLang === 'en' ? 'Reserve & Arsenal' : curLang === 'es' ? 'Reserva y Arsenal' : 'Reserva & Arsenal')}
                 </span>
-              )}
-            </button>
-          );
-        })}
+                <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold flex-none ${
+                  isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold border border-line/50'
+                }`}>
+                  {cat.id === 'active'
+                    ? `${activeCount}/${maxSlots >= 99 ? '∞' : maxSlots}`
+                    : reserveHabits.length}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Acesso Rápido Rústico Medieval: Armaduras & Regras */}
+        <div className="flex items-center gap-1.5 flex-none">
+          <button
+            type="button"
+            onClick={() => {
+              AF.seal();
+              setShowEvolutionGallery(true);
+            }}
+            title={curLang === 'en' ? 'View 11 Medieval Armors' : curLang === 'es' ? 'Ver 11 Armaduras Medievales' : 'Ver 11 Armaduras Medievais'}
+            className="flex-1 sm:flex-none py-2 px-3 rounded-xl border border-amber-500/40 bg-amber-950/25 hover:bg-amber-950/45 hover:border-amber-400 text-amber-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            <Shield size={13} className="text-amber-400 flex-none" />
+            <span className="truncate">{curLang === 'en' ? '11 Armors' : curLang === 'es' ? '11 Armaduras' : '11 Armaduras'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              setShowRulesTable(true);
+            }}
+            title={curLang === 'en' ? 'Forge Rules & Combat Slots' : curLang === 'es' ? 'Reglas de la Forja y Slots' : 'Regras da Forja & Slots'}
+            className="flex-1 sm:flex-none py-2 px-3 rounded-xl border border-line bg-surface2/90 hover:border-gold/50 text-muted hover:text-gold text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            <Compass size={13} className="text-gold flex-none" />
+            <span className="truncate">{curLang === 'en' ? 'Rules & Slots' : curLang === 'es' ? 'Reglas & Slots' : 'Regras & Slots'}</span>
+          </button>
+        </div>
       </div>
 
       {/* 1. PROTOCOLO ATIVO */}
       {activeCategory === 'active' && (
         <div id="tour-forge-habits" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO COMPACTO: Regras de Desbloqueio e Slots */}
-          <Card className="p-3 sm:p-3.5 border-gold/30 bg-surface2/60 w-full max-w-full min-w-0 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 min-w-0 w-full">
-              <div className="flex-1 min-w-0 w-full">
-                <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
-                  <K className="mb-0 text-[10.5px] sm:text-xs truncate">{LBL.slotRulesTitle[curLang]}</K>
-                  <span className="text-[9.5px] sm:text-[10px] font-mono px-2 py-0.5 rounded bg-gold/10 border border-gold/30 text-gold font-bold flex-none">
-                    {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.activeSlotsBadge[curLang]}
+          {/* TOPO COMPACTO: Status de Slots e Ação de Criar Hábito */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+                <Flame size={18} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase">
+                    {curLang === 'en' ? 'ACTIVE FORGE SLOTS' : curLang === 'es' ? 'SLOTS ACTIVOS DE LA FORJA' : 'SLOTS ATIVOS DA FORJA'}
+                  </span>
+                  <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded bg-gold/15 border border-gold/40 text-gold">
+                    {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {curLang === 'en' ? 'ACTIVE' : curLang === 'es' ? 'ACTIVOS' : 'ATIVOS'}
                   </span>
                 </div>
-                <div className="relative w-full min-w-0 overflow-hidden">
-                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10px] font-mono text-muted overflow-x-auto no-scrollbar pb-1 w-full min-w-0">
-                    {CURRENT_RULES && CURRENT_RULES.map((r, i) => {
-                      const isCur = d >= r.min && (i === CURRENT_RULES.length - 1 || d < CURRENT_RULES[i + 1].min);
-                      return (
-                        <span
-                          key={r.min}
-                          className={`shrink-0 px-2 py-0.5 rounded border transition-colors whitespace-nowrap ${
-                            isCur
-                              ? 'border-gold bg-gold/15 text-gold font-bold shadow-[0_0_8px_rgba(255,200,70,0.25)]'
-                              : 'border-line/60 bg-surface text-muted/80'
-                          }`}
-                        >
-                          {r.min}+d → {r.slots >= 99 ? '∞' : r.slots} {r.slots === 1 ? LBL.habitWord[curLang] : LBL.habitsWord[curLang]}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
+                <span className="text-[10.5px] text-muted font-mono truncate mt-0.5">
+                  {curTier ? `${curTier.name} · ${maxSlots >= 99 ? (curLang === 'en' ? 'Unlimited slots unlocked' : curLang === 'es' ? 'Slots ilimitados desbloqueados' : 'Slots ilimitados liberados') : `${maxSlots} ${curLang === 'en' ? 'slots unlocked' : curLang === 'es' ? 'slots desbloqueados' : 'slots liberados'}`}` : ''}
+                </span>
               </div>
-
-              <button
-                type="button"
-                onClick={openCreateModal}
-                className="btn-gold w-full sm:w-auto flex-none py-2 px-3.5 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                <Plus size={14} strokeWidth={2.5} />
-                <span>{LBL.createHabit[curLang]}</span>
-              </button>
             </div>
-          </Card>
+
+            <button
+              type="button"
+              onClick={openCreateModal}
+              className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer self-start sm:self-auto flex-none"
+            >
+              <Plus size={14} strokeWidth={3} className="text-[#141414]" />
+              <span>{LBL.createHabit[curLang]}</span>
+            </button>
+          </div>
 
           {/* 2. ALERTA DE NEGLIGÊNCIA COMPACTO */}
           {neglected.length > 0 && (
@@ -1039,41 +1052,50 @@ export default function ForgeView() {
                   const isDone = fd.some((x) => String(x) === String(h.id));
                   const isFail = ff.some((x) => String(x) === String(h.id));
                   const tm = (L.hTime && L.hTime(S, h.id)) || (S.forge && S.forge.times && S.forge.times[h.id]) || '';
-                  const isBenefitOpen = openBenefitId === h.id;
-                  const isHistoryOpen = openHistoryId === h.id;
+                  const isDetailsOpen = openDetailsId === h.id;
                   const benefitText = getHabitBenefitText(h, lang);
                   const isCustom = isCustomHabit(h.id);
 
                   return (
                     <Card
                       key={h.id}
-                      className={`p-3 sm:p-3.5 transition-all border w-full max-w-full min-w-0 overflow-hidden ${
+                      className={`p-2.5 sm:p-3 transition-all border w-full max-w-full min-w-0 rounded-xl select-none ${
                         isDone
-                          ? 'border-gold/50 bg-gold/5'
+                          ? 'border-gold/60 bg-gradient-to-r from-gold/15 via-[#181622] to-[#131219] shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
                           : isFail
-                          ? 'border-danger/50 bg-danger/5'
-                          : 'border-line hover:border-gold/30'
+                          ? 'border-danger/50 bg-danger/10'
+                          : 'border-line/80 bg-[#16151D] hover:border-gold/40'
                       }`}
                     >
-                      {/* Cabeçalho com ações de Editar, Excluir e Arquivar */}
-                      <div className="flex items-center justify-between gap-2 mb-2 min-w-0 w-full">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <span className="text-xl flex-none">{h.icon}</span>
+                      {/* Linha Principal: Ícone + Título/Horário + Ações Táteis */}
+                      <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className={`grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg border text-lg flex-none transition-all ${
+                            isDone
+                              ? 'border-gold bg-gold/20 text-gold shadow-sm'
+                              : isFail
+                              ? 'border-danger/40 bg-danger/15 text-danger'
+                              : 'border-[#3c3c46] bg-[#1D1B26] text-ink'
+                          }`}>
+                            {h.icon}
+                          </div>
+
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className={`text-xs sm:text-[13.5px] font-bold block truncate ${isDone ? 'text-gold' : isFail ? 'text-danger' : 'text-ink'}`}>
+                              <span className={`text-xs sm:text-[13px] font-bold block truncate leading-tight ${
+                                isDone ? 'text-gold' : isFail ? 'line-through text-danger' : 'text-[#F5EEDC]'
+                              }`}>
                                 {h.n}
                               </span>
-                              {/* Botões de Ação para hábitos customizados */}
                               {isCustom && (
-                                <div className="flex items-center gap-1 flex-none">
+                                <div className="flex items-center gap-0.5 flex-none">
                                   <button
                                     type="button"
                                     title={LBL.editHabit[curLang]}
                                     onClick={() => openEditModal(h)}
                                     className="text-muted hover:text-gold p-0.5"
                                   >
-                                    <Edit3 size={13} />
+                                    <Edit3 size={11} />
                                   </button>
                                   <button
                                     type="button"
@@ -1081,129 +1103,105 @@ export default function ForgeView() {
                                     onClick={() => deleteCustomHabit(h.id)}
                                     className="text-muted hover:text-danger p-0.5"
                                   >
-                                    <Trash2 size={13} />
+                                    <Trash2 size={11} />
                                   </button>
                                 </div>
                               )}
                             </div>
-                            <span className="text-[9.5px] uppercase font-mono text-muted block truncate">
-                              #{String(h.id).slice(-4)} · {isCustom ? LBL.customStar[curLang] : LBL.activeInProtocol[curLang]}
-                            </span>
+
+                            <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted truncate">
+                              <div className="flex items-center gap-1 bg-surface px-1.5 py-0.2 rounded border border-line/60 flex-none">
+                                <Clock size={10} className="text-gold flex-none" />
+                                <input
+                                  type="time"
+                                  value={tm}
+                                  onChange={(e) => setTime(h.id, e.target.value)}
+                                  className="bg-transparent text-ink focus:outline-none w-[42px] sm:w-[48px] text-center"
+                                />
+                              </div>
+                              {isCustom && (
+                                <span className="text-gold/90 font-semibold truncate flex-none">
+                                  {LBL.customStar[curLang]}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 sm:gap-1.5 flex-none pl-1">
-                          {/* Botão Arquivar */}
-                          <button
-                            type="button"
-                            title={LBL.archiveHabit[curLang]}
-                            onClick={() => toggleArchive(h.id)}
-                            className="text-muted/70 hover:text-gold p-1 rounded hover:bg-surface2 transition-colors flex-none"
-                          >
-                            <Archive size={14} />
-                          </button>
-
-                          {/* Botão de Status Ativo (clique para mover à reserva) */}
+                        {/* Ações Rápidas: Mover Reserva, Falhar e Botão Concluir */}
+                        <div className="flex items-center gap-1 sm:gap-1.5 flex-none">
                           <button
                             type="button"
                             title={LBL.moveToReserve[curLang]}
                             onClick={() => toggleActive(h.id)}
-                            className="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/20 text-gold border border-gold/40 hover:bg-gold/30 transition-colors flex-none"
+                            className="text-muted/60 hover:text-gold p-1.5 rounded hover:bg-surface2 transition-colors flex-none"
                           >
-                            {LBL.activeBtn[curLang]}
+                            <Archive size={14} />
                           </button>
-                        </div>
-                      </div>
 
-                      {/* Linha de Ação: Concluir + Horário + Falhar/Desfazer */}
-                      <div className="flex items-center gap-1.5 sm:gap-2 pt-2 border-t border-line/50 w-full min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => toggleDone(h.id)}
-                          className={`flex-1 min-w-0 min-h-[36px] flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg border text-xs font-bold transition-all truncate ${
-                            isDone
-                              ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)]'
-                              : 'border-line bg-surface hover:border-gold/50 text-muted hover:text-ink'
-                          }`}
-                        >
-                          <Check size={14} strokeWidth={2.5} className="flex-none" />
-                          <span className="truncate">{isDone ? LBL.completeBtn[curLang] : LBL.toCompleteBtn[curLang]}</span>
-                        </button>
+                          {!isDone && (
+                            <button
+                              type="button"
+                              title={LBL.failBtn[curLang]}
+                              onClick={() => toggleFailed(h.id)}
+                              className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                                isFail
+                                  ? 'border-danger bg-danger text-white shadow-sm'
+                                  : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-danger hover:text-danger'
+                              }`}
+                            >
+                              <X size={13} strokeWidth={2.5} />
+                            </button>
+                          )}
 
-                        <div className="flex items-center gap-1 bg-surface px-1.5 sm:px-2 py-1 min-h-[36px] rounded-lg border border-line text-[11px] font-mono flex-none">
-                          <Clock size={12} className="text-gold flex-none" />
-                          <input
-                            type="time"
-                            value={tm}
-                            onChange={(e) => setTime(h.id, e.target.value)}
-                            className="bg-transparent text-ink focus:outline-none w-[48px] sm:w-[54px] text-center"
-                          />
-                        </div>
-
-                        {!isDone ? (
                           <button
                             type="button"
-                            title={LBL.failBtn[curLang]}
-                            onClick={() => toggleFailed(h.id)}
-                            className={`flex-none min-h-[36px] px-2.5 py-1 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-                              isFail
-                                ? 'border-danger bg-danger text-white shadow-sm'
-                                : 'border-line bg-surface text-danger/80 hover:border-danger hover:text-danger'
+                            title={isDone ? LBL.undoCompletion[curLang] : LBL.toCompleteBtn[curLang]}
+                            onClick={() => toggleDone(h.id)}
+                            className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
+                              isDone
+                                ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)] font-black'
+                                : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
                             }`}
                           >
-                            <X size={13} strokeWidth={2.5} className="flex-none" />
-                            <span className="hidden xs:inline sm:inline">{LBL.failBtn[curLang]}</span>
+                            <Check size={16} strokeWidth={isDone ? 3 : 2} />
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            title={LBL.undoCompletion[curLang]}
-                            onClick={() => toggleDone(h.id)}
-                            className="flex-none min-h-[36px] px-2.5 py-1 rounded-lg border border-line bg-surface text-[10.5px] font-mono text-muted hover:text-gold hover:border-gold/40 transition-colors"
-                          >
-                            {LBL.undoBtn[curLang]}
-                          </button>
-                        )}
+                        </div>
                       </div>
 
-                      {/* BOTÕES EXPANSÍVEIS TÁTICOS */}
-                      <div className="mt-2.5 pt-2 border-t border-line/40 flex flex-col gap-1.5 w-full min-w-0">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => setOpenHistoryId(isHistoryOpen ? null : h.id)}
-                            className="text-[10px] text-muted hover:text-gold flex items-center justify-between w-full font-mono py-0.5"
-                          >
-                            <span className="flex items-center gap-1">
-                              <CalendarDays size={11} className="text-gold2" />
-                              <span>{isHistoryOpen ? LBL.hideHistory[curLang] : LBL.viewHistory[curLang]}</span>
-                            </span>
-                            {isHistoryOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                          </button>
-                          {isHistoryOpen && renderLast7Days(h.id)}
-                        </div>
+                      {/* Linha Expansível Discreta: Detalhes & Histórico 7D */}
+                      <div className="mt-2 pt-1.5 border-t border-line/40 w-full min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => setOpenDetailsId(isDetailsOpen ? null : h.id)}
+                          className="text-[10px] text-muted hover:text-gold flex items-center justify-between w-full font-mono py-0.5 select-none cursor-pointer"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <ShieldCheck size={11} className="text-gold" />
+                            <span className="font-semibold">{isDetailsOpen ? LBL.hideDetails[curLang] : LBL.viewDetails[curLang]}</span>
+                          </span>
+                          {isDetailsOpen ? <ChevronUp size={12} className="text-gold" /> : <ChevronDown size={12} className="text-muted" />}
+                        </button>
 
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => setOpenBenefitId(isBenefitOpen ? null : h.id)}
-                            className="text-[10px] text-muted hover:text-gold flex items-center justify-between w-full font-mono py-0.5"
-                          >
-                            <span className="flex items-center gap-1">
-                              <ShieldCheck size={11} className="text-gold" />
-                              <span>{isBenefitOpen ? LBL.hideBenefit[curLang] : LBL.viewBenefit[curLang]}</span>
-                            </span>
-                            {isBenefitOpen ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                          </button>
-                          {isBenefitOpen && (
-                            <div className="mt-1 text-[11px] text-[#e3e3ea] bg-surface/90 p-2.5 rounded-lg border border-gold/30 leading-relaxed shadow-sm">
-                              <p className="flex items-start gap-1.5">
-                                <Sparkles size={12} className="text-gold flex-none mt-0.5" />
-                                <span>{benefitText}</span>
-                              </p>
+                        {isDetailsOpen && (
+                          <div className="mt-2 flex flex-col gap-2 pt-1 border-t border-line/30">
+                            <div>
+                              <span className="text-[9px] font-mono text-muted uppercase font-bold block mb-1">
+                                {LBL.viewHistory[curLang]}
+                              </span>
+                              {renderLast7Days(h.id)}
                             </div>
-                          )}
-                        </div>
+
+                            {benefitText && (
+                              <div className="text-[11px] text-[#EDE5D5] bg-surface/90 p-2 rounded-lg border border-gold/30 leading-relaxed shadow-sm">
+                                <p className="flex items-start gap-1.5">
+                                  <Sparkles size={12} className="text-gold flex-none mt-0.5" />
+                                  <span>{benefitText}</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </Card>
                   );
@@ -1460,302 +1458,151 @@ export default function ForgeView() {
         </div>
       )}
 
-      {/* 2.5 ARMADURAS MEDIEVAIS & ANIMAÇÃO DE NÍVEL (TRANSFERIDAS DO QG COM TRAVAMENTO DE ARMADURAS FUTURAS) */}
-      {activeCategory === 'armors' && (
-        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* Header da Forja de Armaduras */}
-          <Card className="p-3.5 sm:p-4 border-amber-500/40 bg-gradient-to-b from-[#18110a] via-[#100b07] to-[#080504]">
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🛡️</span>
-                <span className="font-display font-black text-sm sm:text-base text-gold uppercase tracking-wider">
-                  {curLang === 'en' ? '11 MEDIEVAL ARMORS & ADVANCEMENT' : curLang === 'es' ? '11 ARMADURAS MEDIEVALES Y AVANCE' : '11 ARMADURAS MEDIEVAIS & PROGRESSÃO'}
-                </span>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-amber-950/70 border border-amber-500/50 text-amber-300 font-mono text-[11px] font-bold">
-                🔥 {d} {curLang === 'en' ? 'DAYS CLEAN' : curLang === 'es' ? 'DÍAS LIMPIOS' : 'DIAS LIMPOS'}
-              </span>
-            </div>
-            <p className="text-xs text-amber-200/80 leading-relaxed">
-              {curLang === 'en'
-                ? 'Each retention threshold tempers new steel. Future armors remain locked in the sacred vault until your clean days prove worthy.'
-                : curLang === 'es'
-                ? 'Cada hito de retención templa nuevo acero. Las futuras armaduras permanecen bloqueadas en la forja sagrada hasta que alcances los días necesarios.'
-                : 'A cada marco de retenção conquistado, novas ligas e elmos são forjados. As armaduras futuras permanecem trancadas na forja sagrada até que você alcance os dias necessários.'}
-            </p>
-          </Card>
-
-          {/* Grid Interativo: Seletor de Patentes + Visualizador 3D com Trava */}
-          <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 w-full min-w-0">
-            {/* Lista dos 11 Patamares */}
-            <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-y-auto max-h-[140px] lg:max-h-[520px] w-full lg:w-64 flex-none p-1 rounded-xl bg-surface2/60 border border-line/60">
-              {CURRENT_TIERS.map((t, idx) => {
-                const unlocked = d >= t.min;
-                const isSel = idx === selectedArmorIdx;
-                return (
-                  <button
-                    key={t.min}
-                    type="button"
-                    onClick={() => {
-                      AF.click();
-                      setSelectedArmorIdx(idx);
-                    }}
-                    className={`flex items-center justify-between gap-1.5 p-2 rounded-lg text-left text-xs transition-all flex-shrink-0 lg:flex-shrink cursor-pointer ${
-                      isSel
-                        ? 'bg-gradient-to-r from-amber-600/30 to-amber-500/20 border border-amber-400 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.3)]'
-                        : unlocked
-                        ? 'bg-surface2/80 border border-line/60 text-[#EDE5D5] hover:border-amber-500/40'
-                        : 'bg-black/40 border border-line/30 text-muted/60 opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-base flex-none">{t.icon}</span>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-[11px] truncate leading-tight">{t.name}</span>
-                        <span className="text-[9.5px] font-mono text-amber-400/80 font-bold">{t.min}+ {curLang === 'en' ? 'days' : curLang === 'es' ? 'días' : 'dias'}</span>
-                      </div>
-                    </div>
-                    {unlocked ? (
-                      <CheckCircle2 size={13} className="text-ok flex-none ml-1" />
-                    ) : (
-                      <Lock size={13} className="text-muted/60 flex-none ml-1" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Visualizador da Armadura Selecionada */}
-            {(() => {
-              const selTier = CURRENT_TIERS[selectedArmorIdx] || CURRENT_TIERS[0];
-              const isUnlocked = d >= selTier.min;
-              return (
-                <div className="flex-1 rounded-2xl bg-gradient-to-b from-[#18110b] via-[#100b07] to-[#080504] border-2 border-amber-600/50 p-3 sm:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.85)] flex flex-col justify-between items-center text-center relative overflow-hidden min-h-[420px]">
-                  {/* Luz Superior */}
-                  <div className="pointer-events-none absolute left-1/2 -top-16 -translate-x-1/2 h-36 w-72 rounded-full bg-[radial-gradient(ellipse,rgba(245,158,11,0.22)_0%,transparent_75%)]" />
-
-                  {/* Header de Status */}
-                  <div className="relative z-10 w-full flex items-center justify-between gap-1 pb-2 border-b border-amber-900/40">
-                    <span className={`text-[10px] sm:text-xs font-mono font-black uppercase px-2.5 py-1 rounded-full border ${
-                      isUnlocked
-                        ? 'border-ok/60 bg-ok/10 text-ok'
-                        : 'border-amber-600/40 bg-amber-950/40 text-amber-400'
-                    }`}>
-                      {isUnlocked
-                        ? (curLang === 'en' ? '✓ UNLOCKED' : curLang === 'es' ? '✓ DESBLOQUEADA' : '✓ DESBLOQUEADA')
-                        : (curLang === 'en' ? `🔒 LOCKED · REQUIRES ${selTier.min}+ DAYS` : curLang === 'es' ? `🔒 BLOQUEADA · REQUIERE ${selTier.min}+ DÍAS` : `🔒 BLOQUEADA · EXIGE ${selTier.min}+ DIAS`)}
-                    </span>
-
-                    <span className="text-[10px] font-mono text-amber-200/80">
-                      {curLang === 'en' ? `Armor ${selectedArmorIdx + 1} of ${CURRENT_TIERS.length}` : curLang === 'es' ? `Armadura ${selectedArmorIdx + 1} de ${CURRENT_TIERS.length}` : `Armadura ${selectedArmorIdx + 1} de ${CURRENT_TIERS.length}`}
-                    </span>
-                  </div>
-
-                  {/* 3D ou Forja Trancada */}
-                  <div className="relative z-10 my-3 w-full flex flex-col items-center justify-center min-h-[250px]">
-                    {isUnlocked ? (
-                      <ErrorBoundary>
-                        <Warrior3DCanvas
-                          tier={selTier}
-                          days={selTier.min}
-                          height={250}
-                          curLang={curLang}
-                          interactive={true}
-                          autoRotate={true}
-                        />
-                      </ErrorBoundary>
-                    ) : (
-                      <div className="h-[250px] w-full rounded-xl bg-gradient-to-b from-[#18110a] to-[#0a0704] border-2 border-dashed border-amber-900/60 flex flex-col items-center justify-center p-6 text-center select-none">
-                        <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-3xl text-amber-400 mb-3 shadow-inner">
-                          🔒
-                        </div>
-                        <span className="font-display font-black text-sm sm:text-base text-amber-400 tracking-wider">
-                          {curLang === 'en' ? 'SACRED FORGE LOCKED' : curLang === 'es' ? 'FORJA SAGRADA BLOQUEADA' : 'FORJA SAGRADA TRANCADA'}
-                        </span>
-                        <span className="text-xs font-mono text-amber-200/70 mt-2 max-w-sm">
-                          {curLang === 'en'
-                            ? `${selTier.min - d} days of clean retention remaining to temper this armor.`
-                            : curLang === 'es'
-                            ? `Faltan ${selTier.min - d} días de retención limpia para templar esta armadura.`
-                            : `Faltam ${selTier.min - d} dias de retenção limpa para temperar esta armadura.`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Descrição e Botão de Animar Guerreiro */}
-                  <div className="relative z-10 w-full mt-2">
-                    <h4 className="text-lg sm:text-xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
-                      {selTier.icon} {selTier.name}
-                    </h4>
-                    <p className="text-xs font-mono text-amber-200/80 mb-2">
-                      {selTier.subtitle || ''}
-                    </p>
-
-                    {selTier.reward && (
-                      <div className="rounded-lg border border-amber-500/40 bg-amber-950/30 p-2.5 text-left mb-2">
-                        <span className="text-[9px] font-mono text-amber-400 font-bold uppercase block">
-                          🎁 {curLang === 'en' ? 'WAR REWARD' : curLang === 'es' ? 'RECOMPENSA DE GUERRA' : 'RECOMPENSA DE GUERRA'}:
-                        </span>
-                        <span className="text-xs font-bold text-[#FFF2CC] block">
-                          {selTier.reward}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Efeitos Biológicos e Mentais deste Marco */}
-                    {(() => {
-                      const bio = getBioPerksI18n(selTier.min, curLang);
-                      if (!bio || !bio.perks || !bio.perks.length) return null;
-                      return (
-                        <div className="rounded-lg border border-amber-500/30 bg-black/40 p-2 text-left mb-3">
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <Zap size={12} className="text-gold flex-none" />
-                            <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-gold2">
-                              {bio.header}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-                            {bio.perks.map((perk, pIdx) => (
-                              <div
-                                key={pIdx}
-                                className="flex items-center gap-1 rounded bg-[#18110b] border border-amber-900/40 px-1.5 py-1 text-left text-[10px] sm:text-[10.5px] font-medium text-[#EDE5D5]"
-                              >
-                                <ShieldCheck size={11} className="flex-none text-gold" />
-                                <span className="truncate">{perk}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {isUnlocked ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          AF.seal();
-                          setLevelUpModalTier(selTier);
-                        }}
-                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:brightness-110 border border-amber-300 text-black font-display font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_16px_rgba(245,158,11,0.4)] cursor-pointer"
-                      >
-                        <Play size={14} className="fill-black" />
-                        <span>{curLang === 'en' ? 'ANIMATE WARRIOR ⚡' : curLang === 'es' ? 'ANIMAR GUERRERO ⚡' : 'ANIMAR GUERREIRO ⚡'}</span>
-                      </button>
-                    ) : (
-                      <button
-                        disabled
-                        className="w-full py-2.5 px-4 rounded-xl bg-amber-950/30 border border-amber-900/40 text-amber-400/50 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed opacity-60"
-                      >
-                        <Lock size={13} />
-                        <span>
-                          {curLang === 'en'
-                            ? `LOCKED · REACH ${selTier.min} DAYS`
-                            : curLang === 'es'
-                            ? `BLOQUEADO · ALCANZA ${selTier.min} DÍAS`
-                            : `BLOQUEADO · ALCANCE ${selTier.min} DIAS`}
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
+      {/* MODAL SAGRADO DAS 11 ARMADURAS MEDIEVAIS & EFEITOS */}
+      {showEvolutionGallery && (
+        <WarriorEvolutionGalleryModal
+          tiers={CURRENT_TIERS}
+          currentTier={curTier}
+          currentDays={d}
+          lang={curLang}
+          onClose={() => setShowEvolutionGallery(false)}
+          onTestLevelUp={(tier) => {
+            setShowEvolutionGallery(false);
+            setLevelUpModalTier(tier);
+          }}
+        />
       )}
 
-      {/* 3. REGRAS & SLOTS */}
-      {activeCategory === 'rules' && (
-        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* Card Detalhado de Regras de Desbloqueio */}
-          <Card className="p-3.5 sm:p-4 border-gold/30 bg-surface2/60 w-full max-w-full min-w-0 overflow-hidden">
-            <div className="flex items-center justify-between mb-3 min-w-0">
-              <K className="mb-0 truncate">{LBL.tierUnlockSlotsTitle[curLang]}</K>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gold/10 border border-gold/30 text-gold font-bold flex-none">
-                {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.activeSlotsBadge[curLang]}
-              </span>
-            </div>
-            <p className="text-xs text-muted mb-4 leading-relaxed">
-              {LBL.rulesDesc[curLang]}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 w-full min-w-0">
-              {CURRENT_RULES && CURRENT_RULES.map((r, i) => {
-                const isCur = d >= r.min && (i === CURRENT_RULES.length - 1 || d < CURRENT_RULES[i + 1].min);
-                const isUnlocked = d >= r.min;
-                return (
-                  <div
-                    key={r.min}
-                    className={`p-3 rounded-lg border flex flex-col justify-between w-full min-w-0 overflow-hidden ${
-                      isCur
-                        ? 'border-gold bg-gold/15 shadow-[0_0_12px_rgba(255,200,70,0.2)]'
-                        : isUnlocked
-                        ? 'border-line bg-surface2'
-                        : 'border-line/40 bg-surface/40 opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
-                      <span className="text-xs font-bold text-ink flex items-center gap-1.5 truncate">
-                        <span className="flex-none">{r.icon || '🎖️'}</span>
-                        <span className="truncate">{r.name || (curLang === 'en' ? `Level ${i + 1}` : curLang === 'es' ? `Nivel ${i + 1}` : `Nível ${i + 1}`)}</span>
-                      </span>
-                      {isCur ? (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-gold text-[#141414] flex-none">
-                          {LBL.currentBadge[curLang]}
-                        </span>
-                      ) : isUnlocked ? (
-                        <span className="text-[9px] font-mono text-gold font-semibold flex-none">{LBL.unlockedBadge[curLang]}</span>
-                      ) : (
-                        <span className="text-[9px] font-mono text-muted flex-none">{LBL.lockedBadge[curLang]}</span>
-                      )}
-                    </div>
-                    <div className="text-[11px] font-mono text-muted truncate">
-                      <span>{LBL.minWord[curLang]}: <b className="text-ink">{r.min} {LBL.daysWord[curLang]}</b></span>
-                      <span className="mx-1.5">·</span>
-                      <span>{LBL.slotsWord[curLang]}: <b className="text-gold">{r.slots >= 99 ? LBL.unlimitedWord[curLang] : `${r.slots} ${LBL.habitsWord[curLang]}`}</b></span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Diretrizes Táticas de Conduta e Blindagem */}
-          {renderTacticalProtocol()}
-
-          {/* Seção de Hábitos Arquivados */}
-          <Card className="p-3.5 sm:p-4 border-line w-full max-w-full min-w-0 overflow-hidden">
-            <div className="flex items-center justify-between mb-3 min-w-0">
-              <K className="mb-0">📦 {LBL.archivedHabitsTitle[curLang]} ({archivedHabits.length})</K>
-            </div>
-            {archivedHabits.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full min-w-0">
-                {archivedHabits.map((h) => (
-                  <div
-                    key={h.id}
-                    className="p-2.5 rounded-lg border border-line/60 bg-surface2/60 flex items-center justify-between gap-2 w-full min-w-0 overflow-hidden"
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="text-lg flex-none">{h.icon}</span>
-                      <span className="text-xs font-semibold text-ink truncate">{h.n}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleArchive(h.id)}
-                      className="flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted transition-colors font-bold flex-none"
-                    >
-                      <ArchiveRestore size={12} />
-                      <span>{LBL.unarchiveHabit[curLang]}</span>
-                    </button>
-                  </div>
-                ))}
+      {/* MODAL MEDIEVAL RÚSTICO: REGRAS DA FORJA & SLOTS */}
+      {showRulesTable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-gradient-to-b from-[#18141F] via-[#121118] to-[#0D0C12] border-2 border-gold/40 shadow-[0_16px_50px_rgba(0,0,0,0.9)] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-gold/30 bg-[#1A1722]/90 flex-none">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/40 text-gold flex-none">
+                  <Compass size={18} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xs sm:text-sm font-display font-black text-[#F5EEDC] tracking-wide uppercase truncate">
+                    {curLang === 'en' ? 'FORGE RULES & COMBAT SLOTS' : curLang === 'es' ? 'REGLAS DE LA FORJA Y SLOTS' : 'REGRAS DA FORJA & SLOTS DE COMBATE'}
+                  </h3>
+                  <p className="text-[10.5px] text-muted font-mono truncate">
+                    {curLang === 'en' ? 'Retention days unlock new slots and discipline rules.' : curLang === 'es' ? 'Los días de retención desbloquean nuevos slots y disciplina.' : 'Dias limpos destravam novos slots e fortalecem sua disciplina.'}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="py-6 text-center text-xs text-muted">
-                {LBL.noArchivedHabitsDesc[curLang]}
+              <button
+                type="button"
+                onClick={() => setShowRulesTable(false)}
+                className="text-muted hover:text-gold p-1.5 rounded-lg hover:bg-surface2 transition-colors cursor-pointer flex-none ml-2"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Content Scrollable */}
+            <div className="p-3.5 sm:p-4 overflow-y-auto space-y-3.5">
+              {/* Tabela de Desbloqueio */}
+              <div className="rounded-xl border border-gold/30 bg-surface2/60 p-3 sm:p-3.5">
+                <div className="flex items-center justify-between mb-2.5 flex-wrap gap-1.5">
+                  <span className="font-display font-bold text-xs text-gold uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck size={14} className="text-gold" />
+                    {LBL.tierUnlockSlotsTitle[curLang]}
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gold/15 border border-gold/35 text-gold font-bold">
+                    {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.activeSlotsBadge[curLang]}
+                  </span>
+                </div>
+                <p className="text-[11.5px] text-muted mb-3 leading-relaxed">
+                  {LBL.rulesDesc[curLang]}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {CURRENT_RULES && CURRENT_RULES.map((r, i) => {
+                    const isCur = d >= r.min && (i === CURRENT_RULES.length - 1 || d < CURRENT_RULES[i + 1].min);
+                    const isUnlocked = d >= r.min;
+                    return (
+                      <div
+                        key={r.min}
+                        className={`p-2.5 rounded-lg border flex items-center justify-between transition-all ${
+                          isCur
+                            ? 'border-gold bg-gold/15 shadow-[0_0_12px_rgba(255,200,70,0.2)]'
+                            : isUnlocked
+                            ? 'border-line bg-surface2/80'
+                            : 'border-line/40 bg-surface/30 opacity-60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-base flex-none">{r.icon || '🎖️'}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-ink truncate">
+                              {r.name || (curLang === 'en' ? `Level ${i + 1}` : curLang === 'es' ? `Nivel ${i + 1}` : `Nível ${i + 1}`)}
+                            </span>
+                            <span className="text-[10px] font-mono text-muted">
+                              {r.min}+ {LBL.daysWord[curLang]} → <b className="text-gold">{r.slots >= 99 ? LBL.unlimitedWord[curLang] : `${r.slots} ${r.slots === 1 ? LBL.habitWord[curLang] : LBL.habitsWord[curLang]}`}</b>
+                            </span>
+                          </div>
+                        </div>
+                        {isCur ? (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-gold text-[#141414] flex-none">
+                            {LBL.currentBadge[curLang]}
+                          </span>
+                        ) : isUnlocked ? (
+                          <span className="text-[9px] font-mono text-gold font-semibold flex-none">{LBL.unlockedBadge[curLang]}</span>
+                        ) : (
+                          <span className="text-[9px] font-mono text-muted flex-none">{LBL.lockedBadge[curLang]}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            )}
-          </Card>
+
+              {/* Protocolo Tático de Conduta */}
+              {renderTacticalProtocol()}
+
+              {/* Hábitos Arquivados */}
+              {archivedHabits.length > 0 && (
+                <div className="rounded-xl border border-line bg-surface2/60 p-3 sm:p-3.5">
+                  <span className="font-display font-bold text-xs text-[#EDE5D5] uppercase tracking-wider block mb-2.5">
+                    📦 {LBL.archivedHabitsTitle[curLang]} ({archivedHabits.length})
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {archivedHabits.map((h) => (
+                      <div
+                        key={h.id}
+                        className="p-2 rounded-lg border border-line/60 bg-surface2 flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-base flex-none">{h.icon}</span>
+                          <span className="text-xs font-semibold text-ink truncate">{h.n}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleArchive(h.id)}
+                          className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted transition-colors font-bold flex-none cursor-pointer"
+                        >
+                          <ArchiveRestore size={11} />
+                          <span>{LBL.unarchiveHabit[curLang]}</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-3 border-t border-line/60 bg-[#121118] flex justify-end flex-none">
+              <button
+                type="button"
+                onClick={() => setShowRulesTable(false)}
+                className="py-1.5 px-4 rounded-lg bg-surface border border-line hover:border-gold/50 text-xs font-mono font-bold text-muted hover:text-gold transition-colors cursor-pointer"
+              >
+                {curLang === 'en' ? 'Close Rules' : curLang === 'es' ? 'Cerrar Reglas' : 'Fechar Regras'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
