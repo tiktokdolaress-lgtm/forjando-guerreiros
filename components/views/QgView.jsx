@@ -805,28 +805,30 @@ export default function QgView() {
     const is3PillarsClean = reqPil.length > 0 && reqPil.every((p) => !!cToday[p]);
 
     return (
-      <div className="rounded-xl border border-gold/45 bg-gradient-to-br from-[#181410] via-[#121015] to-[#0D0D12] p-3 sm:p-3.5 shadow-[0_4px_20px_rgba(245,158,11,0.12)] relative overflow-hidden group w-full min-w-0">
+      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm relative overflow-hidden group w-full min-w-0 select-none">
         {/* Glow de fundo */}
         <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gold/10 blur-2xl pointer-events-none" />
 
         {/* Topo: Título e Relógio das 24 Horas */}
-        <div className="flex items-center justify-between gap-2 mb-2 relative z-10 flex-wrap">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-base text-gold animate-pulse">⚔️</span>
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-gold font-display leading-tight flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-2 mb-2.5 relative z-10 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none text-base">
+              ⚔️
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#F5EEDC] font-display leading-tight flex items-center gap-1.5 truncate">
                 <span>{bTx.cardTitle[curLang]}</span>
                 <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/30">
                   {bTx.badgeToday[curLang]}
                 </span>
               </h3>
-              <p className="text-[10px] text-muted font-mono leading-none mt-0.5">
+              <p className="text-[10px] text-muted font-mono leading-none mt-0.5 truncate">
                 {bTx.cardSubtitle[curLang]}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-full bg-surface2 border border-line shrink-0">
+          <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-lg bg-surface border border-line shrink-0">
             <Clock size={11} className="text-gold shrink-0" />
             <span>{bTx.timeRemaining[curLang](remHours, remMins)}</span>
           </div>
@@ -851,20 +853,20 @@ export default function QgView() {
           <button
             type="button"
             onClick={togglePact}
-            className={`w-full py-2 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-mono font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] text-center leading-snug ${
+            className={`w-full py-2.5 px-3 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 text-center leading-snug ${
               isPledged
-                ? 'border border-gold bg-gold text-[#121214] shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                ? 'border border-gold bg-gold text-[#141414] shadow-[0_0_15px_rgba(245,158,11,0.25)] font-black'
                 : 'border border-gold/60 bg-gold/15 hover:bg-gold/25 text-gold'
             }`}
           >
             {isPledged ? (
               <>
-                <Check size={14} strokeWidth={3} className="text-[#121214] shrink-0" />
+                <Check size={15} strokeWidth={3} className="text-[#141414] shrink-0" />
                 <span className="break-words">{bTx.pactButtonPledged[curLang]}</span>
               </>
             ) : (
               <>
-                <Flame size={14} className="text-gold animate-bounce shrink-0" />
+                <Flame size={15} className="text-gold animate-bounce shrink-0" />
                 <span className="break-words">{bTx.pactButtonUnpledged[curLang]}</span>
               </>
             )}
@@ -919,109 +921,199 @@ export default function QgView() {
     );
   };
 
-  const renderDailyCheckin = () => (
-    <Card className="w-full max-w-full overflow-hidden">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <K className="mb-0">{t('checkin')}{L.modeA(S) ? t('two_pil') : ''}</K>
-        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
-          cView.ok ? 'border-gold/40 bg-gold/20 text-gold' : 'border-line bg-surface2 text-muted'
-        }`}>
-          {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
-        </span>
-      </div>
+  const renderDailyCheckin = () => {
+    const SHIELD_DATA = {
+      r: {
+        icon: '🛡️',
+        title: curLang === 'en' ? 'Semen Retention Maintained' : curLang === 'es' ? 'Retención Seminal Mantenida' : 'Retenção Seminal Mantida',
+        sub: curLang === 'en' ? 'Vital energy preserved (No ejaculation)' : curLang === 'es' ? 'Energía vital preservada (Sin eyaculación)' : 'Energia vital preservada (Sem ejaculação)',
+      },
+      p: {
+        icon: '👁️',
+        title: curLang === 'en' ? 'Zero Pornography' : curLang === 'es' ? 'Cero Pornografía' : 'Zero Pornografia',
+        sub: curLang === 'en' ? 'Mind guarded, clean gaze' : curLang === 'es' ? 'Mente blindada, mirada limpia' : 'Mente blindada, olhar firme e limpo',
+      },
+      m: {
+        icon: '⚡',
+        title: curLang === 'en' ? 'Unshakable Self-Mastery' : curLang === 'es' ? 'Autodominio Inquebrantable' : 'Autodomínio Inabalável',
+        sub: curLang === 'en' ? 'Zero masturbation, impulse conquered' : curLang === 'es' ? 'Cero masturbación, impulso dominado' : 'Zero masturbação, soberania sobre o impulso',
+      },
+    };
 
-      <div className="mb-2.5 flex items-center justify-between gap-2 overflow-hidden w-full">
-        <button
-          type="button"
-          className="chip-dim flex-none px-2.5 py-1 text-[11px] whitespace-nowrap"
-          onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
-          title={t('prev_d')}
-        >
-          ◀ {t('prev_d')}
-        </button>
-        <button
-          type="button"
-          className={`chip flex-1 justify-center py-1 text-[11px] sm:text-[11.5px] font-bold truncate ${
-            ciDate === today() ? 'border-gold/40 text-gold' : 'border-line text-muted hover:text-gold'
-          }`}
-          onClick={() => { AF.click(); setCiDate(today()); }}
-          title={ciDate === today() ? 'Registro de Hoje' : 'Clique para voltar ao registro de hoje'}
-        >
-          📅 {ciDate === today() ? `${t('today_b')} (${fdmy(today())})` : `${t('today_b')} · Voltar para Hoje`}
-        </button>
-      </div>
+    return (
+      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0 select-none">
+        <div className="flex items-center justify-between gap-2.5 mb-2.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+              <ShieldCheck size={18} />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
+                {curLang === 'en' ? 'DAILY COMBAT SHIELDING' : curLang === 'es' ? 'BLINDAJE DE COMBATE DIARIO' : 'BLINDAGEM DE COMBATE DIÁRIO'}
+              </span>
+              <span className="text-[10px] text-muted font-mono truncate">
+                {ciDate === today() ? `${t('today_b')} · ${fdmy(today())}` : `${t('editing_r')} ${fdmy(ciDate)}`}
+              </span>
+            </div>
+          </div>
 
-      {ciDate !== today() && (
-        <div className="chip mb-2 cursor-default flex items-center justify-between text-gold border-gold/40 text-[11px]">
-          <span>{t('editing_r')}{fdmy(ciDate)}</span>
-          <button
-            type="button"
-            className="text-[10px] underline ml-2 text-ink hover:text-gold"
-            onClick={() => { AF.click(); setCiDate(today()); }}
-          >
-            {curLang === 'en' ? 'Back to today' : curLang === 'es' ? 'Volver a hoy' : 'Voltar para hoje'}
-          </button>
-        </div>
-      )}
-
-      {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
-      <button
-        type="button"
-        onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
-        className={`w-full mb-2 p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 cursor-pointer active:scale-[0.99] ${
-          cView.ok
-            ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
-            : 'border-line/80 bg-surface hover:border-gold/40'
-        }`}
-      >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <span className="text-base flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className={`text-[11.5px] font-bold leading-snug truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
-              {cView.ok
-                ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
-                : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
-            </span>
-            <span className="text-[10px] text-muted truncate">
-              {pillarsOpen
-                ? (curLang === 'en' ? 'Tap to hide pillars' : curLang === 'es' ? 'Toca para ocultar pilares' : 'Toque para ocultar os pilares')
-                : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir e registrar os 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
+          <div className="flex items-center gap-1.5 flex-none">
+            <button
+              type="button"
+              className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
+              onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
+              title={t('prev_d')}
+            >
+              ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
+            </button>
+            {ciDate !== today() && (
+              <button
+                type="button"
+                className="text-[10px] text-gold px-2 py-1 rounded-lg border border-gold/40 bg-gold/15 font-mono font-bold transition-all cursor-pointer"
+                onClick={() => { AF.click(); setCiDate(today()); }}
+              >
+                {curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'} ▶
+              </button>
+            )}
+            <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-lg border ${
+              cView.ok ? 'border-gold/40 bg-gold/25 text-gold' : 'border-line bg-surface text-muted'
+            }`}>
+              {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-none">
-          <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+        {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
+        <button
+          type="button"
+          onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
+          className={`w-full mb-2 p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer active:scale-[0.99] ${
             cView.ok
-              ? 'border-gold/40 bg-gold/25 text-gold'
-              : 'border-line bg-surface2 text-muted'
-          }`}>
-            {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
-          </span>
-          {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
-        </div>
-      </button>
+              ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
+              : 'border-line/90 bg-surface hover:border-gold/40'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="text-base sm:text-lg flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className={`text-xs font-bold leading-tight truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
+                {cView.ok
+                  ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
+                  : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
+              </span>
+              <span className="text-[10px] text-muted truncate mt-0.5">
+                {pillarsOpen
+                  ? (curLang === 'en' ? 'Tap to hide the 3 pillars' : curLang === 'es' ? 'Toca para ocultar los 3 pilares' : 'Toque para ocultar os 3 pilares')
+                  : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir y registrar los 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
+              </span>
+            </div>
+          </div>
 
-      {/* OS 3 PILARES (ABREM SOMENTE AO TOCAR) */}
-      {pillarsOpen && (
-        <div className="flex flex-col gap-2 pt-0.5 pb-1">
-          {L.pillars(S).map((k) => {
-            const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-            const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-            return (
-              <Chk key={k} on={!!cView[k]} failed={!cView[k] && failTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cView[k], ciDate)}>
-                {t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3')}
-              </Chk>
-            );
-          })}
-        </div>
-      )}
+          <div className="flex items-center gap-1.5 flex-none">
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
+              cView.ok
+                ? 'border-gold/40 bg-gold/25 text-gold'
+                : 'border-line bg-surface2 text-muted'
+            }`}>
+              {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
+            </span>
+            {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
+          </div>
+        </button>
 
-      {ciDate === today()
-        ? <button className="btn-red btn-big mt-2" onClick={failFlow}>{t('fail')}</button>
-        : <p className="fnote mt-1">{t('retro')}</p>}
-    </Card>
-  );
+        {/* OS 3 ESCUDOS INTERATIVOS TÁTEIS */}
+        {pillarsOpen && (
+          <div className="flex flex-col gap-2 pt-0.5 pb-1">
+            {L.pillars(S).map((k) => {
+              const isChecked = !!cView[k];
+              const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+              const failTypes = String(cView.fail || '').split('+').filter(Boolean);
+              const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+
+              const item = SHIELD_DATA[k] || { icon: '⚔️', title: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), sub: '' };
+
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setCI(k, !isChecked, ciDate)}
+                  className={`group flex items-center justify-between rounded-xl border p-2 sm:p-2.5 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
+                    isChecked
+                      ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
+                      : isFailed
+                      ? 'border-danger/60 bg-danger/10'
+                      : 'border-line/70 bg-surface2/60 hover:border-gold/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+                    <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
+                      isChecked
+                        ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
+                        : isFailed
+                        ? 'border-danger bg-danger/20 text-danger'
+                        : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50'
+                    }`}>
+                      {isChecked ? '✓' : item.icon}
+                    </span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className={`text-xs font-bold leading-tight truncate ${
+                        isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
+                      }`}>
+                        {item.title}
+                      </span>
+                      <span className="text-[9.5px] text-muted truncate mt-0.5">
+                        {item.sub}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center flex-none pl-1.5 sm:pl-2">
+                    {isChecked ? (
+                      <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
+                        BLINDADO
+                      </span>
+                    ) : isFailed ? (
+                      <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
+                        FALHOU
+                      </span>
+                    ) : (
+                      <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
+                        MARCAR
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Selo de Vitória Se Hoje For 100% Blindado */}
+            {cView.ok && (
+              <div className="mt-1 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
+                <span className="flex-none">🏆</span>
+                <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
+                  {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Botão de Queda Solene em Combate */}
+        {ciDate === today() ? (
+          <button
+            type="button"
+            className="mt-2.5 w-full py-2 px-3 rounded-xl border border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm"
+            onClick={failFlow}
+          >
+            <span>🩸</span>
+            <span>{curLang === 'en' ? 'Register Battle Fall' : curLang === 'es' ? 'Registrar Caída' : 'Registrar Queda em Combate'}</span>
+          </button>
+        ) : (
+          <p className="fnote mt-1.5 text-center">{t('retro')}</p>
+        )}
+      </div>
+    );
+  };
 
   const renderForgeToday = () => (
     <Card className="flex-1 flex flex-col justify-between">
@@ -1104,10 +1196,12 @@ export default function QgView() {
 
     return (
       <div className="w-full rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-2.5 sm:p-3 shadow-sm select-none transition-all">
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm flex-none animate-pulse">⚡</span>
-            <span className="text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-[#F2ECE0] truncate">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+              <Zap size={14} className="animate-pulse" />
+            </div>
+            <span className="font-display font-black text-xs sm:text-[13px] uppercase tracking-wider text-[#F5EEDC] truncate">
               {tTx.title[curLang]}
             </span>
           </div>
@@ -1199,30 +1293,39 @@ export default function QgView() {
             item.done
               ? 'border-ok/30 bg-ok/5 opacity-70'
               : item.status === 'overdue'
-              ? 'border-danger/40 bg-danger/5 hover:border-danger/60'
+              ? 'border-danger/40 bg-danger/10 hover:border-danger/60'
               : item.status === 'soon'
-              ? 'border-gold/60 bg-gold/10 shadow-[0_0_12px_rgba(212,175,55,0.15)] animate-pulse'
-              : 'border-line/70 bg-[#16161D] hover:border-gold/40'
+              ? 'border-gold/60 bg-gold/15 shadow-[0_0_12px_rgba(212,175,55,0.15)] animate-pulse'
+              : 'border-line/80 bg-[#16151D] hover:border-gold/40'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             {/* Badge do Horário / Tipo */}
             <div className="flex flex-col items-center flex-none">
-              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold tracking-tight ${
+              <span className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-black tracking-tight ${
                 item.done
-                  ? 'text-muted bg-surface'
+                  ? 'text-muted bg-surface border border-line/40'
                   : item.status === 'soon'
-                  ? 'bg-gold text-[#121214] font-black'
-                  : 'bg-gold/15 text-gold border border-gold/30'
+                  ? 'bg-gold text-[#121214] font-black shadow-[0_0_8px_rgba(255,200,70,0.3)]'
+                  : 'bg-gold/15 text-gold border border-gold/35'
               }`}>
                 {item.time}
               </span>
             </div>
 
-            {/* Ícone e Nome da Tarefa/Hábito/Projeto */}
+            {/* Ícone em Moldura Rústica e Nome da Tarefa/Hábito/Projeto */}
+            <div className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-sm flex-none transition-all ${
+              item.done
+                ? 'border-ok/40 bg-ok/15 text-ok shadow-sm'
+                : item.status === 'soon'
+                ? 'border-gold bg-gold/20 text-gold shadow-sm'
+                : 'border-[#3c3c46] bg-[#1D1B26] text-ink'
+            }`}>
+              {item.icon}
+            </div>
+
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs flex-none">{item.icon}</span>
                 <span className={`font-bold truncate text-[12px] sm:text-[12.5px] ${
                   item.done ? 'line-through text-muted' : 'text-[#EDE5D5] group-hover:text-gold'
                 }`}>
@@ -1295,9 +1398,9 @@ export default function QgView() {
                       : (curLang === 'en' ? '⚔️ Mission accomplished with honor!' : curLang === 'es' ? '⚔️ ¡Operación cumplida con honor!' : '⚔️ Operação cumprida com honra!')
                   );
                 }}
-                className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
+                className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
                   item.done
-                    ? 'border-ok bg-ok text-[#121214] shadow-sm'
+                    ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)] font-black'
                     : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
                 }`}
               >
@@ -1320,9 +1423,9 @@ export default function QgView() {
                       : (curLang === 'en' ? '🔨 Habit forged for today!' : curLang === 'es' ? '🔨 ¡Hábito forjado hoy!' : '🔨 Hábito forjado hoje!')
                   );
                 }}
-                className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
+                className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
                   item.done
-                    ? 'border-gold bg-gold text-[#121214] shadow-sm'
+                    ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)] font-black'
                     : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
                 }`}
               >
@@ -1337,7 +1440,7 @@ export default function QgView() {
                   if (navigateToProject) navigateToProject(item.originalId);
                   else setTab('ops');
                 }}
-                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 min-h-[34px] rounded-lg text-[10px] font-bold text-gold bg-gold/10 border border-gold/40 hover:bg-gold hover:text-[#121214] transition-all duration-150 cursor-pointer shadow-sm active:scale-95 flex-none select-none"
+                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] rounded-lg text-[10.5px] font-mono font-bold text-amber-300 bg-amber-950/25 border border-amber-500/40 hover:bg-amber-950/45 hover:border-amber-400 transition-all duration-150 cursor-pointer shadow-sm active:scale-95 flex-none select-none"
               >
                 <span className="text-xs">🏛️</span>
                 <span>{curLang === 'en' ? 'VIEW PROJECT' : curLang === 'es' ? 'VER PROYECTO' : 'VER PROJETO'}</span>
@@ -1350,15 +1453,15 @@ export default function QgView() {
     };
 
     return (
-      <div className="rounded-xl border border-gold/40 bg-gradient-to-br from-[#181721] via-[#14141A] to-[#0E0E12] p-3 sm:p-3.5 shadow-md w-full max-w-full overflow-hidden transition-all">
+      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden transition-all select-none">
         {/* Cabeçalho do Card Agenda Operacional */}
         <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-line/60">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold/15 text-gold text-sm flex-none border border-gold/30">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold text-base flex-none">
               ⏰
-            </span>
+            </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-[#F2ECE0] truncate flex items-center gap-1.5">
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#F5EEDC] truncate flex items-center gap-1.5 font-display">
                 {curLang === 'en' ? "TODAY'S COMBAT SCHEDULE" : curLang === 'es' ? 'CRONOGRAMA DE OPERACIONES' : 'AGENDA OPERACIONAL DE HOJE'}
                 {pendingCount > 0 && (
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-gold animate-ping flex-none" />
@@ -1376,15 +1479,15 @@ export default function QgView() {
 
           <div className="flex items-center gap-1.5 flex-none">
             {totalCount > 0 ? (
-              <span className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold border transition-colors ${
+              <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-black border transition-colors ${
                 pendingCount === 0
                   ? 'border-ok/40 bg-ok/10 text-ok'
-                  : 'border-gold/40 bg-gold/10 text-gold'
+                  : 'border-gold/40 bg-gold/15 text-gold'
               }`}>
                 {completedCount}/{totalCount} {curLang === 'en' ? 'DONE' : curLang === 'es' ? 'CUMPLIDOS' : 'CUMPRIDOS'}
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded text-[9.5px] font-mono font-semibold border border-line text-muted">
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-mono font-semibold border border-line text-muted">
                 {curLang === 'en' ? 'NO OPERATIONS' : curLang === 'es' ? 'SIN OPERACIONES' : 'SEM OPERAÇÕES'}
               </span>
             )}
@@ -1529,22 +1632,26 @@ export default function QgView() {
         {renderDailyTacticalEnergy()}
 
         {/* 2. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
-        <div className="rounded-xl border border-line/80 bg-[#15151C] p-2.5 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0">
+        <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0 select-none">
           <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5 min-w-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-sm flex-none">🛡️</span>
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#F2ECE0] truncate">
-                {curLang === 'en' ? 'DAILY SHIELDING' : curLang === 'es' ? 'BLINDAJE DIARIO' : 'BLINDAGEM DE HOJE'}
-              </span>
-              <span className="text-[9.5px] font-mono text-gold/90 font-bold flex-none">
-                ({ciDate === today() ? fdmy(today()) : fdmy(ciDate)})
-              </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+                <ShieldCheck size={16} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
+                  {curLang === 'en' ? 'DAILY COMBAT SHIELDING' : curLang === 'es' ? 'BLINDAJE DE COMBATE DIARIO' : 'BLINDAGEM DE COMBATE DIÁRIO'}
+                </span>
+                <span className="text-[9.5px] font-mono text-gold/90 truncate">
+                  {ciDate === today() ? fdmy(today()) : fdmy(ciDate)}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-1 flex-none ml-auto">
               <button
                 type="button"
-                className="text-[10px] text-muted hover:text-gold px-2 py-0.5 rounded border border-line/60 bg-surface2 font-semibold transition-colors"
+                className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
                 onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
                 title={t('prev_d')}
               >
@@ -1553,7 +1660,7 @@ export default function QgView() {
               {ciDate !== today() && (
                 <button
                   type="button"
-                  className="text-[10px] text-gold px-2 py-0.5 rounded border border-gold/40 bg-gold/15 font-black transition-colors"
+                  className="text-[10px] text-gold px-2 py-1 rounded-lg border border-gold/40 bg-gold/15 font-mono font-bold transition-all cursor-pointer"
                   onClick={() => { AF.click(); setCiDate(today()); }}
                 >
                   {curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'} ▶
@@ -1699,7 +1806,7 @@ export default function QgView() {
           {ciDate === today() ? (
             <button
               type="button"
-              className="mt-2.5 w-full py-1.5 sm:py-2 rounded-lg border border-danger/30 bg-danger/10 text-danger hover:bg-danger hover:text-white text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.99]"
+              className="mt-2.5 w-full py-2 px-3 rounded-xl border border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm"
               onClick={failFlow}
             >
               <span>🩸</span>
