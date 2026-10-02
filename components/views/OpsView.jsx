@@ -30,6 +30,12 @@ const OPS_CATEGORIES = [
 ];
 
 const I18N = {
+  opsHeadlineTasks: { pt: 'OPERAÇÕES & MISSÕES TÁTICAS', en: 'TACTICAL OPERATIONS & MISSIONS', es: 'OPERACIONES Y MISIONES TÁCTICAS' },
+  opsSubtitleTasks: { pt: 'Conclua suas operações de hoje para forjar a vitória.', en: 'Complete your operations today to forge victory.', es: 'Completa tus operaciones de hoy para forjar la victoria.' },
+  opsHeadlineProjects: { pt: 'FRENTES ESTRATÉGICAS', en: 'STRATEGIC FRONTS', es: 'FRENTES ESTRATÉGICOS' },
+  opsSubtitleProjects: { pt: 'Grandes campanhas, leis de conduta e metas táticas.', en: 'Major campaigns, laws of conduct, and tactical goals.', es: 'Grandes campañas, leyes de conducta y metas tácticas.' },
+  opsHeadlineArchive: { pt: 'ARQUIVO DE COMBATE & HISTÓRICO', en: 'COMBAT ARCHIVE & HISTORY', es: 'ARCHIVO DE COMBATE E HISTORIAL' },
+  opsSubtitleArchive: { pt: 'Projetos e operações concluídos ou guardados no arsenal.', en: 'Projects and operations completed or stored in the arsenal.', es: 'Proyectos y operaciones completados o guardados en el arsenal.' },
   tabTasks: { pt: '🎯 TAREFAS & OPERAÇÕES', en: '🎯 TASKS & OPERATIONS', es: '🎯 TAREAS Y OPERACIONES' },
   tabProjects: { pt: '🏛️ PROJETOS ESTRATÉGICOS', en: '🏛️ STRATEGIC PROJECTS', es: '🏛️ PROYECTOS ESTRATÉGICOS' },
   newTask: { pt: 'NOVA OPERAÇÃO', en: 'NEW OPERATION', es: 'NUEVA OPERACIÓN' },
@@ -2395,97 +2401,88 @@ export default function OpsView() {
 
   return (
     <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-16">
-      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
-      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
-        {OPS_CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
-          const isSelected = activeMainTab === cat.id;
-          const count = cat.id === 'tasks'
-            ? tasks.filter((t) => isTaskActive(t)).length
-            : cat.id === 'projects'
-            ? projects.filter((p) => !p.archived).length
-            : projects.filter((p) => p.archived).length;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                AF.click();
-                setActiveMainTab(cat.id);
-              }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-1 sm:px-3 rounded-lg text-xs font-bold transition-all select-none cursor-pointer ${
-                isSelected
-                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
-                  : 'text-muted hover:text-ink hover:bg-surface/50'
-              }`}
-            >
-              <Icon size={13} className="shrink-0" />
-              <span className="sm:hidden truncate text-[10.5px]">
-                {cat.labelShort[curLang] || cat.labelShort.pt}
-              </span>
-              <span className="hidden sm:inline whitespace-nowrap">
-                {cat.labelFull[curLang] || cat.labelFull.pt}
-              </span>
-              <span className={`text-[9px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded font-mono font-bold shrink-0 ${
-                isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold'
-              }`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {/* NAVEGAÇÃO DE PROJETOS & TAREFAS: 3 SUB-ABAS EM AÇO FORJADO & OURO */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full max-w-full min-w-0 select-none">
+        {/* SELETOR DE SUB-ABAS */}
+        <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-1.5 select-none">
+          {OPS_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            const isSelected = activeMainTab === cat.id;
+            const count = cat.id === 'tasks'
+              ? tasks.filter((t) => isTaskActive(t)).length
+              : cat.id === 'projects'
+              ? projects.filter((p) => !p.archived).length
+              : projects.filter((p) => p.archived).length;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setActiveMainTab(cat.id);
+                }}
+                className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+                  isSelected
+                    ? 'bg-gold text-[#141414] shadow-sm font-black'
+                    : 'text-muted hover:text-ink hover:bg-surface/50'
+                }`}
+              >
+                <Icon size={14} className="flex-none" />
+                <span className="sm:hidden truncate text-[11px]">
+                  {cat.labelShort[curLang] || cat.labelShort.pt}
+                </span>
+                <span className="hidden sm:inline whitespace-nowrap">
+                  {cat.labelFull[curLang] || cat.labelFull.pt}
+                </span>
+                <span className={`text-[10px] px-1.5 sm:px-2 py-0.5 rounded font-mono font-bold flex-none ${
+                  isSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold border border-line/50'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
-      {/* Barra de Ação de Operações */}
-      <div className="flex items-center justify-between gap-1.5 sm:gap-2 w-full min-w-0">
+        {/* BOTÃO DE AÇÃO RÁPIDA DA ABA ATIVA (RÚSTICO MEDIEVAL) */}
         {activeMainTab === 'tasks' && (
-          <div className="flex items-center justify-between w-full min-w-0 gap-1.5 sm:gap-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-gold/30 flex items-center justify-center bg-gold/5 font-mono text-[9px] sm:text-[10px] font-bold text-gold shrink-0">
-                {pct}%
-              </div>
-              <span className="text-[10.5px] sm:text-xs font-mono text-muted truncate">
-                {completedToday}/{todayTasks.length} <span className="hidden sm:inline">{tx.progress[curLang]}</span>
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => openTaskModal()}
-              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap cursor-pointer"
-            >
-              <Plus size={13} strokeWidth={2.5} className="shrink-0" />
-              <span className="hidden sm:inline">{tx.newTask[curLang]}</span>
-              <span className="sm:hidden">{tx.newTaskShort[curLang]}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => openTaskModal()}
+            className="flex-none py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
+          >
+            <Plus size={14} strokeWidth={2.5} className="flex-none" />
+            <span className="hidden sm:inline">{tx.newTask[curLang]}</span>
+            <span className="sm:hidden">{tx.newTaskShort[curLang]}</span>
+          </button>
         )}
 
         {activeMainTab === 'projects' && (
-          <div className="flex items-center justify-between w-full min-w-0 gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 flex-none">
             <button
               type="button"
               onClick={() => {
                 setShowTemplates((prev) => !prev);
                 AF.click();
               }}
-              className={`py-1.5 px-2 sm:px-3 text-xs font-mono font-bold rounded border transition-all flex items-center gap-1 sm:gap-1.5 cursor-pointer shrink min-w-0 ${
+              title={tx.btnExploreTemplates[curLang]}
+              className={`py-2 px-3 rounded-xl border transition-all text-xs font-mono font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-95 whitespace-nowrap ${
                 showTemplates
-                  ? 'border-gold bg-gold/20 text-gold shadow-sm'
-                  : 'border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold'
+                  ? 'border-gold bg-gold/25 text-gold'
+                  : 'border-amber-500/40 bg-amber-950/25 hover:bg-amber-950/45 text-amber-300'
               }`}
             >
-              <Sparkles size={13} className="text-gold shrink-0" />
-              <span className="hidden sm:inline">{showTemplates ? tx.btnHideTemplates[curLang] : tx.btnExploreTemplates[curLang]}</span>
-              <span className="sm:hidden truncate">{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplatesShort[curLang]}</span>
-              {showTemplates ? <ChevronUp size={12} className="shrink-0" /> : <ChevronDown size={12} className="shrink-0" />}
+              <Sparkles size={13} className="text-amber-400 flex-none" />
+              <span>{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplatesShort[curLang]}</span>
+              {showTemplates ? <ChevronUp size={12} className="flex-none" /> : <ChevronDown size={12} className="flex-none" />}
             </button>
 
             <button
               type="button"
               onClick={() => openProjectModal()}
-              className="btn-gold py-1.5 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm shrink-0 whitespace-nowrap cursor-pointer"
+              className="py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
             >
-              <Plus size={13} strokeWidth={2.5} className="shrink-0" />
+              <Plus size={14} strokeWidth={2.5} className="flex-none" />
               <span className="hidden sm:inline">{tx.newProject[curLang]}</span>
               <span className="sm:hidden">{tx.newProjectShort[curLang]}</span>
             </button>
@@ -2495,32 +2492,70 @@ export default function OpsView() {
 
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
-        <div id="tour-ops-tasks" className="flex flex-col gap-3 w-full max-w-full min-w-0">
-          {/* Sub-filtros de Tarefas Responsivos em Tela Cheia */}
-          <div className="grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
+        <div id="tour-ops-tasks" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
+          {/* TOPO COMPACTO: Status Operacional Tático */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Target size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx.opsHeadlineTasks[curLang]}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                    {completedToday}/{todayTasks.length} {tx.progress[curLang]}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate">
+                  {tx.opsSubtitleTasks[curLang]}
+                </p>
+              </div>
+            </div>
+
+            {/* Taxa de Execução Tática */}
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-mono text-muted uppercase font-bold">Progresso Hoje</span>
+                <span className="text-xs font-mono font-black text-gold">{pct}%</span>
+              </div>
+              <div className="w-8 h-8 rounded-full border-2 border-gold/40 flex items-center justify-center bg-gold/10 font-mono text-[10px] font-bold text-gold">
+                {pct}%
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-filtros de Tarefas em Pílulas de Aço Forjado */}
+          <div className="w-full p-1 rounded-xl bg-surface2/80 border border-line/80 grid grid-cols-4 gap-1 sm:flex sm:items-center sm:gap-1.5 select-none">
             {[
               { id: 'today', labelShort: tx.filterToday.short[curLang], labelFull: tx.filterToday[curLang], count: todayTasks.filter((x) => !L.isDone(x, today())).length },
               { id: 'all', labelShort: tx.filterAll.short[curLang], labelFull: tx.filterAll[curLang], count: tasks.filter((t) => isTaskActive(t)).length },
               { id: 'postponed', labelShort: tx.filterPostponed.short[curLang], labelFull: tx.filterPostponed[curLang], count: tasks.filter((t) => isTaskActive(t) && !L.isDone(t, today()) && L.isTaskPostponed(t)).length },
               { id: 'done', labelShort: tx.filterDone.short[curLang], labelFull: tx.filterDone[curLang], count: tasks.filter((x) => isTaskActive(x) && L.isDone(x, today())).length },
-            ].map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setFilter(f.id)}
-                className={`w-full sm:w-auto text-[10px] sm:text-xs font-mono px-1 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-0.5 sm:gap-1.5 cursor-pointer whitespace-nowrap select-none ${
-                  filter === f.id
-                    ? 'bg-gold text-[#141414] font-bold shadow-sm'
-                    : 'bg-surface2 text-muted hover:text-ink border border-line'
-                }`}
-              >
-                <span className="sm:hidden truncate">{f.labelShort}</span>
-                <span className="hidden sm:inline">{f.labelFull}</span>
-                <span className={`text-[8.5px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${filter === f.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
-                  {f.count}
-                </span>
-              </button>
-            ))}
+            ].map((f) => {
+              const isFSelected = filter === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setFilter(f.id)}
+                  className={`flex-1 sm:flex-initial text-[10.5px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap select-none ${
+                    isFSelected
+                      ? 'bg-gold text-[#141414] font-black shadow-sm'
+                      : 'text-muted hover:text-ink hover:bg-surface/50'
+                  }`}
+                >
+                  <span className="sm:hidden truncate">{f.labelShort}</span>
+                  <span className="hidden sm:inline">{f.labelFull}</span>
+                  <span className={`text-[9px] sm:text-[9.5px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
+                    isFSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold border border-line/50'
+                  }`}>
+                    {f.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {displayedTasks.length > 0 ? (
@@ -2539,16 +2574,16 @@ export default function OpsView() {
                 const parentProj = projects.find((p) => String(p.id) === String(tItem.projectId || tItem.proj));
 
                 return (
-                  <Card
+                  <div
                     key={tItem.id}
-                    className={`flex items-center justify-between gap-2.5 p-3 sm:p-3.5 border transition-all w-full ${
+                    className={`flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border transition-all w-full select-none ${
                       isDone
-                        ? 'border-line/40 bg-surface/50 opacity-60'
+                        ? 'border-line/40 bg-surface/40 opacity-60'
                         : isPostponed
-                        ? 'border-amber-500/40 bg-surface2/90 hover:border-amber-500/70'
+                        ? 'border-amber-500/40 bg-gradient-to-r from-[#17151F] via-[#181416] to-[#17151F] hover:border-amber-500/70 shadow-sm'
                         : isOverdue
-                        ? 'border-danger/40 bg-surface2/90 hover:border-danger/70'
-                        : 'border-line bg-surface2/80 hover:border-gold/40'
+                        ? 'border-danger/40 bg-gradient-to-r from-[#1a1215] via-[#141215] to-[#1a1215] hover:border-danger/70 shadow-sm'
+                        : 'border-gold/25 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] hover:border-gold/50 shadow-sm'
                     }`}
                   >
                     <div
@@ -2557,19 +2592,19 @@ export default function OpsView() {
                     >
                       <button
                         type="button"
-                        className={`w-5 h-5 rounded flex-none flex items-center justify-center border transition-colors ${
+                        className={`w-6 h-6 rounded-lg flex-none flex items-center justify-center border transition-all cursor-pointer ${
                           isDone
-                            ? 'border-gold bg-gold text-[#141414]'
-                            : 'border-[#3c3c46] bg-surface hover:border-gold'
+                            ? 'border-gold bg-gold text-[#141414] shadow-sm font-black'
+                            : 'border-[#3c3c46] bg-surface hover:border-gold hover:bg-gold/10'
                         }`}
                       >
-                        {isDone && <Check size={13} strokeWidth={3} />}
+                        {isDone && <Check size={14} strokeWidth={3} />}
                       </button>
                       <div className="min-w-0 flex-1">
-                        <span className={`text-xs sm:text-[13px] font-semibold block truncate ${isDone ? 'line-through text-muted' : 'text-ink'}`}>
+                        <span className={`text-xs sm:text-[13px] font-bold block truncate ${isDone ? 'line-through text-muted' : 'text-ink font-semibold'}`}>
                           {tItem.txt}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5 text-[9.5px] font-mono text-muted flex-wrap">
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted flex-wrap">
                           <span className={`px-1.5 py-0.2 rounded border font-bold uppercase ${priColor}`}>
                             {tItem.pri}
                           </span>
@@ -2639,7 +2674,7 @@ export default function OpsView() {
                           e.stopPropagation();
                           openTaskAnalysisModal(tItem);
                         }}
-                        className="text-muted hover:text-gold p-1.5 rounded hover:bg-gold/10 transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer"
+                        className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all flex items-center gap-1 text-xs font-mono cursor-pointer active:scale-95"
                       >
                         <BarChart2 size={13} className="text-gold" />
                         <span className="text-[10px] hidden md:inline">{tx.btnAnalyzeShort[curLang]}</span>
@@ -2651,10 +2686,10 @@ export default function OpsView() {
                           e.stopPropagation();
                           openPostponeModal(tItem);
                         }}
-                        className={`p-1.5 rounded transition-colors flex items-center gap-1 text-xs font-mono cursor-pointer ${
+                        className={`p-1.5 rounded-lg border transition-all flex items-center gap-1 text-xs font-mono cursor-pointer active:scale-95 ${
                           isPostponed
-                            ? 'text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5'
-                            : 'text-muted hover:text-gold hover:bg-gold/10'
+                            ? 'text-amber-400 hover:text-amber-300 bg-amber-500/15 border-amber-500/40 px-2'
+                            : 'text-muted hover:text-gold border-transparent hover:border-gold/30 hover:bg-gold/10'
                         }`}
                       >
                         <CalendarClock size={13} />
@@ -2667,7 +2702,7 @@ export default function OpsView() {
                           e.stopPropagation();
                           openTaskModal(tItem);
                         }}
-                        className="text-muted hover:text-gold p-1.5 rounded hover:bg-gold/10 transition-colors cursor-pointer"
+                        className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all cursor-pointer active:scale-95"
                       >
                         <Edit3 size={13} />
                       </button>
@@ -2678,7 +2713,7 @@ export default function OpsView() {
                           e.stopPropagation();
                           requestArchiveTask(tItem);
                         }}
-                        className="text-muted hover:text-amber-300 p-1.5 rounded hover:bg-amber-400/10 transition-colors cursor-pointer"
+                        className="text-muted hover:text-amber-300 p-1.5 rounded-lg border border-transparent hover:border-amber-400/30 hover:bg-amber-400/10 transition-all cursor-pointer active:scale-95"
                       >
                         <Archive size={13} />
                       </button>
@@ -2689,12 +2724,12 @@ export default function OpsView() {
                           e.stopPropagation();
                           requestDeleteTask(tItem);
                         }}
-                        className="text-muted hover:text-danger p-1.5 rounded hover:bg-danger/10 transition-colors cursor-pointer"
+                        className="text-muted hover:text-danger p-1.5 rounded-lg border border-transparent hover:border-danger/30 hover:bg-danger/10 transition-all cursor-pointer active:scale-95"
                       >
                         <Trash2 size={13} />
                       </button>
                     </div>
-                  </Card>
+                  </div>
                 );
               })}
 
@@ -2702,7 +2737,7 @@ export default function OpsView() {
               {displayedTasks.length % 2 === 1 && filter !== 'done' && (
                 <div
                   onClick={() => openTaskModal()}
-                  className="cursor-pointer border border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-xl p-3 sm:p-3.5 flex items-center justify-center gap-2 text-gold transition-all min-h-[48px] w-full"
+                  className="cursor-pointer border border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-xl p-3 sm:p-3.5 flex items-center justify-center gap-2 text-gold transition-all min-h-[48px] w-full active:scale-[0.99]"
                 >
                   <Plus size={14} strokeWidth={2.5} />
                   <span className="text-xs font-bold font-mono uppercase tracking-wider">
@@ -2712,44 +2747,89 @@ export default function OpsView() {
               )}
             </div>
           ) : (
-            <Card className="py-12 text-center w-full">
+            <div className="py-12 px-4 rounded-xl border border-line/60 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] text-center w-full">
               <Empty>{tx.noTasks[curLang]}</Empty>
-            </Card>
+            </div>
           )}
         </div>
       )}
 
       {/* 2. ABA DE PROJETOS ESTRATÉGICOS */}
       {activeMainTab === 'projects' && (
-        <div className="flex flex-col gap-3 w-full max-w-full min-w-0">
-          {/* Sub-filtros de Projetos Responsivos */}
-          <div className="grid grid-cols-3 gap-1 sm:flex sm:items-center sm:gap-1.5 w-full">
+        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
+          {/* TOPO COMPACTO: Frentes Estratégicas */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Layers size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx.opsHeadlineProjects[curLang]}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                    {projects.filter((p) => !p.archived).length} {tx.filterActive[curLang]}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate">
+                  {tx.opsSubtitleProjects[curLang]}
+                </p>
+              </div>
+            </div>
+
+            {/* Acesso aos Modelos da Forja */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowTemplates((prev) => !prev);
+                AF.click();
+              }}
+              className={`py-1.5 px-3 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all self-end sm:self-auto ${
+                showTemplates
+                  ? 'border-gold bg-gold/25 text-gold'
+                  : 'border-amber-500/40 bg-amber-950/30 hover:bg-amber-950/50 text-amber-300'
+              }`}
+            >
+              <Sparkles size={13} className="text-amber-400" />
+              <span>{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplates[curLang]}</span>
+              {showTemplates ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+          </div>
+
+          {/* Sub-filtros de Projetos em Pílulas de Aço Forjado */}
+          <div className="w-full p-1 rounded-xl bg-surface2/80 border border-line/80 grid grid-cols-3 gap-1 sm:flex sm:items-center sm:gap-1.5 select-none">
             {[
               { id: 'ativos', label: tx.projFilterActive[curLang], count: projects.filter((p) => !p.archived && p.status !== 'concluido').length },
               { id: 'concluidos', label: tx.projFilterDone[curLang], count: projects.filter((p) => !p.archived && p.status === 'concluido').length },
               { id: 'arquivados', label: tx.projFilterArchived[curLang], count: projects.filter((p) => p.archived).length },
-            ].map((pf) => (
-              <button
-                key={pf.id}
-                type="button"
-                onClick={() => setProjFilter(pf.id)}
-                className={`w-full sm:w-auto text-[10.5px] sm:text-xs font-mono px-1.5 sm:px-3 py-1.5 rounded transition-all flex items-center justify-center gap-1 sm:gap-1.5 select-none cursor-pointer ${
-                  projFilter === pf.id
-                    ? 'bg-gold text-[#141414] font-bold shadow-sm'
-                    : 'bg-surface2 text-muted hover:text-ink border border-line'
-                }`}
-              >
-                <span className="truncate">{pf.label}</span>
-                <span className={`text-[9px] sm:text-[9.5px] px-1 sm:px-1.5 py-0.2 rounded shrink-0 ${projFilter === pf.id ? 'bg-black/20 text-black' : 'bg-surface text-muted'}`}>
-                  {pf.count}
-                </span>
-              </button>
-            ))}
+            ].map((pf) => {
+              const isPFSelected = projFilter === pf.id;
+              return (
+                <button
+                  key={pf.id}
+                  type="button"
+                  onClick={() => setProjFilter(pf.id)}
+                  className={`flex-1 sm:flex-initial text-[10.5px] sm:text-xs font-mono px-2 sm:px-3 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 select-none cursor-pointer ${
+                    isPFSelected
+                      ? 'bg-gold text-[#141414] font-black shadow-sm'
+                      : 'text-muted hover:text-ink hover:bg-surface/50'
+                  }`}
+                >
+                  <span className="truncate">{pf.label}</span>
+                  <span className={`text-[9px] sm:text-[9.5px] px-1.5 py-0.2 rounded font-bold shrink-0 ${
+                    isPFSelected ? 'bg-black/20 text-black' : 'bg-surface text-gold border border-line/50'
+                  }`}>
+                    {pf.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* SEÇÃO EXPANSÍVEL: 6 MODELOS PRÉ-CONFIGURADOS DA FORJA */}
           {showTemplates && (
-            <div className="p-3.5 sm:p-4 rounded-xl border border-gold/40 bg-gradient-to-b from-[#18110b] via-[#100b07] to-surface shadow-xl relative overflow-hidden mb-1">
+            <div className="p-3.5 sm:p-4 rounded-xl border border-gold/40 bg-gradient-to-b from-[#18110b] via-[#100b07] to-surface shadow-xl relative overflow-hidden mb-1 select-none">
               <div className="flex items-start justify-between gap-2 mb-3 pb-2.5 border-b border-gold/20">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/40 text-gold flex items-center justify-center shrink-0">
@@ -2767,7 +2847,7 @@ export default function OpsView() {
                 <button
                   type="button"
                   onClick={() => setShowTemplates(false)}
-                  className="text-muted hover:text-ink p-1 rounded hover:bg-surface2 transition-colors shrink-0 cursor-pointer"
+                  className="text-muted hover:text-ink p-1 rounded-lg hover:bg-surface2 transition-colors shrink-0 cursor-pointer active:scale-95"
                 >
                   <X size={15} />
                 </button>
@@ -2785,12 +2865,12 @@ export default function OpsView() {
                   return (
                     <div
                       key={tpl.id}
-                      className="rounded-lg border border-gold/30 bg-surface/90 hover:border-gold/60 p-3 flex flex-col justify-between transition-all hover:shadow-[0_4px_20px_rgba(245,158,11,0.15)] group"
+                      className="rounded-xl border border-gold/30 bg-surface2/90 hover:border-gold/60 p-3.5 flex flex-col justify-between transition-all hover:shadow-[0_4px_20px_rgba(245,158,11,0.15)] group"
                     >
                       <div>
                         {/* Topo do Modelo */}
                         <div className="flex items-center justify-between gap-1.5 mb-2 flex-wrap">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface2 border border-line text-muted flex items-center gap-1 font-bold">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted flex items-center gap-1 font-bold">
                             <span>{catObj.icon}</span>
                             <span>{catObj.label[curLang] || catObj.label.pt}</span>
                           </span>
@@ -2825,7 +2905,7 @@ export default function OpsView() {
                                   <span
                                     key={h.id}
                                     title={hName}
-                                    className="text-[10px] px-1.5 py-0.2 rounded bg-surface2 border border-line/60 text-ink font-mono flex items-center gap-0.5"
+                                    className="text-[10px] px-1.5 py-0.2 rounded bg-surface border border-line/60 text-ink font-mono flex items-center gap-0.5"
                                   >
                                     <span>{h.icon}</span>
                                     <span className="max-w-[70px] truncate">{hName}</span>
@@ -2848,7 +2928,7 @@ export default function OpsView() {
                           openProjectModal(null, tpl);
                           toast(tx.toastTemplateLoaded[curLang]);
                         }}
-                        className="btn-gold w-full py-1.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm mt-1 cursor-pointer"
+                        className="btn-gold w-full py-1.5 px-3 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm mt-1 cursor-pointer active:scale-95"
                       >
                         <Zap size={12} strokeWidth={2.5} />
                         <span>{tx.btnUseTemplate[curLang]}</span>
@@ -2889,26 +2969,28 @@ export default function OpsView() {
                 const isExpanded = !!expandedProjIds[proj.id];
 
                 return (
-                  <Card
+                  <div
                     key={proj.id}
                     id={`project-card-${proj.id}`}
-                    className={`p-3.5 sm:p-4 border transition-all flex flex-col justify-between ${
+                    className={`p-3.5 sm:p-4 rounded-xl border transition-all flex flex-col justify-between select-none ${
                       String(highlightedProjId) === String(proj.id)
-                        ? 'border-gold ring-2 ring-gold/90 bg-gold/10 shadow-[0_0_25px_rgba(212,175,55,0.35)] scale-[1.01]'
+                        ? 'border-gold ring-2 ring-gold/90 bg-gradient-to-b from-[#241a12] via-[#181318] to-[#121218] shadow-[0_0_25px_rgba(212,175,55,0.35)] scale-[1.01]'
                         : isArchived
-                        ? 'border-line bg-surface/30 opacity-60'
+                        ? 'border-line/60 bg-surface/30 opacity-60'
                         : isCompleted
-                        ? 'border-line/40 bg-surface/50 opacity-75'
+                        ? 'border-line/50 bg-surface/40 opacity-75'
                         : isProjectLate
-                        ? 'border-danger/50 bg-surface2/90 hover:border-danger'
-                        : 'border-line bg-surface2/80 hover:border-gold/40'
+                        ? 'border-danger/50 bg-gradient-to-b from-[#1a1215] via-[#141215] to-[#17151F] hover:border-danger shadow-sm'
+                        : 'border-gold/25 bg-gradient-to-b from-[#17151F] via-[#121218] to-[#17151F] hover:border-gold/45 shadow-sm'
                     }`}
                   >
                     <div>
                       {/* Topo do Card */}
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-start gap-2 min-w-0 flex-1">
-                          <span className="text-xl flex-none mt-0.5" role="img">{catObj?.icon || '🏛️'}</span>
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-xl shrink-0 mt-0.5" role="img">
+                            {catObj?.icon || '🏛️'}
+                          </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 flex-wrap mb-1">
                               {catObj && (
@@ -2939,17 +3021,17 @@ export default function OpsView() {
                             </h4>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1.5 flex-none">
+                        <div className="flex items-center gap-1 flex-none">
                           {!isArchived && (
                             <button
                               type="button"
                               onClick={() => toggleProjectStatus(proj)}
-                              className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold transition-all cursor-pointer ${
+                              className={`text-[10px] font-mono px-2.5 py-1 rounded-lg border font-bold transition-all cursor-pointer active:scale-95 ${
                                 isCompleted
-                                  ? 'border-gold bg-gold/15 text-gold'
+                                  ? 'border-gold/50 bg-gold/15 text-gold'
                                   : isProjectLate
                                   ? 'border-danger/60 bg-danger/15 text-danger font-extrabold flex items-center gap-1 shadow-sm'
-                                  : 'border-line bg-surface text-muted hover:text-ink'
+                                  : 'border-line/80 bg-surface2/80 text-muted hover:text-ink'
                               }`}
                             >
                               {isCompleted ? tx.statusCompleted[curLang] : isProjectLate ? (
@@ -2964,7 +3046,7 @@ export default function OpsView() {
                             type="button"
                             title={tx.editProjTitle[curLang]}
                             onClick={() => openProjectModal(proj)}
-                            className="text-muted hover:text-gold p-1 transition-colors cursor-pointer"
+                            className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all cursor-pointer active:scale-95"
                           >
                             <Edit3 size={13} />
                           </button>
@@ -2972,7 +3054,7 @@ export default function OpsView() {
                             type="button"
                             title={isArchived ? tx.unarchiveProjAction[curLang] : tx.archiveProjAction[curLang]}
                             onClick={() => requestArchiveProject(proj)}
-                            className="text-muted hover:text-gold p-1 transition-colors cursor-pointer"
+                            className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all cursor-pointer active:scale-95"
                           >
                             <Archive size={13} />
                           </button>
@@ -2980,7 +3062,7 @@ export default function OpsView() {
                             type="button"
                             title={tx.delProjAction[curLang]}
                             onClick={() => requestDeleteProject(proj)}
-                            className="text-muted hover:text-danger p-1 transition-colors cursor-pointer"
+                            className="text-muted hover:text-danger p-1.5 rounded-lg border border-transparent hover:border-danger/30 hover:bg-danger/10 transition-all cursor-pointer active:scale-95"
                           >
                             <Trash2 size={13} />
                           </button>
@@ -3006,9 +3088,9 @@ export default function OpsView() {
                           </span>
                           <span className="font-bold text-gold text-xs">{projPct}%</span>
                         </div>
-                        <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-line/40">
+                        <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-line/50">
                           <div
-                            className="h-full bg-gradient-to-r from-gold/80 to-gold transition-all duration-300 rounded-full"
+                            className="h-full bg-gradient-to-r from-amber-600 via-gold to-amber-300 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.3)]"
                             style={{ width: `${projPct}%` }}
                           />
                         </div>
@@ -3443,14 +3525,14 @@ export default function OpsView() {
                         <button
                           type="button"
                           onClick={() => toggleExpandProject(proj.id)}
-                          className="w-full py-1.5 px-3 rounded-lg border border-line bg-surface hover:bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          className="w-full py-1.5 px-3 rounded-lg border border-line bg-surface hover:bg-surface2 text-muted hover:text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
                         >
                           <ChevronUp size={14} />
                           <span>{tx.btnCollapseProject[curLang]}</span>
                         </button>
                       </div>
                     )}
-                  </Card>
+                  </div>
                 );
               })}
 
@@ -3458,7 +3540,7 @@ export default function OpsView() {
               {displayedProjects.length % 2 === 1 && projFilter === 'ativos' && (
                 <div
                   onClick={() => openProjectModal()}
-                  className="cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-lg p-6 flex flex-col items-center justify-center text-center transition-all min-h-[200px] group"
+                  className="cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-xl p-6 flex flex-col items-center justify-center text-center transition-all min-h-[200px] group active:scale-[0.99]"
                 >
                   <div className="w-11 h-11 rounded-full bg-gold/15 border border-gold/35 text-gold flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform shadow-sm">
                     <Plus size={20} strokeWidth={2.5} />
@@ -3474,7 +3556,7 @@ export default function OpsView() {
             </>
             ) : (
               <div className="col-span-1 md:col-span-2 py-8 text-center w-full">
-                <Card className="py-8 px-4 w-full border-gold/30">
+                <div className="py-8 px-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] w-full">
                   <div className="w-12 h-12 rounded-full bg-gold/15 border border-gold/40 text-gold flex items-center justify-center mx-auto mb-3">
                     <Layers size={24} />
                   </div>
@@ -3492,7 +3574,7 @@ export default function OpsView() {
                           setShowTemplates(true);
                           AF.click();
                         }}
-                        className="btn-gold py-2 px-4 text-xs font-bold w-full sm:w-auto flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                        className="btn-gold py-2 px-4 text-xs font-bold w-full sm:w-auto flex items-center justify-center gap-1.5 shadow-sm cursor-pointer active:scale-95"
                       >
                         <Sparkles size={14} />
                         <span>{tx.btnExploreTemplates[curLang]}</span>
@@ -3500,13 +3582,13 @@ export default function OpsView() {
                       <button
                         type="button"
                         onClick={() => openProjectModal()}
-                        className="btn-dark py-2 px-4 text-xs font-bold w-full sm:w-auto cursor-pointer"
+                        className="btn-dark py-2 px-4 text-xs font-bold w-full sm:w-auto cursor-pointer active:scale-95"
                       >
                         {tx.btnCreateFirstProject[curLang]}
                       </button>
                     </div>
                   )}
-                </Card>
+                </div>
               </div>
             )}
           </div>
@@ -3515,9 +3597,31 @@ export default function OpsView() {
 
       {/* 3. ABA DE ARQUIVO GERAL */}
       {activeMainTab === 'archive' && (
-        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0">
+        <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
+          {/* TOPO COMPACTO: Arquivo de Combate & Arsenal */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Archive size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx.opsHeadlineArchive[curLang]}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-surface border border-line text-muted">
+                    {projects.filter((p) => p.archived).length + tasks.filter((t) => t.archived).length} {tx.filterArchived[curLang]}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate">
+                  {tx.opsSubtitleArchive[curLang]}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Projetos Arquivados */}
-          <Card className="p-4 border-line">
+          <div className="p-4 rounded-xl border border-line/80 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center justify-between mb-3">
               <K className="mb-0">{tx.archivedProjectsTitle[curLang]} ({projects.filter((p) => p.archived).length})</K>
             </div>
@@ -3528,20 +3632,20 @@ export default function OpsView() {
                   return (
                     <div
                       key={proj.id}
-                      className="p-3.5 rounded-lg border border-line/60 bg-surface2/60 flex flex-col justify-between gap-3"
+                      className="p-3.5 rounded-xl border border-line/70 bg-surface2/70 flex flex-col justify-between gap-3"
                     >
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h4 className="text-sm font-bold text-ink truncate">{proj.title}</h4>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted font-bold">
                             {tx.badgeArchived[curLang]}
                           </span>
                         </div>
                         {proj.desc && (
-                          <p className="text-xs text-muted line-clamp-2 mb-2">{proj.desc}</p>
+                          <p className="text-xs text-muted line-clamp-2 mb-2 leading-relaxed">{proj.desc}</p>
                         )}
                         <span className="text-[11px] font-mono text-muted">
-                          {tx.lblLinkedTasksCount[curLang]} <b className="text-ink">{projTasks.length}</b>
+                          {tx.lblLinkedTasksCount[curLang]} <b className="text-gold">{projTasks.length}</b>
                         </span>
                       </div>
 
@@ -3549,7 +3653,7 @@ export default function OpsView() {
                         <button
                           type="button"
                           onClick={() => requestArchiveProject(proj)}
-                          className="btn-gold py-1.5 px-3 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                          className="btn-gold py-1.5 px-3 text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
                         >
                           <ArchiveRestore size={12} />
                           <span>{tx.btnUnarchive[curLang]}</span>
@@ -3557,7 +3661,7 @@ export default function OpsView() {
                         <button
                           type="button"
                           onClick={() => requestDeleteProject(proj)}
-                          className="btn-dark py-1.5 px-2.5 text-xs text-muted hover:text-danger hover:border-danger/40 transition-colors"
+                          className="btn-dark py-1.5 px-2.5 text-xs text-muted hover:text-danger hover:border-danger/40 transition-colors active:scale-95 cursor-pointer"
                           title={tx.delProjAction[curLang]}
                         >
                           <Trash2 size={13} />
@@ -3572,11 +3676,11 @@ export default function OpsView() {
                 {tx.noArchivedProjects[curLang]}
               </div>
             )}
-          </Card>
+          </div>
 
           {/* Tarefas Arquivadas (se houver) */}
           {tasks.filter((t) => t.archived).length > 0 && (
-            <Card className="p-4 border-line">
+            <div className="p-4 rounded-xl border border-line/80 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
               <div className="flex items-center justify-between mb-3">
                 <K className="mb-0">{tx.archivedTasksTitle[curLang]} ({tasks.filter((t) => t.archived).length})</K>
               </div>
@@ -3584,7 +3688,7 @@ export default function OpsView() {
                 {tasks.filter((t) => t.archived).map((tItem) => (
                   <div
                     key={tItem.id}
-                    className="p-2.5 rounded border border-line/50 bg-surface2/40 flex items-center justify-between gap-2"
+                    className="p-2.5 rounded-xl border border-line/60 bg-surface2/60 flex items-center justify-between gap-2"
                   >
                     <span className="text-xs text-muted truncate">{tItem.txt}</span>
                     <div className="flex items-center gap-1.5 flex-none">
@@ -3598,7 +3702,7 @@ export default function OpsView() {
                           AF.click();
                           toast(tx.toastTaskRestored[curLang]);
                         }}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold cursor-pointer"
+                        className="text-[10px] font-mono px-2.5 py-1 rounded-lg border border-line bg-surface hover:border-gold hover:text-gold text-muted font-bold cursor-pointer active:scale-95 transition-all"
                       >
                         {tx.btnRestore[curLang]}
                       </button>
@@ -3606,7 +3710,7 @@ export default function OpsView() {
                         type="button"
                         title={tx.editTaskTitle[curLang]}
                         onClick={() => openTaskModal(tItem)}
-                        className="text-muted hover:text-gold p-1 rounded hover:bg-gold/10 transition-colors cursor-pointer"
+                        className="text-muted hover:text-gold p-1.5 rounded-lg hover:bg-gold/10 transition-colors cursor-pointer active:scale-95"
                       >
                         <Edit3 size={12} />
                       </button>
@@ -3614,7 +3718,7 @@ export default function OpsView() {
                         type="button"
                         title={tx.delTaskTitle[curLang]}
                         onClick={() => requestDeleteTask(tItem)}
-                        className="text-muted hover:text-danger p-1 rounded hover:bg-danger/10 transition-colors cursor-pointer"
+                        className="text-muted hover:text-danger p-1.5 rounded-lg hover:bg-danger/10 transition-colors cursor-pointer active:scale-95"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -3622,7 +3726,7 @@ export default function OpsView() {
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           )}
         </div>
       )}
