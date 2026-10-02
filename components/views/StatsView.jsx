@@ -17,6 +17,10 @@ import {
   CalendarDays,
   TrendingUp,
   Calendar,
+  Swords,
+  Activity,
+  Zap,
+  Sparkles,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty, Chk } from '@/components/ui';
@@ -36,6 +40,34 @@ const TRIGGER_LABELS = {
   fantasia: 'Fantasias Mentais Prolongadas',
   cama: 'Ficar na Cama após Acordar',
   banho: 'Banho Demorado / Sozinho',
+};
+
+const STATS_I18N = {
+  tabGeneralShort: { pt: 'Geral & Consistência', en: 'General & Consistency', es: 'General y Consistencia' },
+  tabTimelineShort: { pt: 'Linha do Tempo', en: 'Timeline', es: 'Línea de Tiempo' },
+  tabRiskShort: { pt: 'Risco & S.O.S', en: 'Risk & S.O.S', es: 'Riesgo y S.O.S' },
+  tabHallShort: { pt: 'Salão da Fama', en: 'Hall of Fame', es: 'Salón de la Fama' },
+
+  btnShareWar: { pt: 'EXPORTAR GUERRA', en: 'EXPORT WAR REPORT', es: 'EXPORTAR GUERRA' },
+  btnInspectDay: { pt: 'INSPECIONAR DIA', en: 'INSPECT DAY', es: 'INSPECCIONAR DÍA' },
+
+  headlineGeneral: { pt: 'INTELIGÊNCIA & CONSISTÊNCIA GERAL', en: 'INTELLIGENCE & GENERAL CONSISTENCY', es: 'INTELIGENCIA Y CONSISTENCIA GENERAL' },
+  subtitleGeneral: { pt: 'Métricas vitais, mapa de combate e adesão aos hábitos da Forja.', en: 'Vital metrics, combat map, and adherence to Forge habits.', es: 'Métricas vitales, mapa de combate y adhesión a los hábitos de la Forja.' },
+
+  headlineTimeline: { pt: 'LINHA DO TEMPO & DIAS DE COMBATE', en: 'TIMELINE & COMBAT DAYS', es: 'LÍNEA DE TIEMPO Y DÍAS DE COMBATE' },
+  subtitleTimeline: { pt: 'Histórico cronológico e curva de vitalidade sincronizada à Tríade.', en: 'Chronological history and vitality curve synced with the Triad.', es: 'Historial cronológico y curva de vitalidad sincronizada con la Tríada.' },
+
+  headlineRisk: { pt: 'MAPEAMENTO DE RISCO & BLINDAGEM S.O.S', en: 'RISK MAPPING & S.O.S SHIELDING', es: 'MAPEO DE RIESGO Y BLINDAJE S.O.S' },
+  subtitleRisk: { pt: 'Identificação de horários vulneráveis, intervenções e ranking de gatilhos.', en: 'Identification of vulnerable hours, interventions, and trigger rankings.', es: 'Identificación de horarios vulnerables, intervenciones y ranking de gatillos.' },
+
+  headlineHall: { pt: 'SALÃO DA FAMA & HONRA DOS GUERREIROS', en: 'HALL OF FAME & WARRIORS\' HONOR', es: 'SALÓN DE LA FAMA Y HONOR DE LOS GUERREROS' },
+  subtitleHall: { pt: 'Irmandade anônima, patamares conquistados e cartão de vitória semanal.', en: 'Anonymous brotherhood, conquered tiers, and weekly victory card.', es: 'Hermandad anónima, rangos conquistados y tarjeta de victoria semanal.' },
+
+  badgeHonorScore: { pt: 'TAXA', en: 'RATE', es: 'TASA' },
+  badgePurityScore: { pt: 'PUREZA', en: 'PURITY', es: 'PUREZA' },
+  badgeActiveStatus: { pt: 'ATIVO', en: 'ACTIVE', es: 'ACTIVO' },
+  badgePrivateStatus: { pt: 'PRIVADO', en: 'PRIVATE', es: 'PRIVADO' },
+  badgeCriticalWindow: { pt: 'JANELA CRÍTICA', en: 'CRITICAL WINDOW', es: 'VENTANA CRÍTICA' },
 };
 
 const STATS_CATEGORIES = [
@@ -299,6 +331,8 @@ function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T }) {
 export default function StatsView() {
   const { S, update, openModal, closeModal, toast } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
+  const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
+  const tx = (k, fb) => (STATS_I18N[k] ? STATS_I18N[k][curLang] || STATS_I18N[k].pt : fb);
   const T = React.useCallback((id, fb) => cx(lang, 'stats', id) || fb, [lang]);
 
   const [activeCategory, setActiveCategory] = useState('general');
@@ -560,38 +594,86 @@ export default function StatsView() {
       const cur = L.ci(S, ds);
       const state = cur.fail ? T('day_state_fall', 'Queda') : cur.ok ? T('day_state_win', 'Vitória') : (cur.p || cur.m || cur.r) ? T('day_state_part', 'Parcial') : T('day_state_none', 'Sem registro');
       return (
-        <div className="text-center">
-          <span className="k block text-gold text-base mb-1">
+        <div className="text-center p-1 select-none">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center text-gold">
+            <CalendarDays size={20} />
+          </div>
+          <span className="font-display font-black text-gold text-base block mb-0.5 tracking-wide uppercase">
             {T('day_log_title', 'Registro de ')}{fdmy(ds)}{ds === today() ? T('day_today', ' · Hoje') : ''}
           </span>
-          <p className="fnote mb-3 text-left">
-            {T('day_cur_state', 'Estado atual: ')}<b className="text-gold">{state}</b>{T('day_adj_sub', ' · Ajuste os pilares deste dia abaixo:')}
+          <p className="text-xs text-muted mb-3.5">
+            {T('day_cur_state', 'Estado atual: ')}<b className="text-gold font-bold">{state}</b>{T('day_adj_sub', ' · Ajuste os pilares deste dia abaixo:')}
           </p>
-          {req.map((k) => {
-            const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-            const fTypes = String(cur.fail || '').split('+').filter(Boolean);
-            const label = k === 'p' ? T('day_p_porn', 'Zero Pornografia') : k === 'm' ? T('day_p_mast', 'Autodomínio Inabalável') : T('day_p_ejac', 'Retenção Seminal Mantida');
-            return (
-              <Chk key={k} className="mb-2" on={!!cur[k]} failed={!cur[k] && fTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cur[k], ds)}>
-                {label}
-              </Chk>
-            );
-          })}
+          <div className="space-y-2 mb-4 text-left">
+            {req.map((k) => {
+              const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+              const fTypes = String(cur.fail || '').split('+').filter(Boolean);
+              const label = k === 'p' ? T('day_p_porn', 'Zero Pornografia') : k === 'm' ? T('day_p_mast', 'Autodomínio Inabalável') : T('day_p_ejac', 'Retenção Seminal Mantida');
+              return (
+                <Chk key={k} className="p-2.5 rounded-lg bg-surface2/80 border border-line/80 hover:border-gold/40 transition-all cursor-pointer" on={!!cur[k]} failed={!cur[k] && fTypes.includes(FAILMAP[k])} onClick={() => setCI(k, !cur[k], ds)}>
+                  <span className="text-xs font-semibold">{label}</span>
+                </Chk>
+              );
+            })}
+          </div>
           <div className="my-3 grid grid-cols-2 gap-2">
-            <button className="btn-gold" onClick={() => { req.forEach((k, i) => setTimeout(() => setCI(k, true, ds), i * 10)); toast(T('day_toast_win', 'Marcado como vitória total')); }}>
+            <button
+              type="button"
+              className="py-2.5 px-3 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] font-mono font-black text-xs transition-all cursor-pointer shadow-sm active:scale-95"
+              onClick={() => {
+                req.forEach((k, i) => setTimeout(() => setCI(k, true, ds), i * 10));
+                toast(T('day_toast_win', 'Marcado como vitória total'));
+              }}
+            >
               {T('day_btn_win', 'Marcar Vitória')}
             </button>
-            <button className="btn-dark" onClick={() => { update((s) => { delete (s.checkins[ds] || {}).ok; delete s.checkins[ds]?.fail; }); AF.click(); toast(T('day_toast_part', 'Marcado como parcial')); }}>
+            <button
+              type="button"
+              className="py-2.5 px-3 rounded-xl border border-line/80 bg-surface2/90 hover:border-gold/40 text-muted hover:text-ink font-mono font-bold text-xs transition-all cursor-pointer active:scale-95"
+              onClick={() => {
+                update((s) => {
+                  delete (s.checkins[ds] || {}).ok;
+                  delete s.checkins[ds]?.fail;
+                });
+                AF.click();
+                toast(T('day_toast_part', 'Marcado como parcial'));
+              }}
+            >
               {T('day_btn_part', 'Marcar Parcial')}
             </button>
-            <button className="btn-red" onClick={() => { update((s) => { s.checkins[ds] = s.checkins[ds] || { p: false, m: false, r: false }; delete s.checkins[ds].ok; s.checkins[ds].fail = 'porn'; }); AF.tone(110, 0.35, 'sine', 0.18, 0, 55); toast(T('day_toast_fall', 'Marcado como queda')); }}>
+            <button
+              type="button"
+              className="py-2.5 px-3 rounded-xl border border-danger/40 bg-danger/20 hover:bg-danger/30 text-danger font-mono font-bold text-xs transition-all cursor-pointer active:scale-95"
+              onClick={() => {
+                update((s) => {
+                  s.checkins[ds] = s.checkins[ds] || { p: false, m: false, r: false };
+                  delete s.checkins[ds].ok;
+                  s.checkins[ds].fail = 'porn';
+                });
+                AF.tone(110, 0.35, 'sine', 0.18, 0, 55);
+                toast(T('day_toast_fall', 'Marcado como queda'));
+              }}
+            >
               {T('day_btn_fall', 'Registrar Queda')}
             </button>
-            <button className="btn-dark" onClick={() => { update((s) => { delete s.checkins[ds]; }); toast(T('day_toast_clear', 'Registro limpo')); }}>
+            <button
+              type="button"
+              className="py-2.5 px-3 rounded-xl border border-line/80 bg-surface2/90 hover:border-line text-muted font-mono font-bold text-xs transition-all cursor-pointer active:scale-95"
+              onClick={() => {
+                update((s) => {
+                  delete s.checkins[ds];
+                });
+                toast(T('day_toast_clear', 'Registro limpo'));
+              }}
+            >
               {T('day_btn_clear', 'Limpar Dia')}
             </button>
           </div>
-          <button className="btn-dark btn-big w-full mt-2" onClick={closeModal}>
+          <button
+            type="button"
+            className="w-full py-2.5 rounded-xl border border-line/80 bg-surface2/70 hover:bg-surface2 text-muted hover:text-ink font-mono font-bold text-xs transition-all cursor-pointer active:scale-95 mt-2"
+            onClick={closeModal}
+          >
             {T('day_btn_close', 'Fechar')}
           </button>
         </div>
@@ -688,42 +770,92 @@ export default function StatsView() {
   const CurrentIcon = currentCategory.icon;
 
   return (
-    <div className="flex flex-col gap-4 pb-16">
-      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
-      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
-        {STATS_CATEGORIES.map((cat) => {
-          const CatIcon = cat.icon;
-          const isSel = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => {
-                AF.click();
-                setActiveCategory(cat.id);
-              }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
-                isSel
-                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
-                  : 'text-muted hover:text-ink hover:bg-surface/50'
-              }`}
-            >
-              <CatIcon size={14} className="flex-none" />
-              <span className="truncate">{T(cat.key, cat.label)}</span>
-            </button>
-          );
-        })}
+    <div className="flex flex-col gap-4 pb-16 w-full max-w-full min-w-0">
+      {/* NAVEGAÇÃO DE RELATÓRIOS: 4 SUB-ABAS EM AÇO FORJADO & OURO */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full max-w-full min-w-0 select-none">
+        {/* SELETOR DE SUB-ABAS */}
+        <div className="flex-1 min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
+          {STATS_CATEGORIES.map((cat) => {
+            const CatIcon = cat.icon;
+            const isSel = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setActiveCategory(cat.id);
+                }}
+                className={`flex-1 min-w-[70px] sm:min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-2.5 rounded-lg text-xs font-mono font-bold transition-all truncate select-none cursor-pointer active:scale-95 ${
+                  isSel
+                    ? 'bg-gold text-[#141414] shadow-sm font-black'
+                    : 'text-muted hover:text-ink hover:bg-surface/50'
+                }`}
+              >
+                <CatIcon size={14} className="flex-none" />
+                <span className="truncate">{T(cat.key, cat.label)}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* BOTÃO DE AÇÃO RÁPIDA: EXPORTAR GUERRA */}
+        <button
+          type="button"
+          onClick={() => {
+            AF.click();
+            shareImage();
+          }}
+          className="flex-none py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
+        >
+          <Share2 size={13} strokeWidth={2.5} className="flex-none" />
+          <span>{tx('btnShareWar', 'EXPORTAR GUERRA')}</span>
+        </button>
       </div>
 
       {/* CATEGORIA 1: GERAL & CONSISTÊNCIA */}
       {activeCategory === 'general' && (
-        <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-          {/* 1. Grade de KPIs Principais */}
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO GERAL */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <BarChart2 size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineGeneral', 'INTELIGÊNCIA & CONSISTÊNCIA GERAL')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {d} {T('cv_days', ' DIAS')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleGeneral', 'Métricas vitais, mapa de combate e adesão aos hábitos da Forja.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-muted">
+                ✦ {tx('badgePurityScore', 'PUREZA')}: <b className="text-gold font-bold">{S.purity != null ? S.purity : 100}%</b>
+              </span>
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-muted">
+                🛡️ SOS: <b className="text-ok font-bold">{L.sosWins(S)}</b>
+              </span>
+            </div>
+          </div>
+
+          {/* 1. Grade de KPIs Principais em Aço Forjado */}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
             {KPIS.map(([v, lb], i) => (
-              <div key={i} className="rounded-r border border-line bg-surface p-3 text-center">
-                <b className="block font-display text-[26px] leading-none text-gold">{v}</b>
-                <small className="mt-1 block text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
+              <div
+                key={i}
+                className="rounded-xl border border-line/80 bg-surface2/70 hover:border-gold/40 p-3 text-center transition-all shadow-sm relative overflow-hidden group select-none"
+              >
+                <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-gold/30 to-transparent group-hover:via-gold/60 transition-all" />
+                <b className="block font-display text-2xl sm:text-[26px] leading-none text-gold font-black tracking-tight">{v}</b>
+                <small className="mt-1.5 block text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
                   {lb}
                 </small>
               </div>
@@ -731,556 +863,686 @@ export default function StatsView() {
           </div>
 
           {/* 2. Heatmap & Consistência da Forja */}
-          <div className="grid gap-3.5 lg:grid-cols-2 items-stretch">
-            <Card className="flex flex-col justify-between">
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <K style={{ margin: 0 }}>
-                {T('map_k', 'MAPA — ')}
-                {ref
-                  .toLocaleDateString(localeCode[lang] || 'pt-BR', { month: 'long', year: 'numeric' })
-                  .toUpperCase()}
-              </K>
-              <div className="flex gap-1.5">
-                <button className="chip-dim px-2 py-1" onClick={() => setHmOff(hmOff - 1)}>
-                  <ChevronLeft size={14} />
-                </button>
+          <div className="grid gap-3.5 lg:grid-cols-2 items-stretch w-full max-w-full min-w-0">
+            {/* Heatmap Card */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={15} className="text-gold" />
+                    <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                      {T('map_k', 'MAPA — ')}
+                      {ref
+                        .toLocaleDateString(localeCode[lang] || 'pt-BR', { month: 'long', year: 'numeric' })
+                        .toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      className="p-1.5 rounded-lg border border-line/80 bg-surface2/90 hover:border-gold/50 text-muted hover:text-gold transition-all cursor-pointer active:scale-95"
+                      onClick={() => {
+                        AF.click();
+                        setHmOff(hmOff - 1);
+                      }}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded-lg border border-line/80 bg-surface2/90 hover:border-gold/50 text-muted hover:text-gold transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                      disabled={hmOff >= 0}
+                      onClick={() => {
+                        AF.click();
+                        setHmOff(Math.min(0, hmOff + 1));
+                      }}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div className="hm">
+                  {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                    <b key={'w' + i} className="grid place-items-center border-none bg-transparent text-[9px] text-muted">
+                      {T('wd' + i, (weekdayLetters[lang] || weekdayLetters.pt)[i])}
+                    </b>
+                  ))}
+                  {grid.map((c, i) =>
+                    c.hidden ? <b key={i} className="invisible" /> : <b key={i} className={c.cls} title={c.ds} />
+                  )}
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-line/60 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] text-muted">
+                <span>
+                  <b className="lv1 mr-1 inline-block h-3 w-3 rounded bg-gold/25" />
+                  {T('lg1', '1 pilar')}
+                </span>
+                <span>
+                  <b className="lv2 mr-1 inline-block h-3 w-3 rounded bg-gold/50" />
+                  {T('lg2', '2 pilares')}
+                </span>
+                <span>
+                  <b className="lv3 mr-1 inline-block h-3 w-3 rounded bg-gold" />
+                  {T('lg3', 'completo')}
+                </span>
+                <span>
+                  <b className="lvf mr-1 inline-block h-3 w-3 rounded bg-danger/60" />
+                  {T('lgf', 'queda')}
+                </span>
+                <span>
+                  <b className="mr-1 inline-block h-3 w-3 rounded bg-[#202026]" />
+                  {T('lgn', 'sem registro')}
+                </span>
+              </div>
+            </div>
+
+            {/* Consistência Card */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Flame size={15} className="text-gold" />
+                    <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                      {T('cons_k', '🔨 CONSISTÊNCIA DA FORJA — MÊS ATUAL')}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/25">
+                    {elapsed} {elapsed === 1 ? T('day_elapsed_one', 'dia corrido') : T('day_elapsed_other', 'dias corridos')}
+                  </span>
+                </div>
+
+                {consist.length ? (
+                  <div className="space-y-2.5">
+                    {consist.map((c) => (
+                      <div key={c.h.id} className="p-2.5 rounded-lg bg-surface2/70 border border-line/60">
+                        <div className="mb-1.5 flex justify-between text-[12px] font-bold">
+                          <span className="flex items-center gap-1.5 truncate">
+                            <span>{c.h.icon}</span>
+                            <span className="truncate text-ink">{c.h.n}</span>
+                          </span>
+                          <span className="font-mono text-gold text-xs flex-none ml-2">
+                            {c.cnt}/{elapsed} <span className="text-muted font-normal">({c.pct}%)</span>
+                          </span>
+                        </div>
+                        <div className="w-full bg-[#1b1b22] h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-gold/80 to-gold2 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${c.pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Empty>{T('cons_empty', 'Ative hábitos na Forja para medir consistência.')}</Empty>
+                )}
+              </div>
+
+              {/* Resumo Tático Mensal */}
+              <div className="mt-3 pt-3 border-t border-line/60">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted block mb-2 font-mono">
+                  {T('cons_summary_title', 'RESUMO DE DISCIPLINA NO MÊS')}
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-surface2/80 border border-line/80">
+                    <b className="block font-display text-lg text-gold leading-none font-bold">
+                      {consist.reduce((acc, cur) => acc + cur.cnt, 0)}
+                    </b>
+                    <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 font-mono font-bold">
+                      {T('cons_done_lbl', 'Concluídos')}
+                    </small>
+                  </div>
+                  <div className="p-2 rounded-lg bg-surface2/80 border border-line/80">
+                    <b className="block font-display text-lg text-gold leading-none font-bold">
+                      {consist.length ? Math.round(consist.reduce((acc, cur) => acc + cur.pct, 0) / consist.length) : 0}%
+                    </b>
+                    <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 font-mono font-bold">
+                      {T('cons_avg_lbl', 'Adesão Média')}
+                    </small>
+                  </div>
+                  <div className="p-2 rounded-lg bg-surface2/80 border border-line/80 truncate">
+                    <b className="block font-display text-lg text-gold leading-none truncate font-bold">
+                      {consist.length ? [...consist].sort((a, b) => b.pct - a.pct)[0]?.h.icon : '—'}
+                    </b>
+                    <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 truncate font-mono font-bold">
+                      {T('cons_leader_lbl', 'Líder')}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Relatório Semanal de Guerra (Largura Total) */}
+            <div className="lg:col-span-2 rounded-xl border border-gold/30 bg-gradient-to-br from-[#15141c] via-[#101015] to-[#15141c] p-4 sm:p-5 shadow-sm">
+              <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-line/50">
+                <div className="flex items-center gap-2">
+                  <Trophy size={16} className="text-gold" />
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                    {T('wk_k', '📜 RELATÓRIO SEMANAL DE GUERRA (ÚLTIMOS 7 DIAS)')}
+                  </span>
+                </div>
                 <button
-                  className="chip-dim px-2 py-1"
-                  disabled={hmOff >= 0}
-                  style={hmOff >= 0 ? { opacity: 0.35 } : {}}
-                  onClick={() => setHmOff(Math.min(0, hmOff + 1))}
+                  type="button"
+                  className="py-1.5 px-3 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+                  onClick={() => {
+                    AF.click();
+                    shareImage();
+                  }}
                 >
-                  <ChevronRight size={14} />
+                  <Share2 size={13} strokeWidth={2.5} />
+                  <span>{T('wk_share', 'COMPARTILHAR IMAGEM')}</span>
                 </button>
               </div>
-            </div>
-            <div className="hm">
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                <b key={'w' + i} className="grid place-items-center border-none bg-transparent text-[9px] text-muted">
-                  {T('wd' + i, (weekdayLetters[lang] || weekdayLetters.pt)[i])}
-                </b>
-              ))}
-              {grid.map((c, i) =>
-                c.hidden ? <b key={i} className="invisible" /> : <b key={i} className={c.cls} title={c.ds} />
-              )}
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-line/60 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] text-muted">
-            <span>
-              <b className="lv1 mr-1 inline-block h-3 w-3 rounded bg-gold/25" />
-              {T('lg1', '1 pilar')}
-            </span>
-            <span>
-              <b className="lv2 mr-1 inline-block h-3 w-3 rounded bg-gold/50" />
-              {T('lg2', '2 pilares')}
-            </span>
-            <span>
-              <b className="lv3 mr-1 inline-block h-3 w-3 rounded bg-gold" />
-              {T('lg3', 'completo')}
-            </span>
-            <span>
-              <b className="lvf mr-1 inline-block h-3 w-3 rounded bg-danger/60" />
-              {T('lgf', 'queda')}
-            </span>
-            <span>
-              <b className="mr-1 inline-block h-3 w-3 rounded bg-[#202026]" />
-              {T('lgn', 'sem registro')}
-            </span>
-          </div>
-        </Card>
-
-        {/* Card de Consistência com Resumo Mensal Integrado para Preenchimento Perfeito */}
-        <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <K style={{ margin: 0 }}>{T('cons_k', '🔨 CONSISTÊNCIA DA FORJA — MÊS ATUAL')}</K>
-              <span className="text-[10px] font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/25">
-                {elapsed} {elapsed === 1 ? T('day_elapsed_one', 'dia corrido') : T('day_elapsed_other', 'dias corridos')}
-              </span>
-            </div>
-
-            {consist.length ? (
-              <div className="space-y-2.5">
-                {consist.map((c) => (
-                  <div key={c.h.id} className="p-2 rounded bg-surface2 border border-line/50">
-                    <div className="mb-1 flex justify-between text-[12px] font-bold">
-                      <span className="flex items-center gap-1.5 truncate">
-                        <span>{c.h.icon}</span>
-                        <span className="truncate">{c.h.n}</span>
-                      </span>
-                      <span className="font-mono text-gold2 text-xs flex-none ml-2">
-                        {c.cnt}/{elapsed} <span className="text-muted font-normal">({c.pct}%)</span>
-                      </span>
-                    </div>
-                    <div className="bar">
-                      <i style={{ width: c.pct + '%' }} />
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                <div className="rounded-xl border border-ok/30 bg-ok/10 p-3 text-center">
+                  <b className="block font-display text-2xl text-ok font-black">{wr.wins}</b>
+                  <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-ok">
+                    {T('wk_wins', 'Vitórias')}
+                  </small>
+                </div>
+                <div className="rounded-xl border border-danger/30 bg-danger/10 p-3 text-center">
+                  <b className="block font-display text-2xl text-danger font-black">{wr.falls}</b>
+                  <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-danger">
+                    {T('wk_falls', 'Quedas')}
+                  </small>
+                </div>
+                <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-center">
+                  <b className="block font-display text-2xl text-gold font-black">{wr.consist}%</b>
+                  <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-gold">
+                    {T('wk_cons', 'Consistência Forja')}
+                  </small>
+                </div>
+                <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-center">
+                  <b className="block font-display text-2xl text-gold font-black">🛡 {wr.sos}</b>
+                  <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-gold">
+                    {T('wk_sos', 'S.O.S vencidas')}
+                  </small>
+                </div>
               </div>
-            ) : (
-              <Empty>{T('cons_empty', 'Ative hábitos na Forja para medir consistência.')}</Empty>
-            )}
-          </div>
-
-          {/* Resumo Tático Mensal: Preenche perfeitamente a parte inferior, eliminando qualquer espaço vago */}
-          <div className="mt-3 pt-3 border-t border-line/60">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted block mb-2">
-              {T('cons_summary_title', 'RESUMO DE DISCIPLINA NO MÊS')}
-            </span>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-2 rounded bg-surface2 border border-line">
-                <b className="block font-display text-lg text-gold leading-none">
-                  {consist.reduce((acc, cur) => acc + cur.cnt, 0)}
-                </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">
-                  {T('cons_done_lbl', 'Concluídos')}
-                </small>
-              </div>
-              <div className="p-2 rounded bg-surface2 border border-line">
-                <b className="block font-display text-lg text-gold leading-none">
-                  {consist.length ? Math.round(consist.reduce((acc, cur) => acc + cur.pct, 0) / consist.length) : 0}%
-                </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1">
-                  {T('cons_avg_lbl', 'Adesão Média')}
-                </small>
-              </div>
-              <div className="p-2 rounded bg-surface2 border border-line truncate">
-                <b className="block font-display text-lg text-gold leading-none truncate">
-                  {consist.length ? [...consist].sort((a, b) => b.pct - a.pct)[0]?.h.icon : '—'}
-                </b>
-                <small className="text-[9px] uppercase tracking-wider text-muted block mt-1 truncate">
-                  {T('cons_leader_lbl', 'Líder')}
-                </small>
-              </div>
+              <p className="fnote mt-3.5 pt-2.5 border-t border-line/40" style={{ textAlign: 'left' }}>
+                {T('wk_part', 'Parciais: ')}
+                {wr.part} · {T('wk_none', 'Sem registro: ')}
+                {wr.none} · {T('wk_pur', 'Pureza atual: ')}
+                {wr.purity}% · {T('wk_st', 'Streak: ')}
+                {wr.streak} · {T('wk_hab', 'Hábitos concluídos: ')}
+                {wr.habDone}
+                {wr.habPossible ? '/' + wr.habPossible : ''}.
+                {T('wk_push', ' Todo domingo você recebe um push avisando que o relatório está pronto.')}
+              </p>
             </div>
-          </div>
-        </Card>
-
-        {/* 3. Relatório Semanal de Guerra (Largura Total) */}
-        <Card className="lg:col-span-2">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <K style={{ margin: 0 }}>{T('wk_k', '📜 RELATÓRIO SEMANAL DE GUERRA (ÚLTIMOS 7 DIAS)')}</K>
-            <button className="btn-ghost px-3 py-2 text-[12px]" onClick={shareImage}>
-              <Share2 size={14} /> {T('wk_share', 'COMPARTILHAR IMAGEM')}
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            <div className="rounded-r border border-line bg-surface2 p-3 text-center">
-              <b className="block font-display text-2xl text-ok">{wr.wins}</b>
-              <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
-                {T('wk_wins', 'Vitórias')}
-              </small>
-            </div>
-            <div className="rounded-r border border-line bg-surface2 p-3 text-center">
-              <b className="block font-display text-2xl text-danger">{wr.falls}</b>
-              <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
-                {T('wk_falls', 'Quedas')}
-              </small>
-            </div>
-            <div className="rounded-r border border-line bg-surface2 p-3 text-center">
-              <b className="block font-display text-2xl text-gold">{wr.consist}%</b>
-              <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
-                {T('wk_cons', 'Consistência Forja')}
-              </small>
-            </div>
-            <div className="rounded-r border border-line bg-surface2 p-3 text-center">
-              <b className="block font-display text-2xl text-gold">🛡 {wr.sos}</b>
-              <small className="text-[9.5px] font-extrabold uppercase tracking-[.12em] text-muted">
-                {T('wk_sos', 'S.O.S vencidas')}
-              </small>
-            </div>
-          </div>
-          <p className="fnote mt-3" style={{ textAlign: 'left' }}>
-            {T('wk_part', 'Parciais: ')}
-            {wr.part} · {T('wk_none', 'Sem registro: ')}
-            {wr.none} · {T('wk_pur', 'Pureza atual: ')}
-            {wr.purity}% · {T('wk_st', 'Streak: ')}
-            {wr.streak} · {T('wk_hab', 'Hábitos concluídos: ')}
-            {wr.habDone}
-            {wr.habPossible ? '/' + wr.habPossible : ''}.
-            {T('wk_push', ' Todo domingo você recebe um push avisando que o relatório está pronto.')}
-          </p>
-        </Card>
-      </div>
-    </div>
-  )}
-
-  {/* CATEGORIA: LINHA DO TEMPO (HISTÓRICO INTERATIVO DE DIAS, VITÓRIAS & SOS) */}
-  {activeCategory === 'timeline' && (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-      <Card className="flex-1 flex flex-col justify-between p-4 sm:p-5">
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <K className="mb-0 flex items-center gap-2">
-              <CalendarDays size={16} className="text-gold" />
-              <span>{T('tl_title', 'LINHA DO TEMPO & DIAS DE COMBATE')}</span>
-            </K>
-            <span className="text-xs font-mono font-bold text-gold px-2.5 py-0.5 rounded bg-gold/10 border border-gold/30">
-              {T('tl_rate', 'Taxa: ')}{timelineData.rate}%
-            </span>
-          </div>
-
-          {/* Seletor de Intervalo de Dias */}
-          <div className="mb-3 flex flex-wrap gap-1.5">
-            {[7, 14, 30, 60, 90, 365].map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                  timelineRange === n
-                    ? 'border-gold bg-gold text-[#141414] shadow-sm'
-                    : 'border-line bg-surface text-muted hover:text-ink hover:border-gold/40'
-                }`}
-                onClick={() => {
-                  AF.click();
-                  setTimelineRange(n);
-                }}
-              >
-                {n} {T('tl_days_btn', 'dias')}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              className={`px-3 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
-                timelineRange === 'custom'
-                  ? 'border-gold bg-gold text-[#141414] shadow-sm'
-                  : 'border-line bg-surface text-muted hover:text-ink hover:border-gold/40'
-              }`}
-              onClick={() => {
-                AF.click();
-                setTimelineRange('custom');
-              }}
-            >
-              <Calendar size={12} />
-              <span>{T('tl_custom_btn', 'Personalizado 📅')}</span>
-            </button>
-          </div>
-
-          {/* Filtro de Datas Personalizadas */}
-          {timelineRange === 'custom' && (
-            <div className="mb-3 flex flex-wrap items-center gap-2.5 p-2.5 rounded-xl bg-surface2/70 border border-line text-xs animate-in fade-in">
-              <span className="font-mono text-muted text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
-                <Calendar size={12} className="text-gold" /> {T('tl_custom_filter', 'Período Personalizado')}:
-              </span>
-              <div className="flex items-center gap-1.5">
-                <label className="text-muted text-[11px] font-mono">{T('tl_custom_start', 'Início')}:</label>
-                <input
-                  type="date"
-                  value={customStart}
-                  max={customEnd || today()}
-                  onChange={(e) => {
-                    setCustomStart(e.target.value);
-                    AF.click();
-                  }}
-                  className="px-2 py-1 rounded bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <label className="text-muted text-[11px] font-mono">{T('tl_custom_end', 'Fim')}:</label>
-                <input
-                  type="date"
-                  value={customEnd}
-                  min={customStart}
-                  max={today()}
-                  onChange={(e) => {
-                    setCustomEnd(e.target.value);
-                    AF.click();
-                  }}
-                  className="px-2 py-1 rounded bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Badges de Desempenho Tático */}
-          <div className="mb-3.5 flex flex-wrap gap-1.5">
-            <span className="chip cursor-default text-[11px] font-bold text-gold border-gold/40">
-              🏆 {timelineData.wins} {T('tl_badge_wins', 'Vitórias')}
-            </span>
-            <span className="chip-dim cursor-default border-danger/50 text-danger text-[11px] font-bold">
-              💥 {timelineData.falls} {T('tl_badge_falls', 'Quedas')}
-            </span>
-            <span className="chip-dim cursor-default text-[11px]">
-              ◐ {timelineData.part} {T('tl_badge_part', 'Parciais')}
-            </span>
-            <span className="chip-dim cursor-default text-[11px] text-[#EDE5D5]">
-              ⚡ {timelineData.rate}% {T('tl_badge_cons', 'Consistência')}
-            </span>
-            <span className="chip-dim cursor-default border-ok/45 text-ok text-[11px] font-bold">
-              🛡️ {L.sosWins(S)} {T('tl_badge_sos', 'S.O.S Vencidos')}
-            </span>
-          </div>
-
-          {/* CURVA DE VITALIDADE & FORÇA */}
-          <VitalityCurve
-            curve={timelineData.curve}
-            peakVitality={timelineData.peakVitality}
-            avgVitality={timelineData.avgVitality}
-            curVitality={timelineData.curVitality}
-            T={T}
-          />
-
-          {/* Grid de Células de Dias */}
-          <div className="flex flex-wrap gap-[5px] p-2.5 rounded-xl bg-[#121217] border border-line/60">
-            {timelineData.cells.map((c) => (
-              <button
-                key={c.ds}
-                title={`${c.ds} · ${c.lab} ${T('tl_cell_edit_tip', '(Clique para editar este dia)')}`}
-                className={`tlc ${c.cls} cursor-pointer hover:scale-125 transition-transform`}
-                onClick={() => dayEditor(c.ds)}
-              />
-            ))}
           </div>
         </div>
+      )}
 
-        {/* Legenda de Cores */}
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted pt-3 border-t border-line/50">
-          <span className="flex items-center gap-1.5">
-            <b className="tlc w inline-block" style={{ animation: 'none' }} /> {T('tl_leg_win', 'Vitória (3/3 pilares)')}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <b className="tlc p inline-block" style={{ animation: 'none' }} /> {T('tl_leg_part', 'Parcial')}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <b className="tlc f inline-block" style={{ animation: 'none' }} /> {T('tl_leg_fall', 'Queda')}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <b className="inline-block h-[13px] w-[13px] rounded bg-[#202026] border border-line/40" /> {T('tl_leg_none', 'Sem registro')}
-          </span>
-          <span className="w-full text-[10px] text-gold/80 mt-1">
-            {T('tl_hint', '💡 Toque em qualquer dia para inspecionar, corrigir pilares ou registrar histórico retroativo.')}
-          </span>
-        </div>
-      </Card>
-    </div>
-  )}
-
-  {/* CATEGORIA 2: RISCO & S.O.S */}
-  {activeCategory === 'risk' && (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-      <div className="grid gap-3.5 lg:grid-cols-2 items-stretch">
-        {/* Mapa de Risco por Horário */}
-        <Card className="flex flex-col justify-between">
-          <div>
-            <K>
-              <Clock3 size={12} className="mr-1 inline text-gold" /> {T('risk_k', 'MAPA DE RISCO POR HORÁRIO')}
-            </K>
-            {us.total ? (
-              <>
-                <div className="grid grid-cols-12 gap-1 my-2">
-                  {us.buckets.map((b, h) => {
-                    const max = Math.max(1, ...us.buckets.map((y) => y.sum + y.n));
-                    const lvl = (b.sum + b.n) / max;
-                    return (
-                      <b
-                        key={h}
-                        title={h + 'h · ' + b.n + T('risk_reg', ' registro(s)')}
-                        className="aspect-square rounded border border-line"
-                        style={{ background: lvl > 0 ? `rgba(255,77,77,${0.15 + lvl * 0.85})` : '#202026' }}
-                      />
-                    );
-                  })}
-                </div>
-                <div className="p-2 rounded bg-danger/10 border border-danger/30 text-xs font-bold text-danger flex items-center justify-between">
-                  <span>{T('risk_win', '🎯 Janela Crítica de Alerta:')}</span>
-                  <span className="font-mono">{us.window[0]}h – {us.window[1]}h</span>
-                </div>
-              </>
-            ) : (
-              <div className="p-3 my-2 rounded bg-surface2 border border-line text-xs text-muted leading-relaxed">
-                {T('risk_empty_desc', 'Nenhum impulso crítico registrado ainda. Acione o botão S.O.S em momentos de urgência para mapear com precisão cirúrgica seus horários de maior vulnerabilidade.')}
+      {/* CATEGORIA 2: LINHA DO TEMPO (HISTÓRICO INTERATIVO DE DIAS, VITÓRIAS & SOS) */}
+      {activeCategory === 'timeline' && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO LINHA DO TEMPO */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <CalendarDays size={18} />
               </div>
-            )}
-          </div>
-          <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-            {us.total ? `${us.total} ${T('risk_note', 'impulsos registrados. Mantenha telas longe do quarto nessa janela.')}` : T('risk_note_default', 'Defesa preventiva ativa: mantenha o celular fora do quarto após as 22h.')}
-          </p>
-        </Card>
-
-        {/* Histórico S.O.S */}
-        <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <K style={{ margin: 0 }} className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-gold" />
-                <span>{T('sos_won_title', 'INTERVENÇÕES S.O.S VENCIDAS')}</span>
-              </K>
-              <span className="text-xs font-mono font-bold text-gold px-2 py-0.5 rounded bg-gold/10 border border-gold/30">
-                {L.sosWins(S)} {T('sos_won_badge', 'Vencidas')}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineTimeline', 'LINHA DO TEMPO & DIAS DE COMBATE')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {timelineData.rate}% {tx('badgeHonorScore', 'TAXA')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleTimeline', 'Histórico cronológico e curva de vitalidade sincronizada à Tríade.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-ok font-bold">
+                🏆 {timelineData.wins} {T('tl_badge_wins', 'Vitórias')}
+              </span>
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-danger font-bold">
+                💥 {timelineData.falls} {T('tl_badge_falls', 'Quedas')}
               </span>
             </div>
-            {sosHist.length ? (
-              <div className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1">
-                {sosHist.map((e, i) => (
-                  <div
-                    key={i}
-                    className="flex justify-between items-center rounded-r border border-line bg-surface2 p-2 text-[12px] font-semibold"
+          </div>
+
+          <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between select-none">
+            <div>
+              {/* Seletor de Intervalo de Dias */}
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {[7, 14, 30, 60, 90, 365].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`px-3 py-1.5 text-xs font-mono font-bold rounded-lg border transition-all cursor-pointer active:scale-95 ${
+                        timelineRange === n
+                          ? 'border-gold bg-gold text-[#141414] shadow-sm font-black'
+                          : 'border-line/80 bg-surface2/80 text-muted hover:text-ink hover:border-gold/40'
+                      }`}
+                      onClick={() => {
+                        AF.click();
+                        setTimelineRange(n);
+                      }}
+                    >
+                      {n} {T('tl_days_btn', 'dias')}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-mono font-bold rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                      timelineRange === 'custom'
+                        ? 'border-gold bg-gold text-[#141414] shadow-sm font-black'
+                        : 'border-line/80 bg-surface2/80 text-muted hover:text-ink hover:border-gold/40'
+                    }`}
+                    onClick={() => {
+                      AF.click();
+                      setTimelineRange('custom');
+                    }}
                   >
-                    <span className="flex items-center gap-1.5 text-gold">
-                      <span>🛡️</span>
-                      <span>{T('sos_item', 'Intervenção Vencida')}</span>
-                    </span>
-                    <span className="font-mono text-[10.5px] text-muted">
-                      {fdmy(e.d || dstr(new Date(e.ts || Date.now())))} · {e.h || '--:--'}
-                    </span>
-                  </div>
-                ))}
+                    <Calendar size={13} />
+                    <span>{T('tl_custom_btn', 'Personalizado 📅')}</span>
+                  </button>
+                </div>
+                <span className="text-xs font-mono font-bold text-gold px-2.5 py-1 rounded-lg bg-gold/10 border border-gold/30">
+                  {T('tl_rate', 'Taxa: ')}{timelineData.rate}%
+                </span>
               </div>
-            ) : (
-              <div className="p-3 rounded bg-surface2 border border-line text-xs text-muted leading-relaxed">
-                {T('sos_empty_full', 'Nenhuma intervenção S.O.S registrada ainda. Em momentos de urgência, use o botão de emergência flutuante para resfriar a mente e salvar seu streak.')}
-              </div>
-            )}
-          </div>
-          <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-            {T('sos_footer_note', 'Cada vitória no S.O.S recalibra os receptores de dopamina pré-frontais.')}
-          </p>
-        </Card>
-      </div>
 
-      {/* Ranking de Gatilhos & Auditoria */}
-      <Card className="border-danger/30">
-        <div>
-          <K className="text-danger flex items-center gap-1.5 text-xs font-bold font-mono uppercase mb-2">
-            <ShieldAlert size={14} />
-            {triggerRank.length > 0 ? T('trg_rank_title', 'RANKING DE GATILHOS (AUDITORIA)') : T('trg_shield_title', 'BLINDAGEM CONTRA GATILHOS')}
-          </K>
-          {triggerRank.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {triggerRank.slice(0, 4).map((item, idx) => (
-                <div key={item.id} className="flex flex-col gap-1 p-2 rounded bg-surface2 border border-line/40">
-                  <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-ink flex items-center gap-1.5 truncate">
-                      <span className="text-danger font-mono font-bold text-[11px]">#{idx + 1}</span>
-                      <span className="truncate">{item.name}</span>
-                    </span>
-                    <span className="font-mono text-danger font-bold text-xs flex-none ml-2">
-                      {item.count}x ({item.pct}%)
-                    </span>
+              {/* Filtro de Datas Personalizadas */}
+              {timelineRange === 'custom' && (
+                <div className="mb-3 flex flex-wrap items-center gap-2.5 p-3 rounded-xl bg-surface2/80 border border-line/80 text-xs animate-in fade-in">
+                  <span className="font-mono text-muted text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Calendar size={13} className="text-gold" /> {T('tl_custom_filter', 'Período Personalizado')}:
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-muted text-[11px] font-mono">{T('tl_custom_start', 'Início')}:</label>
+                    <input
+                      type="date"
+                      value={customStart}
+                      max={customEnd || today()}
+                      onChange={(e) => {
+                        setCustomStart(e.target.value);
+                        AF.click();
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
+                    />
                   </div>
-                  <div className="w-full bg-[#1b1b22] h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-danger h-full rounded-full transition-all duration-500"
-                      style={{ width: `${item.pct}%` }}
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-muted text-[11px] font-mono">{T('tl_custom_end', 'Fim')}:</label>
+                    <input
+                      type="date"
+                      value={customEnd}
+                      min={customStart}
+                      max={today()}
+                      onChange={(e) => {
+                        setCustomEnd(e.target.value);
+                        AF.click();
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-[#16161a] border border-line text-ink text-xs font-mono focus:border-gold outline-none"
                     />
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded bg-surface2 border border-line flex items-center gap-2">
-                <span className="text-ok font-bold text-sm">✓</span>
-                <span className="text-ink">{T('trg_empty_safe', 'Nenhuma queda recente registrada. Defesas intactas!')}</span>
-              </div>
-              <div className="p-2 rounded bg-surface2/60 border border-line/50 text-[11px] text-muted space-y-1">
-                <div className="font-bold text-gold2">{T('trg_empty_top', 'Top Gatilhos Críticos a Vigiar:')}</div>
-                <div>{T('trg_empty_1', '• Redes Sociais no escuro da madrugada')}</div>
-                <div>{T('trg_empty_2', '• Estresse acumulado e cansaço sem treino')}</div>
-                <div>{T('trg_empty_3', '• Tédio e isolamento com computador aberto')}</div>
-              </div>
-            </div>
-          )}
-        </div>
-        <p className="fnote mt-2 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-          {T('trg_footer_note', 'Identificar o gatilho antecipadamente desativa a cascata impulsiva no cérebro.')}
-        </p>
-      </Card>
-    </div>
-  )}
+              )}
 
-  {/* CATEGORIA 3: SALÃO DA FAMA & HONRA */}
-  {activeCategory === 'hall' && (
-    <div className="flex flex-col gap-4 animate-in fade-in duration-150">
-      {/* Resumo de Honra & Conquistas */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-        <div className="p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_streak', 'Streak Atual')}</span>
-          <b className="block font-display text-2xl text-gold mt-1">🔥 {S.streak || 0}d</b>
-        </div>
-        <div className="p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_purity', 'Índice de Pureza')}</span>
-          <b className="block font-display text-2xl text-gold mt-1">✦ {S.purity || 100}%</b>
-        </div>
-        <div className="col-span-2 sm:col-span-1 p-3 rounded border border-line bg-surface text-center">
-          <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_status', 'Status no Salão')}</span>
-          <span className={`block font-mono text-xs font-bold mt-2 ${S.hallOptIn ? 'text-gold' : 'text-muted'}`}>
-            {S.hallOptIn ? `🛡️ ${S.hallName || T('hall_stat_active', 'Ativo')}` : `🔒 ${T('hall_stat_private', 'Privado')}`}
-          </span>
-        </div>
-      </div>
+              {/* Badges de Desempenho Tático */}
+              <div className="mb-3.5 flex flex-wrap gap-1.5">
+                <span className="px-2.5 py-1 rounded-lg bg-gold/10 border border-gold/40 text-[11px] font-mono font-bold text-gold">
+                  🏆 {timelineData.wins} {T('tl_badge_wins', 'Vitórias')}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-danger/10 border border-danger/40 text-[11px] font-mono font-bold text-danger">
+                  💥 {timelineData.falls} {T('tl_badge_falls', 'Quedas')}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-surface2 border border-line/80 text-[11px] font-mono text-muted">
+                  ◐ {timelineData.part} {T('tl_badge_part', 'Parciais')}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-surface2 border border-line/80 text-[11px] font-mono text-ink">
+                  ⚡ {timelineData.rate}% {T('tl_badge_cons', 'Consistência')}
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-ok/10 border border-ok/40 text-[11px] font-mono font-bold text-ok">
+                  🛡️ {L.sosWins(S)} {T('tl_badge_sos', 'S.O.S Vencidos')}
+                </span>
+              </div>
 
-      {/* Salão da Fama Anônimo */}
-      <Card className="flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <K style={{ margin: 0 }}>
-              <Trophy size={12} className="mr-1 inline text-gold" /> {T('hall_k', 'SALÃO DA FAMA ANÔNIMO')}
-            </K>
-            <span className="text-[10px] font-mono text-muted">
-              {S.hallOptIn ? `🛡️ ${T('hall_joined', 'Participando')}` : T('hall_priv_mode', 'Modo Privado')}
-            </span>
+              {/* CURVA DE VITALIDADE & FORÇA */}
+              <VitalityCurve
+                curve={timelineData.curve}
+                peakVitality={timelineData.peakVitality}
+                avgVitality={timelineData.avgVitality}
+                curVitality={timelineData.curVitality}
+                T={T}
+              />
+
+              {/* Grid de Células de Dias */}
+              <div className="flex flex-wrap gap-[6px] p-3 rounded-xl bg-[#0f0f14] border border-line/70">
+                {timelineData.cells.map((c) => (
+                  <button
+                    key={c.ds}
+                    title={`${c.ds} · ${c.lab} ${T('tl_cell_edit_tip', '(Clique para editar este dia)')}`}
+                    className={`tlc ${c.cls} cursor-pointer hover:scale-125 transition-transform active:scale-95`}
+                    onClick={() => dayEditor(c.ds)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Legenda de Cores */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted pt-3 border-t border-line/50">
+              <span className="flex items-center gap-1.5">
+                <b className="tlc w inline-block" style={{ animation: 'none' }} /> {T('tl_leg_win', 'Vitória (3/3 pilares)')}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <b className="tlc p inline-block" style={{ animation: 'none' }} /> {T('tl_leg_part', 'Parcial')}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <b className="tlc f inline-block" style={{ animation: 'none' }} /> {T('tl_leg_fall', 'Queda')}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <b className="inline-block h-[13px] w-[13px] rounded bg-[#202026] border border-line/40" /> {T('tl_leg_none', 'Sem registro')}
+              </span>
+              <span className="w-full text-[10px] text-gold/80 mt-1 font-mono">
+                {T('tl_hint', '💡 Toque em qualquer dia para inspecionar, corrigir pilares ou registrar histórico retroativo.')}
+              </span>
+            </div>
           </div>
-          {hall === null ? (
-            <Empty>{T('loading', 'Carregando...')}</Empty>
-          ) : hall.length ? (
-            <div className="max-h-[300px] space-y-1.5 overflow-y-auto pr-1">
-              {hall.map((h, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-2.5 rounded-r border p-2.5 text-[12px] font-bold ${
-                    h.name === S.hallName ? 'border-gold/60 bg-gold/10 text-gold' : 'border-line bg-surface2'
-                  }`}
-                >
-                  <span className="w-7 text-center font-display text-sm text-gold2">
-                    {i + 1}º
-                  </span>
-                  <span className="flex-1 truncate">
-                    {h.name} {h.name === S.hallName ? T('you', '(você)') : ''}
-                  </span>
-                  <span className="text-xs text-muted">{h.tier}</span>
-                  <span className="font-mono text-gold text-xs font-bold">{h.days}d</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-3 rounded bg-surface2 border border-line text-xs text-muted">
-              {T('hall_empty_act', 'Nenhum guerreiro optou pelo Salão ainda. Ative nas Configurações para ingressar.')}
-            </div>
-          )}
         </div>
-        <p className="fnote mt-3 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-          {T('hall_note', 'Ranking anônimo com pseudônimos — apenas dias e patamar.')}
-        </p>
-      </Card>
+      )}
 
-      {/* Cartão de Compartilhamento Semanal */}
-      <Card className="p-3.5 bg-gradient-to-br from-surface to-gold/5 border-gold/40">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div>
-            <span className="text-xs font-bold font-mono text-gold flex items-center gap-1.5 uppercase tracking-wider">
-              <Share2 size={13} />
-              <span>{T('hall_share_title', 'Cartão Semanal de Honra & Vitória')}</span>
-            </span>
-            <p className="text-xs text-muted mt-1 leading-relaxed">
-              {T('hall_share_desc', 'Exporte o seu resumo semanal oficial com gráficos vetoriais, dias limpos e streak para compartilhar ou salvar nas suas notas.')}
+      {/* CATEGORIA 3: RISCO & S.O.S */}
+      {activeCategory === 'risk' && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO RISCO & S.O.S */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-danger/40 bg-gradient-to-r from-[#1b1216] via-[#121218] to-[#1b1216] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-danger/15 border border-danger/40 flex items-center justify-center text-danger flex-none">
+                <ShieldAlert size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineRisk', 'MAPEAMENTO DE RISCO & BLINDAGEM S.O.S')}
+                  </span>
+                  {us.total > 0 && (
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-danger/15 text-danger border-danger/30">
+                      {us.window[0]}h – {us.window[1]}h {tx('badgeCriticalWindow', 'CRÍTICO')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleRisk', 'Identificação de horários vulneráveis, intervenções e ranking de gatilhos.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-ok font-bold">
+                🛡️ {L.sosWins(S)} {T('sos_won_badge', 'Vencidas')}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-3.5 lg:grid-cols-2 items-stretch w-full max-w-full min-w-0">
+            {/* Mapa de Risco por Horário */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock3 size={15} className="text-gold" />
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                    {T('risk_k', 'MAPA DE RISCO POR HORÁRIO')}
+                  </span>
+                </div>
+                {us.total ? (
+                  <>
+                    <div className="grid grid-cols-12 gap-1 my-2.5">
+                      {us.buckets.map((b, h) => {
+                        const max = Math.max(1, ...us.buckets.map((y) => y.sum + y.n));
+                        const lvl = (b.sum + b.n) / max;
+                        return (
+                          <b
+                            key={h}
+                            title={h + 'h · ' + b.n + T('risk_reg', ' registro(s)')}
+                            className="aspect-square rounded-md border border-line/70 transition-transform hover:scale-110"
+                            style={{ background: lvl > 0 ? `rgba(255,77,77,${0.15 + lvl * 0.85})` : '#202026' }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-danger/10 border border-danger/30 text-xs font-bold text-danger flex items-center justify-between">
+                      <span>{T('risk_win', '🎯 Janela Crítica de Alerta:')}</span>
+                      <span className="font-mono text-sm font-black">{us.window[0]}h – {us.window[1]}h</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-3 my-2 rounded-xl bg-surface2/60 border border-line/70 text-xs text-muted leading-relaxed">
+                    {T('risk_empty_desc', 'Nenhum impulso crítico registrado ainda. Acione o botão S.O.S em momentos de urgência para mapear com precisão cirúrgica seus horários de maior vulnerabilidade.')}
+                  </div>
+                )}
+              </div>
+              <p className="fnote mt-2.5 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
+                {us.total ? `${us.total} ${T('risk_note', 'impulsos registrados. Mantenha telas longe do quarto nessa janela.')}` : T('risk_note_default', 'Defesa preventiva ativa: mantenha o celular fora do quarto após as 22h.')}
+              </p>
+            </div>
+
+            {/* Histórico S.O.S */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={15} className="text-gold" />
+                    <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                      {T('sos_won_title', 'INTERVENÇÕES S.O.S VENCIDAS')}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-gold px-2 py-0.5 rounded-md bg-gold/10 border border-gold/30">
+                    {L.sosWins(S)} {T('sos_won_badge', 'Vencidas')}
+                  </span>
+                </div>
+                {sosHist.length ? (
+                  <div className="max-h-[220px] space-y-1.5 overflow-y-auto pr-1">
+                    {sosHist.map((e, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center rounded-lg border border-line/70 bg-surface2/70 p-2.5 text-[12px] font-semibold"
+                      >
+                        <span className="flex items-center gap-1.5 text-gold">
+                          <span>🛡️</span>
+                          <span>{T('sos_item', 'Intervenção Vencida')}</span>
+                        </span>
+                        <span className="font-mono text-[10.5px] text-muted">
+                          {fdmy(e.d || dstr(new Date(e.ts || Date.now())))} · {e.h || '--:--'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-surface2/60 border border-line/70 text-xs text-muted leading-relaxed">
+                    {T('sos_empty_full', 'Nenhuma intervenção S.O.S registrada ainda. Em momentos de urgência, use o botão de emergência flutuante para resfriar a mente e salvar seu streak.')}
+                  </div>
+                )}
+              </div>
+              <p className="fnote mt-2.5 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
+                {T('sos_footer_note', 'Cada vitória no S.O.S recalibra os receptores de dopamina pré-frontais.')}
+              </p>
+            </div>
+          </div>
+
+          {/* Ranking de Gatilhos & Auditoria */}
+          <div className="rounded-xl border border-danger/30 bg-[#121217] p-3.5 sm:p-4 shadow-sm w-full max-w-full min-w-0">
+            <div>
+              <div className="text-danger flex items-center gap-1.5 text-xs font-bold font-mono uppercase mb-2.5">
+                <ShieldAlert size={15} />
+                <span>{triggerRank.length > 0 ? T('trg_rank_title', 'RANKING DE GATILHOS (AUDITORIA)') : T('trg_shield_title', 'BLINDAGEM CONTRA GATILHOS')}</span>
+              </div>
+              {triggerRank.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {triggerRank.slice(0, 4).map((item, idx) => (
+                    <div key={item.id} className="flex flex-col gap-1 p-2.5 rounded-lg bg-surface2/70 border border-line/60">
+                      <div className="flex justify-between items-center text-xs font-semibold">
+                        <span className="text-ink flex items-center gap-1.5 truncate">
+                          <span className="text-danger font-mono font-bold text-[11px]">#{idx + 1}</span>
+                          <span className="truncate">{item.name}</span>
+                        </span>
+                        <span className="font-mono text-danger font-bold text-xs flex-none ml-2">
+                          {item.count}x ({item.pct}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#1b1b22] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-danger h-full rounded-full transition-all duration-500"
+                          style={{ width: `${item.pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-surface2/70 border border-line flex items-center gap-2">
+                    <span className="text-ok font-bold text-sm">✓</span>
+                    <span className="text-ink">{T('trg_empty_safe', 'Nenhuma queda recente registrada. Defesas intactas!')}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-surface2/50 border border-line/50 text-[11px] text-muted space-y-1">
+                    <div className="font-bold text-gold2">{T('trg_empty_top', 'Top Gatilhos Críticos a Vigiar:')}</div>
+                    <div>{T('trg_empty_1', '• Redes Sociais no escuro da madrugada')}</div>
+                    <div>{T('trg_empty_2', '• Estresse acumulado e cansaço sem treino')}</div>
+                    <div>{T('trg_empty_3', '• Tédio e isolamento com computador aberto')}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="fnote mt-2.5 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
+              {T('trg_footer_note', 'Identificar o gatilho antecipadamente desativa a cascata impulsiva no cérebro.')}
             </p>
           </div>
-          <button
-            type="button"
-            className="btn-gold px-4 py-2 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap flex-none w-full sm:w-auto justify-center cursor-pointer"
-            onClick={shareImage}
-          >
-            <Share2 size={13} />
-            <span>{T('hall_share_btn', 'Exportar Imagem')}</span>
-          </button>
         </div>
-      </Card>
-    </div>
-  )}
+      )}
+
+      {/* CATEGORIA 4: SALÃO DA FAMA & HONRA */}
+      {activeCategory === 'hall' && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO SALÃO DA FAMA */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Trophy size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineHall', 'SALÃO DA FAMA & HONRA DOS GUERREIROS')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {S.hallOptIn ? (S.hallName || tx('badgeActiveStatus', 'ATIVO')) : tx('badgePrivateStatus', 'PRIVADO')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleHall', 'Irmandade anônima, patamares conquistados e cartão de vitória semanal.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
+                🔥 {S.streak || 0}d {T('hall_stat_streak', 'Streak')}
+              </span>
+              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
+                ✦ {S.purity || 100}% {tx('badgePurityScore', 'Pureza')}
+              </span>
+            </div>
+          </div>
+
+          {/* Resumo de Honra & Conquistas */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <div className="p-3.5 rounded-xl border border-line/80 bg-surface2/70 text-center shadow-sm">
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_streak', 'Streak Atual')}</span>
+              <b className="block font-display text-2xl text-gold mt-1 font-black">🔥 {S.streak || 0}d</b>
+            </div>
+            <div className="p-3.5 rounded-xl border border-line/80 bg-surface2/70 text-center shadow-sm">
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_purity', 'Índice de Pureza')}</span>
+              <b className="block font-display text-2xl text-gold mt-1 font-black">✦ {S.purity || 100}%</b>
+            </div>
+            <div className="col-span-2 sm:col-span-1 p-3.5 rounded-xl border border-line/80 bg-surface2/70 text-center shadow-sm">
+              <span className="text-[10px] font-mono text-muted uppercase font-bold tracking-wider">{T('hall_stat_status', 'Status no Salão')}</span>
+              <span className={`block font-mono text-xs font-bold mt-2 ${S.hallOptIn ? 'text-gold' : 'text-muted'}`}>
+                {S.hallOptIn ? `🛡️ ${S.hallName || T('hall_stat_active', 'Ativo')}` : `🔒 ${T('hall_stat_private', 'Privado')}`}
+              </span>
+            </div>
+          </div>
+
+          {/* Salão da Fama Anônimo */}
+          <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Trophy size={15} className="text-gold" />
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
+                    {T('hall_k', 'SALÃO DA FAMA ANÔNIMO')}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-bold text-muted px-2 py-0.5 rounded bg-surface2 border border-line/60">
+                  {S.hallOptIn ? `🛡️ ${T('hall_joined', 'Participando')}` : T('hall_priv_mode', 'Modo Privado')}
+                </span>
+              </div>
+              {hall === null ? (
+                <Empty>{T('loading', 'Carregando...')}</Empty>
+              ) : hall.length ? (
+                <div className="max-h-[300px] space-y-1.5 overflow-y-auto pr-1">
+                  {hall.map((h, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-2.5 rounded-lg border p-2.5 text-[12px] font-bold ${
+                        h.name === S.hallName ? 'border-gold/60 bg-gold/10 text-gold' : 'border-line/70 bg-surface2/70'
+                      }`}
+                    >
+                      <span className="w-7 text-center font-display text-sm text-gold2 font-black">
+                        {i + 1}º
+                      </span>
+                      <span className="flex-1 truncate">
+                        {h.name} {h.name === S.hallName ? T('you', '(você)') : ''}
+                      </span>
+                      <span className="text-xs text-muted font-mono">{h.tier}</span>
+                      <span className="font-mono text-gold text-xs font-bold">{h.days}d</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-surface2/60 border border-line/70 text-xs text-muted">
+                  {T('hall_empty_act', 'Nenhum guerreiro optou pelo Salão ainda. Ative nas Configurações para ingressar.')}
+                </div>
+              )}
+            </div>
+            <p className="fnote mt-3 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
+              {T('hall_note', 'Ranking anônimo com pseudônimos — apenas dias e patamar.')}
+            </p>
+          </div>
+
+          {/* Cartão de Compartilhamento Semanal */}
+          <div className="rounded-xl border border-gold/30 bg-gradient-to-br from-[#16151e] via-[#101015] to-[#16151e] p-4 sm:p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold font-mono text-gold flex items-center gap-1.5 uppercase tracking-wider">
+                  <Share2 size={14} />
+                  <span>{T('hall_share_title', 'Cartão Semanal de Honra & Vitória')}</span>
+                </span>
+                <p className="text-xs text-muted mt-1 leading-relaxed">
+                  {T('hall_share_desc', 'Exporte o seu resumo semanal oficial com gráficos vetoriais, dias limpos e streak para compartilhar ou salvar nas suas notas.')}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center gap-1.5 whitespace-nowrap flex-none w-full sm:w-auto justify-center cursor-pointer shadow-sm active:scale-95"
+                onClick={() => {
+                  AF.click();
+                  shareImage();
+                }}
+              >
+                <Share2 size={13} strokeWidth={2.5} />
+                <span>{T('hall_share_btn', 'Exportar Imagem')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
