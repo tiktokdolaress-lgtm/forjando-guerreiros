@@ -21,6 +21,7 @@ import {
   Activity,
   Zap,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty, Chk } from '@/components/ui';
@@ -68,6 +69,15 @@ const STATS_I18N = {
   badgeActiveStatus: { pt: 'ATIVO', en: 'ACTIVE', es: 'ACTIVO' },
   badgePrivateStatus: { pt: 'PRIVADO', en: 'PRIVATE', es: 'PRIVADO' },
   badgeCriticalWindow: { pt: 'JANELA CRÍTICA', en: 'CRITICAL WINDOW', es: 'VENTANA CRÍTICA' },
+
+  exportTitle: { pt: 'ESCOLHA O PERÍODO', en: 'CHOOSE PERIOD', es: 'ELIGE EL PERÍODO' },
+  exportOpt7: { pt: 'Exportar últimos 7 dias', en: 'Export last 7 days', es: 'Exportar últimos 7 días' },
+  exportOpt7Sub: { pt: 'Relatório semanal de combate', en: 'Weekly combat report', es: 'Informe semanal de combate' },
+  exportOpt30: { pt: 'Exportar últimos 30 dias', en: 'Export last 30 days', es: 'Exportar últimos 30 días' },
+  exportOpt30Sub: { pt: 'Visão mensal de consistência', en: 'Monthly consistency overview', es: 'Visión mensual de consistencia' },
+  exportOptAll: { pt: 'Exportar todo o período', en: 'Export all-time period', es: 'Exportar todo el período' },
+  exportOptAllSub: { pt: 'Histórico completo desde o marco zero', en: 'Complete history from ground zero', es: 'Historial completo desde el marco cero' },
+  exportToastSuccess: { pt: 'Relatório de combate gerado com sucesso!', en: 'Combat report generated successfully!', es: '¡Informe de combate generado con éxito!' },
 };
 
 const STATS_CATEGORIES = [
@@ -341,6 +351,7 @@ export default function StatsView() {
   const [timelineRange, setTimelineRange] = useState(30);
   const [customStart, setCustomStart] = useState(() => dstr(new Date(Date.now() - 29 * 86400000)));
   const [customEnd, setCustomEnd] = useState(() => today());
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   useEffect(() => {
     fetch('/api/hall')
@@ -682,7 +693,79 @@ export default function StatsView() {
     openModal(<DayModal />);
   };
 
-  const shareImage = () => {
+  const getPeriodReport = (period = '7') => {
+    let numDays = 7;
+    if (period === '30') numDays = 30;
+    else if (period === 'all') {
+      numDays = Math.max(30, Math.min(365, L.progressDays(S) || 30));
+    }
+
+    const days = [];
+    for (let i = numDays - 1; i >= 0; i--) {
+      days.push(dstr(new Date(Date.now() - i * 86400000)));
+    }
+
+    let wins = 0, falls = 0, part = 0, none = 0, habDone = 0;
+    const checkins = (S && S.checkins) || {};
+    const forgeDone = (S && S.forge && S.forge.done) || {};
+    const activeHabits = (S && S.forge && S.forge.active) || [];
+
+    days.forEach((ds) => {
+      const c = checkins[ds];
+      if (c && c.ok) wins++;
+      else if (c && c.fail) falls++;
+      else if (c && (c.p || c.m || c.r)) part++;
+      else none++;
+
+      habDone += (forgeDone[ds] || []).length;
+    });
+
+    const habPossible = activeHabits.length * numDays;
+    const sos = ((S && S.sosLog) || []).filter((e) => days.includes(e.d)).length;
+    const consist = habPossible > 0 ? Math.round((habDone / habPossible) * 100) : 0;
+
+    let periodTitle = {
+      pt: 'RELATÓRIO DE GUERRA (7 DIAS)',
+      en: 'WAR REPORT (7 DAYS)',
+      es: 'INFORME DE GUERRA (7 DÍAS)',
+    };
+    if (period === '30') {
+      periodTitle = {
+        pt: 'RELATÓRIO DE GUERRA (30 DIAS)',
+        en: 'WAR REPORT (30 DAYS)',
+        es: 'INFORME DE GUERRA (30 DÍAS)',
+      };
+    } else if (period === 'all') {
+      periodTitle = {
+        pt: 'RELATÓRIO GERAL DE GUERRA (TODO O PERÍODO)',
+        en: 'ALL-TIME WAR REPORT (FULL PERIOD)',
+        es: 'INFORME GENERAL DE GUERRA (TODO EL PERÍODO)',
+      };
+    }
+
+    return {
+      period,
+      numDays,
+      days,
+      wins,
+      falls,
+      part,
+      none,
+      habDone,
+      habPossible,
+      consist,
+      sos: period === 'all' ? (L.sosWins(S) || sos) : sos,
+      purity: S?.purity != null ? S.purity : 100,
+      streak: L.currentStreak(S),
+      best: S?.best || 0,
+      daysTotal: L.progressDays(S),
+      periodTitle: periodTitle[curLang] || periodTitle.pt,
+    };
+  };
+
+  const shareImage = (period = '7') => {
+    AF.click();
+    const rep = getPeriodReport(period);
     const c = document.createElement('canvas');
     c.width = 1080;
     c.height = 1080;
@@ -697,34 +780,34 @@ export default function StatsView() {
     x.font = 'bold 62px sans-serif';
     x.fillText('FORJANDO GUERREIROS ⚔', 540, 170);
     x.fillStyle = '#F5F5F7';
-    x.font = 'bold 40px sans-serif';
-    x.fillText(T('cv2', 'RELATÓRIO SEMANAL DE GUERRA'), 540, 240);
+    x.font = 'bold 38px sans-serif';
+    x.fillText(rep.periodTitle, 540, 240);
     x.fillStyle = '#8E8E93';
     x.font = '28px sans-serif';
     x.fillText(
-      wr.days[0].split('-').reverse().slice(0, 2).join('/') +
+      rep.days[0].split('-').reverse().slice(0, 2).join('/') +
         T('cv_to', ' a ') +
-        wr.days[6].split('-').reverse().slice(0, 2).join('/'),
+        rep.days[rep.days.length - 1].split('-').reverse().slice(0, 2).join('/'),
       540,
       290
     );
     x.fillStyle = '#FFC846';
     x.font = 'bold 120px sans-serif';
-    x.fillText(wr.daysTotal + T('cv_days', ' DIAS'), 540, 450);
+    x.fillText(rep.daysTotal + T('cv_days', ' DIAS'), 540, 450);
     x.fillStyle = '#F5F5F7';
     x.font = 'bold 44px sans-serif';
     x.fillText(
-      '🏆 ' + wr.wins + T('cv_wins', ' vitórias') + '      💥 ' + wr.falls + T('cv_falls', ' quedas'),
+      '🏆 ' + rep.wins + T('cv_wins', ' vitórias') + '      💥 ' + rep.falls + T('cv_falls', ' quedas'),
       540,
       570
     );
     x.fillText(
-      '🔥 ' + T('cv_streak', 'streak') + ' ' + wr.streak + '      ✦ ' + T('cv_purity', 'pureza') + ' ' + wr.purity + '%',
+      '🔥 ' + T('cv_streak', 'streak') + ' ' + rep.streak + '      ✦ ' + T('cv_purity', 'pureza') + ' ' + rep.purity + '%',
       540,
       650
     );
     x.fillText(
-      '🔨 ' + T('cv_cons', 'consistência') + ' ' + wr.consist + '%      🛡 S.O.S ' + wr.sos,
+      '🔨 ' + T('cv_cons', 'consistência') + ' ' + rep.consist + '%      🛡 S.O.S ' + rep.sos,
       540,
       730
     );
@@ -737,15 +820,16 @@ export default function StatsView() {
 
     c.toBlob((b) => {
       if (!b) return;
-      const f = new File([b], T('cv_file', 'relatorio-forjando-guerreiros.png'), { type: 'image/png' });
+      const f = new File([b], `relatorio-guerra-${period}-forjando-guerreiros.png`, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [f] })) {
-        navigator.share({ files: [f], title: T('cv_sharetitle', 'Relatório Semanal de Guerra') }).catch(() => {});
+        navigator.share({ files: [f], title: rep.periodTitle }).catch(() => {});
       } else {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(b);
         a.download = f.name;
         a.click();
       }
+      toast(tx('exportToastSuccess', 'Relatório de combate gerado com sucesso!'));
     }, 'image/png');
   };
 
@@ -799,18 +883,109 @@ export default function StatsView() {
           })}
         </div>
 
-        {/* BOTÃO DE AÇÃO RÁPIDA: EXPORTAR GUERRA */}
-        <button
-          type="button"
-          onClick={() => {
-            AF.click();
-            shareImage();
-          }}
-          className="flex-none py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
-        >
-          <Share2 size={13} strokeWidth={2.5} className="flex-none" />
-          <span>{tx('btnShareWar', 'EXPORTAR GUERRA')}</span>
-        </button>
+        {/* BOTÃO DE AÇÃO RÁPIDA: EXPORTAR GUERRA COM 3 OPÇÕES DE PERÍODO */}
+        <div className="relative flex-none">
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              setShowExportMenu((prev) => !prev);
+            }}
+            className="py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 whitespace-nowrap"
+          >
+            <Share2 size={13} strokeWidth={2.5} className="flex-none" />
+            <span>{tx('btnShareWar', 'EXPORTAR GUERRA')}</span>
+            <ChevronDown size={13} className={`transition-transform duration-200 ${showExportMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* MENU DROPDOWN DE 3 OPÇÕES DE PERÍODO */}
+          {showExportMenu && (
+            <>
+              {/* BACKDROP TRANSPARENTE PARA FECHAR AO CLICAR FORA */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowExportMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-72 z-50 p-1.5 rounded-xl border border-gold/40 bg-[#141419] shadow-2xl animate-in fade-in zoom-in-95">
+                <div className="px-2.5 py-1.5 border-b border-line/60 mb-1 flex items-center justify-between">
+                  <span className="text-[10px] font-mono font-bold text-gold uppercase tracking-wider">
+                    {tx('exportTitle', 'ESCOLHA O PERÍODO')}
+                  </span>
+                  <span className="text-[10px] text-muted font-mono">PNG 1080px</span>
+                </div>
+
+                {/* Opção 1: Últimos 7 Dias */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    shareImage('7');
+                  }}
+                  className="w-full p-2 rounded-lg hover:bg-surface2/80 transition-colors flex items-center gap-2.5 text-left cursor-pointer group active:scale-95"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center text-gold group-hover:scale-105 transition-transform flex-none">
+                    <Clock3 size={15} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-ink group-hover:text-gold transition-colors flex items-center justify-between">
+                      <span>{tx('exportOpt7', 'Exportar últimos 7 dias')}</span>
+                      <span className="text-[9.5px] font-mono text-gold px-1.5 py-0.5 rounded bg-gold/10">7d</span>
+                    </div>
+                    <p className="text-[10px] text-muted truncate">
+                      {tx('exportOpt7Sub', 'Relatório semanal de combate')}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Opção 2: Últimos 30 Dias */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    shareImage('30');
+                  }}
+                  className="w-full p-2 rounded-lg hover:bg-surface2/80 transition-colors flex items-center gap-2.5 text-left cursor-pointer group active:scale-95"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center text-gold group-hover:scale-105 transition-transform flex-none">
+                    <Calendar size={15} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-ink group-hover:text-gold transition-colors flex items-center justify-between">
+                      <span>{tx('exportOpt30', 'Exportar últimos 30 dias')}</span>
+                      <span className="text-[9.5px] font-mono text-gold px-1.5 py-0.5 rounded bg-gold/10">30d</span>
+                    </div>
+                    <p className="text-[10px] text-muted truncate">
+                      {tx('exportOpt30Sub', 'Visão mensal de consistência')}
+                    </p>
+                  </div>
+                </button>
+
+                {/* Opção 3: Todo o Período */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    shareImage('all');
+                  }}
+                  className="w-full p-2 rounded-lg hover:bg-surface2/80 transition-colors flex items-center gap-2.5 text-left cursor-pointer group active:scale-95"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/50 flex items-center justify-center text-gold group-hover:scale-105 transition-transform flex-none">
+                    <Trophy size={15} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-ink group-hover:text-gold transition-colors flex items-center justify-between">
+                      <span>{tx('exportOptAll', 'Exportar todo o período')}</span>
+                      <span className="text-[9.5px] font-mono text-gold px-1.5 py-0.5 rounded bg-gold/10">ALL</span>
+                    </div>
+                    <p className="text-[10px] text-muted truncate">
+                      {tx('exportOptAllSub', 'Histórico completo desde o marco zero')}
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* CATEGORIA 1: GERAL & CONSISTÊNCIA */}
@@ -1014,24 +1189,13 @@ export default function StatsView() {
 
             {/* 3. Relatório Semanal de Guerra (Largura Total) */}
             <div className="lg:col-span-2 rounded-xl border border-gold/30 bg-gradient-to-br from-[#15141c] via-[#101015] to-[#15141c] p-4 sm:p-5 shadow-sm">
-              <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-line/50">
+              <div className="mb-3.5 flex items-center justify-between gap-2 pb-2.5 border-b border-line/50">
                 <div className="flex items-center gap-2">
                   <Trophy size={16} className="text-gold" />
                   <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
                     {T('wk_k', '📜 RELATÓRIO SEMANAL DE GUERRA (ÚLTIMOS 7 DIAS)')}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  className="py-1.5 px-3 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
-                  onClick={() => {
-                    AF.click();
-                    shareImage();
-                  }}
-                >
-                  <Share2 size={13} strokeWidth={2.5} />
-                  <span>{T('wk_share', 'COMPARTILHAR IMAGEM')}</span>
-                </button>
               </div>
               <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
                 <div className="rounded-xl border border-ok/30 bg-ok/10 p-3 text-center">
@@ -1514,32 +1678,6 @@ export default function StatsView() {
             <p className="fnote mt-3 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
               {T('hall_note', 'Ranking anônimo com pseudônimos — apenas dias e patamar.')}
             </p>
-          </div>
-
-          {/* Cartão de Compartilhamento Semanal */}
-          <div className="rounded-xl border border-gold/30 bg-gradient-to-br from-[#16151e] via-[#101015] to-[#16151e] p-4 sm:p-5 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div>
-                <span className="text-xs font-bold font-mono text-gold flex items-center gap-1.5 uppercase tracking-wider">
-                  <Share2 size={14} />
-                  <span>{T('hall_share_title', 'Cartão Semanal de Honra & Vitória')}</span>
-                </span>
-                <p className="text-xs text-muted mt-1 leading-relaxed">
-                  {T('hall_share_desc', 'Exporte o seu resumo semanal oficial com gráficos vetoriais, dias limpos e streak para compartilhar ou salvar nas suas notas.')}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black flex items-center gap-1.5 whitespace-nowrap flex-none w-full sm:w-auto justify-center cursor-pointer shadow-sm active:scale-95"
-                onClick={() => {
-                  AF.click();
-                  shareImage();
-                }}
-              >
-                <Share2 size={13} strokeWidth={2.5} />
-                <span>{T('hall_share_btn', 'Exportar Imagem')}</span>
-              </button>
-            </div>
           </div>
         </div>
       )}
