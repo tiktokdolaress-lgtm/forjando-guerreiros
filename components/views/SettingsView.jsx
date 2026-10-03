@@ -4,7 +4,8 @@ import {
   Cloud, RefreshCw, LogOut, Download, Upload, Skull, Plus, X, 
   ShieldCheck, Languages, Bell, BellOff, UserX, Handshake, Copy, 
   Trophy, Palette, Check, Volume2, Shield, Database, ChevronRight, Lock,
-  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Crown, Compass
+  MoreVertical, MessageSquarePlus, Send, Scroll, Sparkles, CheckCircle2, Crown, Compass,
+  Flame, Award, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Toggle, Chk, Empty } from '@/components/ui';
@@ -20,6 +21,33 @@ import ChangelogModal from '../ChangelogModal';
 import AppTourModal, { TOUR_STORAGE_KEY } from '../AppTourModal';
 import { CURRENT_APP_VERSION } from '@/lib/changelog';
 
+/* =========================================================================
+   DICIONÁRIO TRILÍNGUE — CONFIGURAÇÕES (PADRÃO DA FORJA)
+   ========================================================================= */
+export const SETTINGS_I18N = {
+  catGeneral: { pt: 'Geral & Visual', en: 'General & Visual', es: 'General y Visual' },
+  catFeedback: { pt: 'Sugestões & Bugs', en: 'Feedback & Bugs', es: 'Sugerencias y Errores' },
+  catSecurity: { pt: 'Segurança & Acesso', en: 'Security & Access', es: 'Seguridad y Acceso' },
+  catData: { pt: 'Conta & Dados', en: 'Account & Data', es: 'Cuenta y Datos' },
+
+  headlineGeneral: { pt: 'IDENTIDADE VISUAL & STATUS DE GUERRA', en: 'VISUAL IDENTITY & WAR STATUS', es: 'IDENTIDAD VISUAL Y ESTADO DE GUERRA' },
+  subtitleGeneral: { pt: 'Customização de temas, idioma, áudio tático e alinhamento dos pilares de combate.', en: 'Theme customization, language, tactical audio, and combat pillars alignment.', es: 'Personalización de temas, idioma, audio táctico y alineación de pilares de combate.' },
+
+  headlineFeedback: { pt: 'CONSELHO DE GUERRA & CANAL DIRETO', en: 'WAR COUNCIL & DIRECT CHANNEL', es: 'CONSEJO DE GUERRA Y CANAL DIRECTO' },
+  subtitleFeedback: { pt: 'Sugira novos recursos, relate bugs e acompanhe as respostas diretas do Comando.', en: 'Suggest new features, report bugs, and track direct replies from Command.', es: 'Sugiere nuevas funciones, reporta errores y sigue las respuestas directas del Comando.' },
+
+  headlineSecurity: { pt: 'BLINDAGEM, NOTIFICAÇÕES & GUARDIÃO', en: 'SHIELDING, NOTIFICATIONS & GUARDIAN', es: 'BLINDAJE, NOTIFICACIONES Y GUARDIÁN' },
+  subtitleSecurity: { pt: 'Bloqueio por PIN de 4 dígitos, motor duplo de alertas e parceiro de responsabilidade.', en: '4-digit PIN lock, dual alert engine, and accountability partner link.', es: 'Bloqueo por PIN de 4 dígitos, motor doble de alertas y compañero de responsabilidad.' },
+
+  headlineData: { pt: 'SOBERANIA DE DADOS, NUVEM & CÓDIGO', en: 'DATA SOVEREIGNTY, CLOUD & CODE', es: 'SOBERANÍA DE DATOS, NUBE Y CÓDIGO' },
+  subtitleData: { pt: 'Sincronização na nuvem, backups em JSON, frases customizadas e controle de conta.', en: 'Cloud sync, JSON backups, custom principles, and account control.', es: 'Sincronización en la nube, copias de seguridad en JSON, frases personalizadas y control de cuenta.' },
+
+  badgeSystem: { pt: 'SISTEMA FORJA', en: 'FORGE SYSTEM', es: 'SISTEMA FORJA' },
+  badgeCommand: { pt: 'CANAL DO COMANDO', en: 'COMMAND CHANNEL', es: 'CANAL DEL COMANDO' },
+  badgeShield: { pt: 'BLINDAGEM ATIVA', en: 'ACTIVE SHIELD', es: 'BLINDAJE ACTIVO' },
+  badgeSovereignty: { pt: 'SOBERANIA TOTAL', en: 'TOTAL SOVEREIGNTY', es: 'SOBERANÍA TOTAL' },
+};
+
 const SUB_LBL_FALLBACK = {
   pt: { active: '✅ ATIVA', trialing: '🎁 TESTE GRÁTIS EM CURSO', inactive: '⛔ INATIVA', canceled: '🚫 CANCELADA', past_due: '⚠️ PAGAMENTO PENDENTE', local: '💾 MODO LOCAL' },
   en: { active: '✅ ACTIVE', trialing: '🎁 FREE TRIAL ACTIVE', inactive: '⛔ INACTIVE', canceled: '🚫 CANCELED', past_due: '⚠️ PAYMENT PENDING', local: '💾 LOCAL MODE' },
@@ -33,16 +61,18 @@ const THEMES = [
 ];
 
 const SETTINGS_CATEGORIES = [
-  { id: 'general', key: 'cat_general', label: 'Geral & Visual', icon: Palette },
-  { id: 'feedback', key: 'cat_feedback', label: 'Sugestões & Bugs', icon: MessageSquarePlus },
-  { id: 'security', key: 'cat_security', label: 'Segurança & Acesso', icon: Shield },
-  { id: 'data', key: 'cat_data', label: 'Conta & Dados', icon: Database },
+  { id: 'general', key: 'catGeneral', label: 'Geral & Visual', icon: Palette },
+  { id: 'feedback', key: 'catFeedback', label: 'Sugestões & Bugs', icon: MessageSquarePlus },
+  { id: 'security', key: 'catSecurity', label: 'Segurança & Acesso', icon: Shield },
+  { id: 'data', key: 'catData', label: 'Conta & Dados', icon: Database },
 ];
 
 export default function SettingsView() {
   const { S, update, toast, confirmBox, auth, setPhase, setAuth, authRef, sub, refreshSub, openModal, closeModal, setTab } = useApp();
   const st = S.settings;
   const lang = (st && st.lang) || 'pt';
+  const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
+  const tx = (k, fb) => (SETTINGS_I18N[k] && SETTINGS_I18N[k][curLang]) || fb;
   const currentTheme = st.theme || 'dark';
   const T = (id, fb) => cx(lang, 'settings', id) || cx(lang, 'life', id) || fb;
   
@@ -322,13 +352,10 @@ export default function SettingsView() {
   const showSecurity = activeCategory === 'security';
   const showData = activeCategory === 'data';
 
-  const activeCatObj = SETTINGS_CATEGORIES.find(c => c.id === activeCategory) || SETTINGS_CATEGORIES[0];
-  const ActiveIcon = activeCatObj.icon;
-
   return (
-    <div className="flex flex-col gap-3 pb-16">
-      {/* SELETOR DE CATEGORIAS RESPONSIVO */}
-      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2">
+    <div className="flex flex-col gap-4 pb-16 w-full max-w-full min-w-0">
+      {/* NAVEGAÇÃO DE SUB-ABAS EM AÇO FORJADO & OURO */}
+      <div className="w-full max-w-full min-w-0 p-1 rounded-xl bg-surface2/80 border border-line/80 flex items-center gap-1 sm:gap-2 select-none">
         {SETTINGS_CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const sel = activeCategory === cat.id;
@@ -340,841 +367,1032 @@ export default function SettingsView() {
                 AF.click();
                 setActiveCategory(cat.id);
               }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all truncate select-none cursor-pointer ${
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 sm:px-3 rounded-lg text-xs font-mono font-bold transition-all truncate select-none cursor-pointer active:scale-95 ${
                 sel
-                  ? 'bg-gold text-[#141414] shadow-sm font-extrabold'
+                  ? 'bg-gold text-[#141414] shadow-sm font-black'
                   : 'text-muted hover:text-ink hover:bg-surface/50'
               }`}
             >
               <Icon size={14} className="flex-none" />
-              <span className="truncate">{T(cat.key, cat.label)}</span>
+              <span className="truncate">{tx(cat.key, cat.label)}</span>
             </button>
           );
         })}
       </div>
 
-      {/* 1. SEÇÃO GERAL & VISUAL */}
+      {/* =========================================================================
+          SUB-ABA 1: GERAL & VISUAL
+          ========================================================================= */}
       {showGeneral && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch">
-          {/* IDENTIDADE VISUAL & ÁUDIO */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><Palette size={13} className="mr-1 inline text-gold" /> {T('sec_theme', 'TEMA & IDENTIDADE VISUAL')}</K>
-                <span className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20">
-                  {(() => {
-                    const curr = THEMES.find(t => t.id === currentTheme);
-                    return curr ? T(curr.nameKey, curr.fallbackName) : currentTheme;
-                  })()}
-                </span>
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO GERAL */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Palette size={18} />
               </div>
-
-              {/* Seletor Compacto de Temas */}
-              <div className="grid grid-cols-3 gap-1.5 mb-3">
-                {THEMES.map((th) => {
-                  const sel = currentTheme === th.id;
-                  return (
-                    <button
-                      key={th.id}
-                      type="button"
-                      onClick={() => selectTheme(th.id)}
-                      className={`flex flex-col items-center justify-center rounded border p-2 text-center transition-all ${
-                        sel
-                          ? 'border-gold bg-gold/15 text-gold shadow-[0_0_8px_rgba(255,200,70,0.2)] font-bold'
-                          : 'border-line bg-surface2 text-muted hover:border-gold/40 hover:text-ink'
-                      }`}
-                    >
-                      <span className="text-base mb-0.5">{th.icon}</span>
-                      <span className="text-[11.5px] leading-tight truncate w-full">{T(th.nameKey, th.fallbackName)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Linhas integradas de Idioma & Efeitos Sonoros */}
-              <div className="space-y-2 pt-2.5 border-t border-line/60">
-                <div className="flex items-center justify-between gap-3 p-2 rounded bg-surface2/60 border border-line/40">
-                  <div className="flex items-center gap-2">
-                    <Languages size={14} className="text-gold" />
-                    <div>
-                      <b className="text-xs text-ink">{T('lang_title', 'Idioma')}</b>
-                      <small className="block text-[10px] text-muted">{T('lang_desc', 'Interface do sistema')}</small>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    {['pt', 'en', 'es'].map((l) => (
-                      <button
-                        key={l}
-                        className={st.lang === l ? 'chip text-[10.5px] py-0.5 px-2.5' : 'chip-dim text-[10.5px] py-0.5 px-2.5'}
-                        onClick={() => {
-                          update((s) => { s.settings.lang = l; });
-                          setLangCookie(l);
-                          toast(T('lang_toast', '🌐 Idioma: ') + l.toUpperCase());
-                        }}
-                      >
-                        {l.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineGeneral', 'IDENTIDADE VISUAL & STATUS DE GUERRA')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {tx('badgeSystem', 'SISTEMA FORJA')}
+                  </span>
                 </div>
-
-                <div className="flex items-center justify-between gap-3 p-2 rounded bg-surface2/60 border border-line/40">
-                  <div className="flex items-center gap-2">
-                    <Volume2 size={14} className="text-gold" />
-                    <div>
-                      <b className="text-xs text-ink">{T('sound_title', 'Efeitos Sonoros')}</b>
-                      <small className="block text-[10px] text-muted">{T('sound_desc', 'Feedback tático nas ações')}</small>
-                    </div>
-                  </div>
-                  <Toggle
-                    on={st.sound}
-                    onChange={() => {
-                      update((s) => { s.settings.sound = !s.settings.sound; });
-                      if (!st.sound) AF.click();
-                    }}
-                  />
-                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleGeneral', 'Customização de temas, idioma, áudio tático e alinhamento dos pilares de combate.')}
+                </p>
               </div>
             </div>
-          </Card>
-
-          {/* STATUS DE VIDA & PILARES */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K>💍 {T('sec_status', 'STATUS DE VIDA & PILARES')}</K>
-                <span className="text-[10px] font-mono text-muted">{T('status_impact_badge', 'IMPACTO NO QG')}</span>
-              </div>
-              <p className="text-[11.5px] text-muted mb-2 leading-relaxed">
-                {T('status_desc', 'Define quais hábitos e pilares são cobrados diariamente no seu Quartel General.')}
-              </p>
-
-              <div className="space-y-1.5">
-                {Object.keys(LIFE_STATUS).map((m) => {
-                  const LS = cx(lang, 'life', m) || LIFE_STATUS[m];
-                  const sel = L.lifeMode(S) === m;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setStatus(m)}
-                      className={`w-full flex items-start gap-2.5 p-2 rounded border text-left transition-all ${
-                        sel
-                          ? 'border-gold bg-gold/10 text-ink'
-                          : 'border-line/60 bg-surface2/60 text-muted hover:border-gold/30 hover:text-ink'
-                      }`}
-                    >
-                      <span className={`grid h-4 w-4 flex-none place-items-center rounded-full border text-[9px] font-bold mt-0.5 ${
-                        sel ? 'border-gold bg-gold text-[#141414]' : 'border-line text-transparent'
-                      }`}>✓</span>
-                      <div className="flex-1 min-w-0">
-                        <b className={`text-xs ${sel ? 'text-gold' : 'text-ink'}`}>{LS.label}</b>
-                        <p className="text-[10.5px] text-muted leading-tight truncate">{LS.desc}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>
-
-          {/* BANNER NOTAS DA ATUALIZAÇÃO NO GERAL */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-amber-600/40 bg-gradient-to-r from-amber-950/30 via-surface2/60 to-surface border-dashed">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-1.5 rounded-lg bg-amber-950/80 border border-amber-500/40 text-amber-400 flex-none">
-                  <Scroll size={16} />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <b className="text-xs text-amber-200">{T('decrees_banner_title', 'Decretos da Forja (Notas da Atualização)')}</b>
-                    <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
-                      {CURRENT_APP_VERSION}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted truncate">
-                    {T('decrees_banner_sub', 'Veja o que mudou nesta versão e acompanhe as melhorias da forja.')}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
-                className="flex-none px-3 py-1.5 rounded-lg border border-amber-500/50 bg-amber-950/80 text-amber-300 text-xs font-bold hover:bg-amber-900 transition-colors cursor-pointer"
-              >
-                {T('decrees_banner_btn', 'Ver Novidades')}
-              </button>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="px-2.5 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
+                🎨 {THEMES.find(t => t.id === currentTheme)?.icon} {THEMES.find(t => t.id === currentTheme)?.fallbackName}
+              </span>
             </div>
           </div>
 
-          {/* BANNER MANUAL TÁTICO / TOUR DO GUERREIRO */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gold/40 bg-gradient-to-r from-gold/15 via-surface2/60 to-surface border-dashed">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-1.5 rounded-lg bg-gold/15 border border-gold/40 text-gold flex-none">
-                  <Compass size={16} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+            {/* IDENTIDADE VISUAL & ÁUDIO */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Palette size={15} />
+                    <span>{T('sec_theme', 'TEMA & IDENTIDADE VISUAL')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/10 border border-gold/20 font-bold">
+                    {(() => {
+                      const curr = THEMES.find(t => t.id === currentTheme);
+                      return curr ? T(curr.nameKey, curr.fallbackName) : currentTheme;
+                    })()}
+                  </span>
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <b className="text-xs text-gold">{T('tour_banner_title', 'Manual do Guerreiro (Tour de Apresentação)')}</b>
-                    <span className="text-[10px] font-mono text-gold font-bold px-1.5 py-0.2 rounded bg-gold/10 border border-gold/30">
-                      {T('tour_banner_steps_badge', '5 ETAPAS')}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-muted truncate">
-                    {T('tour_banner_sub', 'Relembre como usar as 3 Torres do QG, Forja de Hábitos, Missões Operacionais e Botão S.O.S.')}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => openModal(<AppTourModal onClose={closeModal} />, 'tour dialog')}
-                className="flex-none px-3 py-1.5 rounded-lg border border-gold/50 bg-gold/20 text-gold text-xs font-bold hover:bg-gold/30 transition-colors cursor-pointer"
-              >
-                {T('tour_banner_btn', 'Ver Tour do App')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* SEÇÃO 2: SUGESTÕES, BUGS & DECRETOS DA FORJA */}
-      {showFeedback && (
-        <>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
-          {/* FORMULÁRIO PRINCIPAL DE FEEDBACK */}
-          <Card className="lg:col-span-2 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><MessageSquarePlus size={13} className="mr-1 inline text-gold" /> {T('fb_title', 'CONSELHO DE GUERRA & FEEDBACK')}</K>
-                {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={fetchAdminFeedbacks}
-                    className="text-[10px] font-mono text-gold uppercase px-2 py-0.5 rounded bg-gold/15 border border-gold/40 hover:bg-gold/30 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
-                    title={T('admin_btn_title', 'Painel do Comando - Ver todos os feedbacks recebidos')}
-                  >
-                    <span className="font-bold">{T('fb_badge_admin', 'COMANDO · CANAL DIRETO')}</span>
-                    <span className="text-[11px]">👁️</span>
-                  </button>
-                )}
-              </div>
-              <p className="text-xs text-muted mb-3 leading-relaxed">
-                {T('fb_sub', 'Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.')}
-              </p>
-
-              {/* Seletor de Tipo */}
-              <div className="mb-3">
-                <label className="block text-[11px] font-mono text-ink/80 mb-1.5 font-bold uppercase">
-                  {T('fb_type_label', 'TIPO DE MENSAGEM')}
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                  {[
-                    { id: 'suggestion', label: T('fb_opt_sugg', 'Sugestão'), icon: '💡', desc: T('fb_opt_sugg_sub', 'Nova ideia') },
-                    { id: 'bug', label: T('fb_opt_bug', 'Relatar Bug'), icon: '🐛', desc: T('fb_opt_bug_sub', 'Erro no app') },
-                    { id: 'ux', label: T('fb_opt_ux', 'Usabilidade'), icon: '⚔️', desc: T('fb_opt_ux_sub', 'Dificuldade') },
-                    { id: 'praise', label: T('fb_opt_praise', 'Elogio'), icon: '⭐', desc: T('fb_opt_praise_sub', 'Testemunho') },
-                  ].map((cat) => {
-                    const sel = feedbackCategory === cat.id;
+                {/* Seletor Compacto de Temas */}
+                <div className="grid grid-cols-3 gap-2 mb-3.5">
+                  {THEMES.map((th) => {
+                    const sel = currentTheme === th.id;
                     return (
                       <button
-                        key={cat.id}
+                        key={th.id}
                         type="button"
-                        onClick={() => {
-                          try { AF.click(); } catch (e) {}
-                          setFeedbackCategory(cat.id);
-                        }}
-                        className={`flex flex-col items-center justify-center p-2 rounded-lg border text-center transition-all cursor-pointer ${
+                        onClick={() => selectTheme(th.id)}
+                        className={`flex flex-col items-center justify-center rounded-xl border p-2.5 text-center transition-all cursor-pointer active:scale-95 ${
                           sel
-                            ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
-                            : 'border-line bg-surface2 text-muted hover:border-gold/40 hover:text-ink'
+                            ? 'border-gold bg-gold/15 text-gold shadow-[0_0_8px_rgba(255,200,70,0.2)] font-bold'
+                            : 'border-line/70 bg-surface2/70 text-muted hover:border-gold/40 hover:text-ink'
                         }`}
                       >
-                        <span className="text-base mb-0.5">{cat.icon}</span>
-                        <span className="text-[11px] leading-tight font-bold">{cat.label}</span>
+                        <span className="text-xl mb-1">{th.icon}</span>
+                        <span className="text-xs font-mono font-bold leading-tight truncate w-full">{T(th.nameKey, th.fallbackName)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Linhas integradas de Idioma & Efeitos Sonoros */}
+                <div className="space-y-2 pt-2.5 border-t border-line/50">
+                  <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-surface2/60 border border-line/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#181822] border border-line/80 flex items-center justify-center text-gold flex-none">
+                        <Languages size={15} />
+                      </div>
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('lang_title', 'Idioma')}</b>
+                        <small className="block text-[10.5px] text-muted">{T('lang_desc', 'Interface do sistema')}</small>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {['pt', 'en', 'es'].map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          className={`font-mono text-xs font-bold py-1 px-3 rounded-lg transition-all cursor-pointer active:scale-95 ${
+                            st.lang === l
+                              ? 'bg-gold text-[#141414] font-black shadow-sm'
+                              : 'bg-surface2 border border-line/70 text-muted hover:text-ink'
+                          }`}
+                          onClick={() => {
+                            AF.click();
+                            update((s) => { s.settings.lang = l; });
+                            setLangCookie(l);
+                            toast(T('lang_toast', '🌐 Idioma: ') + l.toUpperCase());
+                          }}
+                        >
+                          {l.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-surface2/60 border border-line/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#181822] border border-line/80 flex items-center justify-center text-gold flex-none">
+                        <Volume2 size={15} />
+                      </div>
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('sound_title', 'Efeitos Sonoros')}</b>
+                        <small className="block text-[10.5px] text-muted">{T('sound_desc', 'Feedback tático nas ações')}</small>
+                      </div>
+                    </div>
+                    <Toggle
+                      on={st.sound}
+                      onChange={() => {
+                        update((s) => { s.settings.sound = !s.settings.sound; });
+                        if (!st.sound) AF.click();
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* STATUS DE VIDA & PILARES */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <span>💍</span>
+                    <span>{T('sec_status', 'STATUS DE VIDA & PILARES')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-muted uppercase px-2 py-0.5 rounded bg-surface2 border border-line/60">
+                    {T('status_impact_badge', 'IMPACTO NO QG')}
+                  </span>
+                </div>
+                <p className="text-xs text-muted mb-3 leading-relaxed">
+                  {T('status_desc', 'Define quais hábitos e pilares são cobrados diariamente no seu Quartel General.')}
+                </p>
+
+                <div className="space-y-2">
+                  {Object.keys(LIFE_STATUS).map((m) => {
+                    const LS = cx(lang, 'life', m) || LIFE_STATUS[m];
+                    const sel = L.lifeMode(S) === m;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => {
+                          AF.click();
+                          setStatus(m);
+                        }}
+                        className={`w-full flex items-start gap-3 p-3 rounded-xl border text-left transition-all cursor-pointer active:scale-95 ${
+                          sel
+                            ? 'border-gold bg-gradient-to-r from-gold/15 to-transparent text-ink shadow-sm'
+                            : 'border-line/60 bg-surface2/60 text-muted hover:border-gold/30 hover:text-ink'
+                        }`}
+                      >
+                        <span className={`grid h-5 w-5 flex-none place-items-center rounded-full border text-[10px] font-bold mt-0.5 ${
+                          sel ? 'border-gold bg-gold text-[#141414]' : 'border-line text-transparent'
+                        }`}>✓</span>
+                        <div className="flex-1 min-w-0">
+                          <b className={`text-xs font-display font-bold block ${sel ? 'text-gold' : 'text-ink'}`}>{LS.label}</b>
+                          <p className="text-[11px] text-muted leading-relaxed mt-0.5 truncate">{LS.desc}</p>
+                        </div>
                       </button>
                     );
                   })}
                 </div>
               </div>
-
-              {/* Campo de Mensagem */}
-              <div className="mb-3">
-                <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
-                  {T('fb_msg_label', 'SUA MENSAGEM / RELATO')}
-                </label>
-                <textarea
-                  value={feedbackMsg}
-                  onChange={(e) => setFeedbackMsg(e.target.value)}
-                  placeholder={
-                    feedbackCategory === 'bug'
-                      ? T('fb_msg_ph_bug', 'Descreva o que aconteceu, em qual tela ou aparelho, e o que deu errado...')
-                      : feedbackCategory === 'suggestion'
-                      ? T('fb_msg_ph_sugg', 'Descreva a sua ideia ou recurso que tornaria o app ainda melhor...')
-                      : feedbackCategory === 'praise'
-                      ? T('fb_msg_ph_praise', 'Conte como o Forjando Guerreiros tem impactado sua disciplina e retenção...')
-                      : T('fb_msg_ph_ux', 'Conte-nos sua experiência ou dificuldade encontrada...')
-                  }
-                  rows={4}
-                  maxLength={1000}
-                  className="w-full rounded-lg border border-line bg-surface2 p-3 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none resize-none leading-relaxed"
-                />
-                <div className="flex justify-between items-center text-[10px] font-mono text-muted mt-1 px-1">
-                  <span>{T('fb_min_char', 'Mínimo 5 caracteres')}</span>
-                  <span>{feedbackMsg.length}/1000</span>
-                </div>
-              </div>
-
-              {/* Contato opcional */}
-              <div className="mb-3">
-                <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
-                  {T('fb_contact_label', 'SEU CONTATO (OPCIONAL)')}
-                </label>
-                <input
-                  type="text"
-                  value={feedbackContact}
-                  onChange={(e) => setFeedbackContact(e.target.value)}
-                  placeholder={T('fb_contact_ph', 'Seu e-mail ou @ para receber retorno, se desejar...')}
-                  className="w-full rounded-lg border border-line bg-surface2 px-3 py-2 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none"
-                />
-              </div>
-
-              {/* Botão de Envio */}
-              <button
-                type="button"
-                onClick={submitFeedback}
-                disabled={feedbackSending || feedbackMsg.trim().length < 5}
-                className="w-full btn-gold py-2.5 text-xs font-bold uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow"
-              >
-                <Send size={14} />
-                <span>{feedbackSending ? T('fb_btn_sending', 'ENVIANDO AO COMANDO...') : T('fb_btn_send', 'ENVIAR AO COMANDO DA FORJA')}</span>
-              </button>
             </div>
-          </Card>
 
-          {/* COLUNA LATERAL: NOTAS DE ATUALIZAÇÃO & HISTÓRICO */}
-          <div className="space-y-3">
-            {/* CARD DECRETOS DA FORJA (CHANGELOG) */}
-            <Card className="border-amber-600/40 bg-gradient-to-br from-surface to-amber-950/20">
-              <div className="flex items-center justify-between mb-2">
-                <K><Scroll size={13} className="mr-1 inline text-amber-400" /> {T('fb_decrees_title', 'DECRETOS DA FORJA')}</K>
-                <span className="text-[10px] font-mono text-amber-400 font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/40">
-                  {CURRENT_APP_VERSION}
-                </span>
-              </div>
-              <p className="text-xs text-muted mb-3 leading-relaxed">
-                {T('fb_decrees_sub', 'Confira todas as melhorias e correções recém-forjadas no aplicativo. Suas assinaturas e dias permanecem 100% seguros a cada versão.')}
-              </p>
-              <button
-                type="button"
-                onClick={() => openModal(<ChangelogModal onClose={closeModal} />, 'dialog')}
-                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-amber-600/50 bg-amber-950/40 text-amber-300 text-xs font-bold hover:bg-amber-900/60 transition-colors cursor-pointer"
-              >
-                <Scroll size={14} className="text-amber-400" />
-                <span>{T('fb_decrees_btn', 'VER NOTAS DA ATUALIZAÇÃO')}</span>
-              </button>
-            </Card>
-
-            {/* CARD HISTÓRICO DE FEEDBACKS ENVIADOS */}
-            <Card>
-              <div className="flex items-center justify-between mb-2">
-                <K><CheckCircle2 size={13} className="mr-1 inline text-emerald-400" /> {T('fb_history_title', 'SEUS ENVIOS')}</K>
-                <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} {T('fb_records_unit', 'registro(s)')}</span>
-              </div>
-              {feedbackHistory.length === 0 ? (
-                <Empty className="py-4 text-[11px]">
-                  {T('fb_history_empty', 'Nenhum feedback enviado ainda neste dispositivo.')}
-                </Empty>
-              ) : (
-                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                  {feedbackHistory.map((item, idx) => (
-                    <div key={idx} className="p-2 rounded border border-line/60 bg-surface2/60 text-xs">
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="font-bold text-ink uppercase text-[10px] font-mono">
-                          {item.category === 'bug' ? '🐛 Bug' : item.category === 'suggestion' ? '💡 Sugestão' : item.category === 'praise' ? '⭐ Elogio' : '⚔️ Usabilidade'}
-                        </span>
-                        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-500/30">
-                          {item.status || T('fb_status_registered', 'Registrado')}
-                        </span>
-                      </div>
-                      <p className="text-muted text-[11px] line-clamp-2 italic">
-                        "{item.message}"
-                      </p>
-                      {(() => {
-                        const replyContent = typeof item.reply === 'string'
-                          ? item.reply
-                          : (item.reply && typeof item.reply === 'object'
-                              ? (item.reply.text || item.reply.replyText || '')
-                              : '');
-                        if (!replyContent) return null;
-                        return (
-                          <div className="mt-2 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] space-y-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-300 font-bold">
-                              <Crown size={11} className="text-gold" />
-                              <span>Resposta do Comando Supremo (Criador):</span>
-                            </div>
-                            <p className="text-amber-100 font-sans italic text-xs leading-relaxed">
-                              &ldquo;{replyContent}&rdquo;
-                            </p>
-                          </div>
-                        );
-                      })()}
-                      <div className="text-[9.5px] font-mono text-muted/70 mt-1 text-right">
-                        {item.date}
-                      </div>
+            {/* BANNER NOTAS DA ATUALIZAÇÃO NO GERAL */}
+            <div className="lg:col-span-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-[#141217] to-amber-950/20 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-amber-950/80 border border-amber-500/50 text-amber-400 flex items-center justify-center flex-none">
+                    <Scroll size={17} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <b className="text-xs sm:text-sm font-display font-bold text-amber-200">{T('decrees_banner_title', 'Decretos da Forja (Notas da Atualização)')}</b>
+                      <span className="text-[10px] font-mono text-gold font-bold px-2 py-0.5 rounded bg-gold/15 border border-gold/40">
+                        {CURRENT_APP_VERSION}
+                      </span>
                     </div>
-                  ))}
+                    <p className="text-[11px] text-muted truncate mt-0.5">
+                      {T('decrees_banner_sub', 'Veja o que mudou nesta versão e acompanhe as melhorias da forja.')}
+                    </p>
+                  </div>
                 </div>
-              )}
-            </Card>
+                <button
+                  type="button"
+                  onClick={() => {
+                    AF.click();
+                    openModal(<ChangelogModal onClose={closeModal} />, 'dialog');
+                  }}
+                  className="flex-none px-4 py-2 rounded-xl border border-amber-500/60 bg-amber-950/80 text-amber-300 text-xs font-mono font-black hover:bg-amber-900 transition-colors cursor-pointer shadow-sm active:scale-95 text-center"
+                >
+                  {T('decrees_banner_btn', 'Ver Novidades')}
+                </button>
+              </div>
+            </div>
+
+            {/* BANNER MANUAL TÁTICO / TOUR DO GUERREIRO */}
+            <div className="lg:col-span-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/40 bg-gradient-to-r from-gold/15 via-[#141217] to-gold/5 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-gold/15 border border-gold/40 text-gold flex items-center justify-center flex-none">
+                    <Compass size={17} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <b className="text-xs sm:text-sm font-display font-bold text-gold">{T('tour_banner_title', 'Manual do Guerreiro (Tour de Apresentação)')}</b>
+                      <span className="text-[10px] font-mono text-gold font-bold px-2 py-0.5 rounded bg-gold/10 border border-gold/30">
+                        {T('tour_banner_steps_badge', '5 ETAPAS')}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted truncate mt-0.5">
+                      {T('tour_banner_sub', 'Relembre como usar as 3 Torres do QG, Forja de Hábitos, Missões Operacionais e Botão S.O.S.')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    AF.click();
+                    openModal(<AppTourModal onClose={closeModal} />, 'tour dialog');
+                  }}
+                  className="flex-none px-4 py-2 rounded-xl border border-gold/50 bg-gold/20 text-gold text-xs font-mono font-black hover:bg-gold/30 transition-colors cursor-pointer shadow-sm active:scale-95 text-center"
+                >
+                  {T('tour_banner_btn', 'Ver Tour do App')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* MODAL DE CONSULTA DO COMANDO (FEEDBACKS RECEBIDOS NO SERVIDOR) */}
-        {showAdminFeedbacks && isAdmin && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-            <div className="relative w-full max-w-2xl bg-surface border border-gold/40 rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col text-ink">
-              <div className="flex items-center justify-between pb-3 border-b border-line">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🛡️</span>
-                  <div>
-                    <h3 className="font-display font-bold text-base text-gold">{T('admin_panel_title', 'PAINEL DO COMANDO · FEEDBACKS RECEBIDOS')}</h3>
-                    <p className="text-[11px] text-muted font-mono">{T('admin_panel_sub', 'Feedbacks forjados pelos guerreiros no servidor')} ({adminFeedbacksList.length} total)</p>
+      {/* =========================================================================
+          SUB-ABA 2: SUGESTÕES, BUGS & DECRETOS DA FORJA
+          ========================================================================= */}
+      {showFeedback && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO FEEDBACK */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <MessageSquarePlus size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineFeedback', 'CONSELHO DE GUERRA & CANAL DIRETO')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {tx('badgeCommand', 'CANAL DO COMANDO')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleFeedback', 'Sugira novos recursos, relate bugs e acompanhe as respostas diretas do Comando.')}
+                </p>
+              </div>
+            </div>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={fetchAdminFeedbacks}
+                className="py-1.5 px-3 rounded-lg border border-gold/40 bg-gold/15 hover:bg-gold/25 text-gold text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <span>{T('fb_badge_admin', 'COMANDO · CANAL DIRETO')}</span>
+                <span className="text-xs">👁️</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            {/* FORMULÁRIO PRINCIPAL DE FEEDBACK */}
+            <div className="lg:col-span-2 rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <MessageSquarePlus size={15} />
+                    <span>{T('fb_title', 'CONSELHO DE GUERRA & FEEDBACK')}</span>
+                  </span>
+                </div>
+                <p className="text-xs text-muted mb-3 leading-relaxed">
+                  {T('fb_sub', 'Ajude a forjar um aplicativo cada vez mais implacável. Relate problemas, sugira novas ideias de melhorias ou deixe seu testemunho de batalha.')}
+                </p>
+
+                {/* Seletor de Tipo */}
+                <div className="mb-3.5">
+                  <label className="block text-[11px] font-mono text-ink/80 mb-2 font-bold uppercase">
+                    {T('fb_type_label', 'TIPO DE MENSAGEM')}
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'suggestion', label: T('fb_opt_sugg', 'Sugestão'), icon: '💡', desc: T('fb_opt_sugg_sub', 'Nova ideia') },
+                      { id: 'bug', label: T('fb_opt_bug', 'Relatar Bug'), icon: '🐛', desc: T('fb_opt_bug_sub', 'Erro no app') },
+                      { id: 'ux', label: T('fb_opt_ux', 'Usabilidade'), icon: '⚔️', desc: T('fb_opt_ux_sub', 'Dificuldade') },
+                      { id: 'praise', label: T('fb_opt_praise', 'Elogio'), icon: '⭐', desc: T('fb_opt_praise_sub', 'Testemunho') },
+                    ].map((cat) => {
+                      const sel = feedbackCategory === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            AF.click();
+                            setFeedbackCategory(cat.id);
+                          }}
+                          className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all cursor-pointer active:scale-95 ${
+                            sel
+                              ? 'border-gold bg-gold/15 text-gold font-bold shadow-sm'
+                              : 'border-line/70 bg-surface2/70 text-muted hover:border-gold/40 hover:text-ink'
+                          }`}
+                        >
+                          <span className="text-lg mb-1">{cat.icon}</span>
+                          <span className="text-xs font-mono font-bold leading-tight">{cat.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+
+                {/* Campo de Mensagem */}
+                <div className="mb-3.5">
+                  <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
+                    {T('fb_msg_label', 'SUA MENSAGEM / RELATO')}
+                  </label>
+                  <textarea
+                    value={feedbackMsg}
+                    onChange={(e) => setFeedbackMsg(e.target.value)}
+                    placeholder={
+                      feedbackCategory === 'bug'
+                        ? T('fb_msg_ph_bug', 'Descreva o que aconteceu, em qual tela ou aparelho, e o que deu errado...')
+                        : feedbackCategory === 'suggestion'
+                        ? T('fb_msg_ph_sugg', 'Descreva a sua ideia ou recurso que tornaria o app ainda melhor...')
+                        : feedbackCategory === 'praise'
+                        ? T('fb_msg_ph_praise', 'Conte como o Forjando Guerreiros tem impactado sua disciplina e retenção...')
+                        : T('fb_msg_ph_ux', 'Conte-nos sua experiência ou dificuldade encontrada...')
+                    }
+                    rows={4}
+                    maxLength={1000}
+                    className="w-full rounded-xl border border-line/80 bg-surface2/60 p-3 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none resize-none leading-relaxed"
+                  />
+                  <div className="flex justify-between items-center text-[10px] font-mono text-muted mt-1 px-1">
+                    <span>{T('fb_min_char', 'Mínimo 5 caracteres')}</span>
+                    <span>{feedbackMsg.length}/1000</span>
+                  </div>
+                </div>
+
+                {/* Contato opcional */}
+                <div className="mb-4">
+                  <label className="block text-[11px] font-mono text-ink/80 mb-1 font-bold uppercase">
+                    {T('fb_contact_label', 'SEU CONTATO (OPCIONAL)')}
+                  </label>
+                  <input
+                    type="text"
+                    value={feedbackContact}
+                    onChange={(e) => setFeedbackContact(e.target.value)}
+                    placeholder={T('fb_contact_ph', 'Seu e-mail ou @ para receber retorno, se desejar...')}
+                    className="w-full rounded-xl border border-line/80 bg-surface2/60 px-3.5 py-2.5 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none"
+                  />
+                </div>
+
+                {/* Botão de Envio */}
                 <button
                   type="button"
-                  onClick={() => setShowAdminFeedbacks(false)}
-                  className="p-1 rounded-lg border border-line text-muted hover:text-ink hover:border-gold/40"
+                  onClick={submitFeedback}
+                  disabled={feedbackSending || feedbackMsg.trim().length < 5}
+                  className="w-full py-3 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black uppercase flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95"
                 >
-                  <X size={16} />
+                  <Send size={14} />
+                  <span>{feedbackSending ? T('fb_btn_sending', 'ENVIANDO AO COMANDO...') : T('fb_btn_send', 'ENVIAR AO COMANDO DA FORJA')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* COLUNA LATERAL: NOTAS DE ATUALIZAÇÃO & HISTÓRICO */}
+            <div className="space-y-4">
+              {/* CARD DECRETOS DA FORJA (CHANGELOG) */}
+              <div className="rounded-xl border border-amber-500/40 bg-gradient-to-br from-[#15141c] via-[#101015] to-amber-950/20 p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-display text-xs font-bold tracking-wider text-amber-300 uppercase flex items-center gap-1.5">
+                    <Scroll size={14} className="text-amber-400" />
+                    <span>{T('fb_decrees_title', 'DECRETOS DA FORJA')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-400 font-extrabold uppercase px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40">
+                    {CURRENT_APP_VERSION}
+                  </span>
+                </div>
+                <p className="text-xs text-muted mb-3 leading-relaxed">
+                  {T('fb_decrees_sub', 'Confira todas as melhorias e correções recém-forjadas no aplicativo. Suas assinaturas e dias permanecem 100% seguros a cada versão.')}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    AF.click();
+                    openModal(<ChangelogModal onClose={closeModal} />, 'dialog');
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-amber-500/60 bg-amber-950/50 text-amber-300 text-xs font-mono font-bold hover:bg-amber-900/60 transition-colors cursor-pointer shadow-sm active:scale-95"
+                >
+                  <Scroll size={14} className="text-amber-400" />
+                  <span>{T('fb_decrees_btn', 'VER NOTAS DA ATUALIZAÇÃO')}</span>
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1">
-                {adminFeedbacksLoading ? (
-                  <div className="text-center py-8 text-xs font-mono text-muted animate-pulse">{T('admin_loading', 'Carregando registros da Forja...')}</div>
-                ) : adminFeedbacksList.length === 0 ? (
-                  <div className="text-center py-8 text-xs font-mono text-muted">{T('admin_empty', 'Nenhum feedback recebido no servidor até o momento.')}</div>
+              {/* CARD HISTÓRICO DE FEEDBACKS ENVIADOS */}
+              <div className="rounded-xl border border-line/80 bg-[#121217] p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs font-bold tracking-wider text-emerald-400 uppercase flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    <span>{T('fb_history_title', 'SEUS ENVIOS')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-muted">{feedbackHistory.length} {T('fb_records_unit', 'registro(s)')}</span>
+                </div>
+                {feedbackHistory.length === 0 ? (
+                  <Empty className="py-4 text-[11px]">
+                    {T('fb_history_empty', 'Nenhum feedback enviado ainda neste dispositivo.')}
+                  </Empty>
                 ) : (
-                  adminFeedbacksList.map((fb, idx) => (
-                    <div key={fb.id || idx} className="p-3 rounded-xl border border-line bg-surface2/60 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className="font-bold text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                          {fb.category === 'bug' ? '🐛 BUG' : fb.category === 'suggestion' ? '💡 SUGESTÃO' : fb.category === 'praise' ? '⭐ ELOGIO' : '⚔️ USABILIDADE'}
-                        </span>
-                        <span className="text-[10px] font-mono text-muted">
-                          {new Date(fb.createdAt).toLocaleString(lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR')} · {fb.appVersion}
-                        </span>
-                      </div>
-                      <p className="text-ink leading-relaxed font-sans text-xs bg-black/30 p-2.5 rounded-lg border border-line/40">
-                        {fb.message}
-                      </p>
-                      {fb.contact && (
-                        <div className="text-[10.5px] font-mono text-emerald-400 flex items-center gap-1">
-                          <span>{T('admin_contact_prefix', '📧 Contato do Guerreiro:')}</span>
-                          <strong className="text-emerald-300">{fb.contact}</strong>
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1 no-scrollbar">
+                    {feedbackHistory.map((item, idx) => (
+                      <div key={idx} className="p-2.5 rounded-xl border border-line/60 bg-surface2/60 text-xs">
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="font-bold text-ink uppercase text-[10px] font-mono">
+                            {item.category === 'bug' ? '🐛 Bug' : item.category === 'suggestion' ? '💡 Sugestão' : item.category === 'praise' ? '⭐ Elogio' : '⚔️ Usabilidade'}
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                            {item.status || T('fb_status_registered', 'Registrado')}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  ))
+                        <p className="text-muted text-[11px] line-clamp-2 italic">
+                          "{item.message}"
+                        </p>
+                        {(() => {
+                          const replyContent = typeof item.reply === 'string'
+                            ? item.reply
+                            : (item.reply && typeof item.reply === 'object'
+                                ? (item.reply.text || item.reply.replyText || '')
+                                : '');
+                          if (!replyContent) return null;
+                          return (
+                            <div className="mt-2 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-[11px] space-y-1">
+                              <div className="flex items-center gap-1.5 text-[10px] font-mono text-amber-300 font-bold">
+                                <Crown size={11} className="text-gold" />
+                                <span>Resposta do Comando Supremo (Criador):</span>
+                              </div>
+                              <p className="text-amber-100 font-sans italic text-xs leading-relaxed">
+                                &ldquo;{replyContent}&rdquo;
+                              </p>
+                            </div>
+                          );
+                        })()}
+                        <div className="text-[9.5px] font-mono text-muted/70 mt-1 text-right">
+                          {item.date}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </div>
-
-              <div className="pt-3 border-t border-line flex items-center justify-between text-[11px] font-mono text-muted">
-                <span>{T('admin_tip', 'Dica: Para receber direto no celular, configure FEEDBACK_WEBHOOK_URL.')}</span>
-                <button
-                  type="button"
-                  onClick={() => setShowAdminFeedbacks(false)}
-                  className="px-4 py-1.5 rounded-lg border border-line bg-surface2 text-ink font-bold hover:border-gold/40"
-                >
-                  {T('admin_close', 'Fechar')}
-                </button>
               </div>
             </div>
           </div>
-        )}
-        </>
-      )}
 
-      {/* 3. SEÇÃO SEGURANÇA & ACESSO */}
-      {showSecurity && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch">
-          {/* BLOQUEIO POR PIN */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><ShieldCheck size={13} className="mr-1 inline text-gold" /> {T('sec_pin', 'BLOQUEIO POR PIN')}</K>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                  st.pin ? 'text-ok bg-ok/10 border-ok/30' : 'text-muted bg-surface2 border-line'
-                }`}>
-                  {st.pin ? T('badge_active', '✓ ATIVADO') : T('badge_disabled', 'DESATIVADO')}
-                </span>
-              </div>
-
-              {st.pin ? (
-                <div className="space-y-2">
-                  <p className="text-xs text-ok font-medium">
-                    {T('pin_on', '✓ Bloqueio ativo de 4 dígitos blindando o acesso ao app.')}
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="password" className="field text-xs text-center font-mono" maxLength={4} inputMode="numeric" placeholder={T('ph_pinCur', 'PIN atual')} value={pinCur} onChange={(e) => setPinCur(e.target.value)} />
-                    <input type="password" className="field text-xs text-center font-mono" maxLength={4} inputMode="numeric" placeholder={T('ph_pinNew1', 'Novo PIN (ou vazio)')} value={pinNew} onChange={(e) => setPinNew(e.target.value)} />
-                  </div>
-                  <button className="btn-gold w-full text-xs py-1.5" onClick={setPin}>{T('pin_upd', 'ATUALIZAR / REMOVER PIN')}</button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted leading-relaxed">
-                    {T('pin_intro', 'Defina um PIN de 4 dígitos para impedir o acesso caso alguém pegue seu aparelho.')}
-                  </p>
-                  <div className="flex gap-2">
-                    <input type="password" className="field flex-1 text-xs text-center font-mono tracking-widest" maxLength={4} inputMode="numeric" placeholder={T('ph_pin4_simple', 'Código de 4 dígitos')} value={pinNew} onChange={(e) => setPinNew(e.target.value)} />
-                    <button className="btn-gold flex-none px-4 text-xs font-bold py-1.5" onClick={setPin}>{T('pin_act', 'ATIVAR PIN')}</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* NOTIFICAÇÕES */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><Bell size={13} className="mr-1 inline text-gold" /> {T('sec_notif', 'NOTIFICAÇÕES DE GUERRA')}</K>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                  perm === 'granted' ? 'text-ok bg-ok/10 border-ok/30' : 'text-gold2 bg-gold/10 border-gold/20'
-                }`}>
-                  {perm === 'granted' ? T('badge_device_active', 'DISPOSITIVO ATIVO') : T('badge_not_authorized', 'NÃO AUTORIZADO')}
-                </span>
-              </div>
-
-              {/* Painel Duplo de Notificações */}
-              <div className="space-y-2">
-                <div className="p-2.5 rounded bg-surface2/80 border border-gold/20 text-xs text-muted leading-relaxed">
-                  <span className="font-bold text-gold block mb-0.5 text-[11px]">
-                    ⚡ {T('notif_dual_title', 'Motor de Alerta Duplo (Dentro e Fora)')}
-                  </span>
-                  {T('notif_dual_body', 'Fora: Notificações na tela de bloqueio e barra de status do celular ou PC. Dentro: Banners visuais e acorde sonoro tático para você não perder nenhum compromisso.')}
-                </div>
-
-                {perm !== 'granted' && (
-                  <button className="btn-gold w-full text-xs py-2" disabled={notifBusy} onClick={enableNotif}>
-                    <Bell size={13} /> {T('notif_on', 'AUTORIZAR NOTIFICAÇÕES NO DISPOSITIVO')}
-                  </button>
-                )}
-
-                <div className="space-y-1.5">
-                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
+          {/* MODAL DE CONSULTA DO COMANDO (FEEDBACKS RECEBIDOS NO SERVIDOR) */}
+          {showAdminFeedbacks && isAdmin && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+              <div className="relative w-full max-w-2xl bg-[#141419] border border-gold/40 rounded-2xl p-5 shadow-2xl max-h-[85vh] flex flex-col text-ink">
+                <div className="flex items-center justify-between pb-3 border-b border-line">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🛡️</span>
                     <div>
-                      <b className="text-xs text-ink">{T('notif_daily_t', 'Lembrete noturno')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_daily_d', 'Push às ~20h se não fez check-in')}</small>
+                      <h3 className="font-display font-bold text-base text-gold">{T('admin_panel_title', 'PAINEL DO COMANDO · FEEDBACKS RECEBIDOS')}</h3>
+                      <p className="text-[11px] text-muted font-mono">{T('admin_panel_sub', 'Feedbacks forjados pelos guerreiros no servidor')} ({adminFeedbacksList.length} total)</p>
                     </div>
-                    <Toggle on={st.notifDaily !== false} onChange={() => update((s) => { s.settings.notifDaily = s.settings.notifDaily === false; })} />
                   </div>
-
-                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
-                    <div>
-                      <b className="text-xs text-ink">{T('notif_hab_t', 'Horários dos hábitos')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_hab_d', 'Alertas nos horários agendados')}</small>
-                    </div>
-                    <Toggle on={st.notifHabits !== false} onChange={() => update((s) => { s.settings.notifHabits = s.settings.notifHabits === false; })} />
-                  </div>
-
-                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
-                    <div>
-                      <b className="text-xs text-ink">{T('notif_tasks_t', 'Tarefas e Operações')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_tasks_d', 'Alertas no horário agendado de cada tarefa')}</small>
-                    </div>
-                    <Toggle on={st.notifTasks !== false} onChange={() => update((s) => { s.settings.notifTasks = s.settings.notifTasks === false; })} />
-                  </div>
-
-                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
-                    <div>
-                      <b className="text-xs text-ink">{T('notif_proj_t', 'Projetos Estratégicos')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_proj_d', 'Alertas de janela de foco diária e prazo final')}</small>
-                    </div>
-                    <Toggle on={st.notifProjects !== false} onChange={() => update((s) => { s.settings.notifProjects = s.settings.notifProjects === false; })} />
-                  </div>
-
-                  <div className="p-2 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-2">
-                    <div>
-                      <b className="text-xs text-ink">{T('notif_sound_t', 'Sinal sonoro interno')}</b>
-                      <small className="block text-[10px] text-muted">{T('notif_sound_d', 'Toca um acorde heróico ao disparar o horário')}</small>
-                    </div>
-                    <Toggle on={st.notifSound !== false} onChange={() => update((s) => { s.settings.notifSound = s.settings.notifSound === false; })} />
-                  </div>
-
                   <button
                     type="button"
-                    className="btn-dark w-full text-xs py-2 mt-1 flex items-center justify-center gap-1.5 border-gold/30 text-gold hover:border-gold"
-                    onClick={async () => {
-                      if (st.notifSound !== false) {
-                        AF.alert();
-                      }
-                      toast(T('notif_test_toast', '⚡ Teste de alerta tático executado! Notificações interna e externa ativas.'));
-                      await localNotify(
-                        '⚔️ Teste de Alerta · Forjando Guerreiros',
-                        'Lembrete duplo (fora e dentro do app) funcionando perfeitamente!',
-                        'fg-test-alert'
-                      );
-                    }}
+                    onClick={() => setShowAdminFeedbacks(false)}
+                    className="p-1 rounded-lg border border-line text-muted hover:text-ink hover:border-gold/40"
                   >
-                    <Bell size={13} />
-                    <span>{T('notif_test_btn', 'TESTAR ALERTAS (DENTRO E FORA)')}</span>
+                    <X size={16} />
                   </button>
+                </div>
 
-                  {perm === 'granted' && (
-                    <button className="btn-dark w-full text-[11px] py-1 text-muted hover:text-ink mt-1" onClick={disableNotif}>
-                      <BellOff size={12} /> {T('notif_off', 'Desativar neste dispositivo')}
+                <div className="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1">
+                  {adminFeedbacksLoading ? (
+                    <div className="text-center py-8 text-xs font-mono text-muted animate-pulse">{T('admin_loading', 'Carregando registros da Forja...')}</div>
+                  ) : adminFeedbacksList.length === 0 ? (
+                    <div className="text-center py-8 text-xs font-mono text-muted">{T('admin_empty', 'Nenhum feedback recebido no servidor até o momento.')}</div>
+                  ) : (
+                    adminFeedbacksList.map((fb, idx) => (
+                      <div key={fb.id || idx} className="p-3 rounded-xl border border-line bg-surface2/60 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-bold text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                            {fb.category === 'bug' ? '🐛 BUG' : fb.category === 'suggestion' ? '💡 SUGESTÃO' : fb.category === 'praise' ? '⭐ ELOGIO' : '⚔️ USABILIDADE'}
+                          </span>
+                          <span className="text-[10px] font-mono text-muted">
+                            {new Date(fb.createdAt).toLocaleString(lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR')} · {fb.appVersion}
+                          </span>
+                        </div>
+                        <p className="text-ink leading-relaxed font-sans text-xs bg-black/30 p-2.5 rounded-lg border border-line/40">
+                          {fb.message}
+                        </p>
+                        {fb.contact && (
+                          <div className="text-[10.5px] font-mono text-emerald-400 flex items-center gap-1">
+                            <span>{T('admin_contact_prefix', '📧 Contato do Guerreiro:')}</span>
+                            <strong className="text-emerald-300">{fb.contact}</strong>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-line flex items-center justify-between text-[11px] font-mono text-muted">
+                  <span>{T('admin_tip', 'Dica: Para receber direto no celular, configure FEEDBACK_WEBHOOK_URL.')}</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminFeedbacks(false)}
+                    className="px-4 py-1.5 rounded-lg border border-line bg-surface2 text-ink font-bold hover:border-gold/40"
+                  >
+                    {T('admin_close', 'Fechar')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          SUB-ABA 3: SEGURANÇA & ACESSO
+          ========================================================================= */}
+      {showSecurity && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO SEGURANÇA */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Shield size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineSecurity', 'BLINDAGEM, NOTIFICAÇÕES & GUARDIÃO')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {tx('badgeShield', 'BLINDAGEM ATIVA')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleSecurity', 'Bloqueio por PIN de 4 dígitos, motor duplo de alertas e parceiro de responsabilidade.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+                st.pin ? 'bg-ok/15 border-ok/40 text-ok' : 'bg-surface2/90 border-line/80 text-muted'
+              }`}>
+                {st.pin ? '🔒 PIN Blindado' : '🔓 Sem PIN'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+            {/* BLOQUEIO POR PIN */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <ShieldCheck size={15} />
+                    <span>{T('sec_pin', 'BLOQUEIO POR PIN')}</span>
+                  </span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                    st.pin ? 'text-ok bg-ok/10 border-ok/30' : 'text-muted bg-surface2 border-line'
+                  }`}>
+                    {st.pin ? T('badge_active', '✓ ATIVADO') : T('badge_disabled', 'DESATIVADO')}
+                  </span>
+                </div>
+
+                {st.pin ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-ok font-medium flex items-center gap-1.5">
+                      <Check size={14} />
+                      <span>{T('pin_on', 'Bloqueio ativo de 4 dígitos blindando o acesso ao app.')}</span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="password" className="rounded-xl border border-line/80 bg-surface2/60 p-2.5 text-xs text-center font-mono tracking-widest text-ink focus:border-gold focus:outline-none" maxLength={4} inputMode="numeric" placeholder={T('ph_pinCur', 'PIN atual')} value={pinCur} onChange={(e) => setPinCur(e.target.value)} />
+                      <input type="password" className="rounded-xl border border-line/80 bg-surface2/60 p-2.5 text-xs text-center font-mono tracking-widest text-ink focus:border-gold focus:outline-none" maxLength={4} inputMode="numeric" placeholder={T('ph_pinNew1', 'Novo PIN (ou vazio)')} value={pinNew} onChange={(e) => setPinNew(e.target.value)} />
+                    </div>
+                    <button className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black uppercase w-full cursor-pointer shadow-sm active:scale-95" onClick={setPin}>{T('pin_upd', 'ATUALIZAR / REMOVER PIN')}</button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted leading-relaxed">
+                      {T('pin_intro', 'Defina um PIN de 4 dígitos para impedir o acesso caso alguém pegue seu aparelho.')}
+                    </p>
+                    <div className="flex gap-2">
+                      <input type="password" className="rounded-xl border border-line/80 bg-surface2/60 p-2.5 flex-1 text-xs text-center font-mono tracking-widest text-ink focus:border-gold focus:outline-none" maxLength={4} inputMode="numeric" placeholder={T('ph_pin4_simple', 'Código de 4 dígitos')} value={pinNew} onChange={(e) => setPinNew(e.target.value)} />
+                      <button className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black uppercase flex-none cursor-pointer shadow-sm active:scale-95" onClick={setPin}>{T('pin_act', 'ATIVAR PIN')}</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* NOTIFICAÇÕES DE GUERRA */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Bell size={15} />
+                    <span>{T('sec_notif', 'NOTIFICAÇÕES DE GUERRA')}</span>
+                  </span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                    perm === 'granted' ? 'text-ok bg-ok/10 border-ok/30' : 'text-gold2 bg-gold/10 border-gold/20'
+                  }`}>
+                    {perm === 'granted' ? T('badge_device_active', 'DISPOSITIVO ATIVO') : T('badge_not_authorized', 'NÃO AUTORIZADO')}
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className="p-3 rounded-xl bg-surface2/60 border border-gold/20 text-xs text-muted leading-relaxed">
+                    <span className="font-bold text-gold block mb-1 text-[11px] font-mono">
+                      ⚡ {T('notif_dual_title', 'Motor de Alerta Duplo (Dentro e Fora)')}
+                    </span>
+                    {T('notif_dual_body', 'Fora: Notificações na tela de bloqueio e barra de status do celular ou PC. Dentro: Banners visuais e acorde sonoro tático para você não perder nenhum compromisso.')}
+                  </div>
+
+                  {perm !== 'granted' && (
+                    <button className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black uppercase w-full flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95" disabled={notifBusy} onClick={enableNotif}>
+                      <Bell size={14} /> {T('notif_on', 'AUTORIZAR NOTIFICAÇÕES NO DISPOSITIVO')}
                     </button>
+                  )}
+
+                  <div className="space-y-2 pt-1">
+                    <div className="p-2.5 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-2">
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('notif_daily_t', 'Lembrete noturno')}</b>
+                        <small className="block text-[10px] text-muted">{T('notif_daily_d', 'Push às ~20h se não fez check-in')}</small>
+                      </div>
+                      <Toggle on={st.notifDaily !== false} onChange={() => update((s) => { s.settings.notifDaily = s.settings.notifDaily === false; })} />
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-2">
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('notif_hab_t', 'Horários dos hábitos')}</b>
+                        <small className="block text-[10px] text-muted">{T('notif_hab_d', 'Alertas nos horários agendados')}</small>
+                      </div>
+                      <Toggle on={st.notifHabits !== false} onChange={() => update((s) => { s.settings.notifHabits = s.settings.notifHabits === false; })} />
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-2">
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('notif_tasks_t', 'Tarefas e Operações')}</b>
+                        <small className="block text-[10px] text-muted">{T('notif_tasks_d', 'Alertas no horário agendado de cada tarefa')}</small>
+                      </div>
+                      <Toggle on={st.notifTasks !== false} onChange={() => update((s) => { s.settings.notifTasks = s.settings.notifTasks === false; })} />
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-2">
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('notif_proj_t', 'Projetos Estratégicos')}</b>
+                        <small className="block text-[10px] text-muted">{T('notif_proj_d', 'Alertas de janela de foco diária e prazo final')}</small>
+                      </div>
+                      <Toggle on={st.notifProjects !== false} onChange={() => update((s) => { s.settings.notifProjects = s.settings.notifProjects === false; })} />
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-2">
+                      <div>
+                        <b className="text-xs text-ink font-bold block">{T('notif_sound_t', 'Sinal sonoro interno')}</b>
+                        <small className="block text-[10px] text-muted">{T('notif_sound_d', 'Toca um acorde heróico ao disparar o horário')}</small>
+                      </div>
+                      <Toggle on={st.notifSound !== false} onChange={() => update((s) => { s.settings.notifSound = s.settings.notifSound === false; })} />
+                    </div>
+
+                    <button
+                      type="button"
+                      className="py-2.5 px-4 rounded-xl border border-gold/40 bg-surface2 hover:bg-surface2/80 text-gold text-xs font-mono font-bold w-full mt-1 flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+                      onClick={async () => {
+                        if (st.notifSound !== false) {
+                          AF.alert();
+                        }
+                        toast(T('notif_test_toast', '⚡ Teste de alerta tático executado! Notificações interna e externa ativas.'));
+                        await localNotify(
+                          '⚔️ Teste de Alerta · Forjando Guerreiros',
+                          'Lembrete duplo (fora e dentro do app) funcionando perfeitamente!',
+                          'fg-test-alert'
+                        );
+                      }}
+                    >
+                      <Bell size={13} />
+                      <span>{T('notif_test_btn', 'TESTAR ALERTAS (DENTRO E FORA)')}</span>
+                    </button>
+
+                    {perm === 'granted' && (
+                      <button className="w-full text-[11px] font-mono py-1.5 text-muted hover:text-ink mt-1 flex items-center justify-center gap-1 cursor-pointer transition-colors" onClick={disableNotif}>
+                        <BellOff size={12} /> {T('notif_off', 'Desativar neste dispositivo')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PARCEIRO DE RESPONSABILIDADE */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Handshake size={15} />
+                    <span>{T('sec_partner', 'PARCEIRO DE RESPONSABILIDADE')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-muted uppercase px-2 py-0.5 rounded bg-surface2 border border-line/60">
+                    {T('badge_accountability', 'ACCOUNTABILITY')}
+                  </span>
+                </div>
+
+                {S.partnerToken ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted leading-relaxed">
+                      {T('partner_have', 'Link somente-leitura ativo. Exibe apenas pseudônimo, dias e streak:')}
+                    </p>
+                    <div className="flex gap-2">
+                      <input className="rounded-xl border border-line/80 bg-surface2/60 px-3 py-2 flex-1 font-mono text-[11px] text-ink focus:border-gold focus:outline-none" readOnly value={(typeof window !== 'undefined' ? window.location.origin : '') + '/p/' + S.partnerToken} />
+                      <button className="py-2 px-3.5 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] flex items-center justify-center cursor-pointer shadow-sm active:scale-95" onClick={() => { AF.click(); navigator.clipboard.writeText(window.location.origin + '/p/' + S.partnerToken); toast(T('ok_linkCopied', '🔗 Link copiado.')); }}>
+                        <Copy size={14} />
+                      </button>
+                    </div>
+                    <button className="w-full py-2 px-3 rounded-xl border border-danger/40 bg-surface2 text-danger hover:bg-danger/10 text-xs font-mono font-bold cursor-pointer transition-colors active:scale-95" onClick={() => confirmBox(T('c_plTitle', 'DESATIVAR LINK?'), T('c_plBody', 'Seu parceiro perderá o acesso ao seu cartão de responsabilidade.'), () => update((s) => { s.partnerToken = null; }), T('c_plOk', 'SIM, DESATIVAR'))}>
+                      {T('partner_off', 'Desativar Link')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted leading-relaxed">
+                      {T('partner_intro', 'Gere um link seguro para um amigo ou mentor acompanhar seu progresso sem expor notas ou dados privados.')}
+                    </p>
+                    <button className="py-2.5 px-4 rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] text-xs font-mono font-black uppercase w-full flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95" onClick={() => { AF.click(); const tok = Math.random().toString(36).slice(2) + Date.now().toString(36); update((s) => { s.partnerToken = tok; if (!s.hallName) s.hallName = genHallName(); }); toast(T('ok_linkCreated', '🤝 Link de responsabilidade criado.')); }}>
+                      <Handshake size={14} /> {T('btn_partner_create', 'GERAR LINK DE AUDITORIA')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SALÃO DA FAMA */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Trophy size={15} />
+                    <span>{T('sec_hall', 'SALÃO DA FAMA')}</span>
+                  </span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                    S.hallOptIn ? 'text-gold bg-gold/10 border-gold/30' : 'text-muted bg-surface2 border-line'
+                  }`}>
+                    {S.hallOptIn ? T('badge_participating', 'PARTICIPANDO') : T('badge_hidden', 'OCULTO')}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface2/60 border border-line/60 flex items-center justify-between gap-3 mb-2.5">
+                  <div>
+                    <b className="text-xs text-ink font-bold block">{T('hall_t', 'Participar do ranking anônimo')}</b>
+                    <small className="block text-[11px] text-muted mt-0.5">
+                      {S.hallOptIn ? T('hall_pseudo', 'Pseudônimo: ') + (S.hallName || 'Guerreiro') : T('hall_optin', 'Apenas quem opta explicitamente é exibido')}
+                    </small>
+                  </div>
+                  <Toggle
+                    on={!!S.hallOptIn}
+                    onChange={() => update((s) => {
+                      s.hallOptIn = !s.hallOptIn;
+                      if (s.hallOptIn && !s.hallName) s.hallName = genHallName();
+                    })}
+                  />
+                </div>
+
+                <p className="text-[11.5px] text-muted leading-relaxed">
+                  {T('hall_intro', '100% anônimo. Apenas seu pseudônimo de combate e sequência de dias são visíveis para inspirar a tropa.')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          SUB-ABA 4: CONTA, DADOS & CÓDIGO
+          ========================================================================= */}
+      {showData && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          {/* BANNER TÁTICO DADOS */}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Database size={18} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                    {tx('headlineData', 'SOBERANIA DE DADOS, NUVEM & CÓDIGO')}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                    {tx('badgeSovereignty', 'SOBERANIA TOTAL')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate mt-0.5">
+                  {tx('subtitleData', 'Sincronização na nuvem, backups em JSON, frases customizadas e controle de conta.')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+                cloud.CLOUD ? 'bg-ok/15 border-ok/40 text-ok' : 'bg-gold/15 border-gold/40 text-gold'
+              }`}>
+                {cloud.CLOUD ? '☁️ Nuvem Conectada' : '💾 Modo Local'}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+            {/* CONTA & NUVEM */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Cloud size={15} />
+                    <span>{T('sec_account', 'SUA CONTA & NUVEM')}</span>
+                  </span>
+                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                    cloud.CLOUD ? 'text-ok bg-ok/10 border-ok/30' : 'text-gold2 bg-gold/10 border-gold/30'
+                  }`}>
+                    {cloud.CLOUD ? T('badge_cloud_active', 'NUVEM ATIVA') : T('badge_local', 'LOCAL')}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface2/60 border border-line/60 text-xs space-y-2 mb-3.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted">{T('lbl_warrior', 'Guerreiro:')}</span>
+                    <b className="text-gold font-mono truncate max-w-[200px]">{auth.email || '—'}</b>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted">{T('lbl_subscription', 'Assinatura:')}</span>
+                    <span className="flex items-center gap-1.5">
+                      <b className={sub === 'active' || sub === 'trialing' ? 'text-ok font-bold' : 'text-gold2 font-bold'}>
+                        {subLabels[sub] || sub}
+                      </b>
+                      <button
+                        className="underline text-[10px] text-muted hover:text-gold cursor-pointer"
+                        onClick={() => { refreshSub(2); toast(T('ok_subUpd', '🔄 Status atualizado.')); }}
+                      >
+                        {T('sub_refresh', '(atualizar)')}
+                      </button>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="py-2 px-3 rounded-xl border border-line/80 bg-surface2 hover:bg-surface2/80 text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" onClick={syncNow}>
+                    <RefreshCw size={13} /> {T('btn_sync', 'Sincronizar Agora')}
+                  </button>
+                  <button className="py-2 px-3 rounded-xl border border-danger/40 bg-surface2 hover:bg-danger/10 text-danger text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" onClick={signOut}>
+                    <LogOut size={13} /> {T('btn_signout', 'Sair da Conta')}
+                  </button>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => { AF.click(); setTab('admin'); }}
+                    className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl bg-gold/15 border border-gold/40 text-gold text-xs font-mono font-bold hover:bg-gold/25 transition-all shadow-sm cursor-pointer active:scale-95"
+                  >
+                    <Crown size={14} className="text-gold" />
+                    <span>ABRIR PAINEL DO COMANDO (ADMIN)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* BACKUP LOCAL */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <Download size={15} />
+                    <span>{T('sec_backup', 'BACKUP EM ARQUIVO')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-muted uppercase px-2 py-0.5 rounded bg-surface2 border border-line/60">
+                    {T('backup_format', 'FORMATO .JSON')}
+                  </span>
+                </div>
+                <p className="text-xs text-muted mb-3.5 leading-relaxed">
+                  {T('backup_desc', 'Exporte uma cópia completa dos seus dados criptografados para backup físico ou migração de aparelho.')}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button className="py-2 px-3 rounded-xl border border-line/80 bg-surface2 hover:bg-surface2/80 text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" onClick={exportBk}>
+                    <Download size={13} /> {T('btn_export', 'Exportar Backup')}
+                  </button>
+                  <button className="py-2 px-3 rounded-xl border border-line/80 bg-surface2 hover:bg-surface2/80 text-ink text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95" onClick={() => fileRef.current && fileRef.current.click()}>
+                    <Upload size={13} /> {T('btn_import', 'Importar Arquivo')}
+                  </button>
+                </div>
+                <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) importBk(f); e.target.value = ''; }} />
+              </div>
+            </div>
+
+            {/* FRASES DO CÓDIGO DO GUERREIRO */}
+            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
+                    <span>📜</span>
+                    <span>{T('sec_phrases', 'FRASES DO CÓDIGO DO GUERREIRO')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-muted uppercase px-2 py-0.5 rounded bg-surface2 border border-line/60">
+                    {S.phrases.length} {T('lbl_extras', 'EXTRAS')}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex flex-col gap-1.5">
+                  <div className="flex gap-2 items-start">
+                    <textarea
+                      rows={2}
+                      className="rounded-xl border border-line/80 bg-surface2/60 p-2.5 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none flex-1 resize-y min-h-[46px] max-h-[160px] leading-relaxed"
+                      maxLength={3000}
+                      placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 3000 caracteres)...')}
+                      value={ph}
+                      onChange={(e) => setPh(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && ph.trim()) {
+                          e.preventDefault();
+                          update((s) => { s.phrases.push(ph.trim()); });
+                          setPh('');
+                          toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="py-2 px-3.5 h-[46px] rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] flex items-center justify-center cursor-pointer shadow-sm active:scale-95 flex-none"
+                      onClick={() => {
+                        if (!ph.trim()) return;
+                        update((s) => { s.phrases.push(ph.trim()); });
+                        setPh('');
+                        toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
+                      }}
+                      title={T('btn_add_phrase_title', 'Adicionar Frase')}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] font-mono text-muted px-1">
+                    <span>{T('phrases_hint', 'Enter para salvar (Shift+Enter para nova linha)')}</span>
+                    <span className={ph.length >= 2800 ? 'text-danger font-bold' : ''}>
+                      {ph.length}/3000
+                    </span>
+                  </div>
+                </div>
+
+                <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
+                  {S.phrases.length ? (
+                    S.phrases.map((p, i) => (
+                      <div key={i} className="flex items-start justify-between gap-2.5 rounded-xl border border-line/60 bg-surface2/60 p-2.5 text-xs">
+                        <span className="italic text-ink whitespace-pre-wrap leading-relaxed break-words flex-1 font-serif text-[12.5px]">"{p}"</span>
+                        <button
+                          className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5 cursor-pointer"
+                          onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), (T('del_phrase_prefix', 'Remover "') + p + T('del_phrase_suffix', '" do Código?')), () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
+                          title={T('del_phrase_btn', 'Excluir frase')}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <Empty className="py-3 text-[11px]">{T('phrases_empty', 'Nenhuma frase customizada adicionada ainda.')}</Empty>
                   )}
                 </div>
               </div>
             </div>
-          </Card>
 
-          {/* PARCEIRO DE RESPONSABILIDADE */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><Handshake size={13} className="mr-1 inline text-gold" /> {T('sec_partner', 'PARCEIRO DE RESPONSABILIDADE')}</K>
-                <span className="text-[10px] font-mono text-muted">{T('badge_accountability', 'ACCOUNTABILITY')}</span>
-              </div>
-
-              {S.partnerToken ? (
-                <div className="space-y-2">
-                  <p className="text-[11.5px] text-muted">
-                    {T('partner_have', 'Link somente-leitura ativo. Exibe apenas pseudônimo, dias e streak:')}
-                  </p>
-                  <div className="flex gap-1.5">
-                    <input className="field flex-1 font-mono text-[11px] py-1" readOnly value={(typeof window !== 'undefined' ? window.location.origin : '') + '/p/' + S.partnerToken} />
-                    <button className="btn-gold flex-none px-3" onClick={() => { navigator.clipboard.writeText(window.location.origin + '/p/' + S.partnerToken); toast(T('ok_linkCopied', '🔗 Link copiado.')); }}>
-                      <Copy size={13} />
-                    </button>
-                  </div>
-                  <button className="btn-dark w-full text-xs py-1 text-danger hover:bg-danger/10" onClick={() => confirmBox(T('c_plTitle', 'DESATIVAR LINK?'), T('c_plBody', 'Seu parceiro perderá o acesso ao seu cartão de responsabilidade.'), () => update((s) => { s.partnerToken = null; }), T('c_plOk', 'SIM, DESATIVAR'))}>
-                    {T('partner_off', 'Desativar Link')}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted leading-relaxed">
-                    {T('partner_intro', 'Gere um link seguro para um amigo ou mentor acompanhar seu progresso sem expor notas ou dados privados.')}
-                  </p>
-                  <button className="btn-gold w-full text-xs py-2" onClick={() => { const tok = Math.random().toString(36).slice(2) + Date.now().toString(36); update((s) => { s.partnerToken = tok; if (!s.hallName) s.hallName = genHallName(); }); toast(T('ok_linkCreated', '🤝 Link de responsabilidade criado.')); }}>
-                    <Handshake size={13} /> {T('btn_partner_create', 'GERAR LINK DE AUDITORIA')}
-                  </button>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* SALÃO DA FAMA */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2.5">
-                <K><Trophy size={13} className="mr-1 inline text-gold" /> {T('sec_hall', 'SALÃO DA FAMA')}</K>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                  S.hallOptIn ? 'text-gold bg-gold/10 border-gold/30' : 'text-muted bg-surface2 border-line'
-                }`}>
-                  {S.hallOptIn ? T('badge_participating', 'PARTICIPANDO') : T('badge_hidden', 'OCULTO')}
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded bg-surface2 border border-line/60 flex items-center justify-between gap-3 mb-2">
-                <div>
-                  <b className="text-xs text-ink">{T('hall_t', 'Participar do ranking anônimo')}</b>
-                  <small className="block text-[10.5px] text-muted">
-                    {S.hallOptIn ? T('hall_pseudo', 'Pseudônimo: ') + (S.hallName || 'Guerreiro') : T('hall_optin', 'Apenas quem opta explicitamente é exibido')}
-                  </small>
-                </div>
-                <Toggle
-                  on={!!S.hallOptIn}
-                  onChange={() => update((s) => {
-                    s.hallOptIn = !s.hallOptIn;
-                    if (s.hallOptIn && !s.hallName) s.hallName = genHallName();
-                  })}
-                />
-              </div>
-
-              <p className="text-[11px] text-muted leading-relaxed">
-                {T('hall_intro', '100% anônimo. Apenas seu pseudônimo de combate e sequência de dias são visíveis para inspirar a tropa.')}
-              </p>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* 3. SEÇÃO CONTA, DADOS & CÓDIGO */}
-      {showData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-stretch">
-          {/* CONTA & NUVEM */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <K><Cloud size={13} className="mr-1 inline text-gold" /> {T('sec_account', 'SUA CONTA & NUVEM')}</K>
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                  cloud.CLOUD ? 'text-ok bg-ok/10 border-ok/30' : 'text-gold2 bg-gold/10 border-gold/30'
-                }`}>
-                  {cloud.CLOUD ? T('badge_cloud_active', 'NUVEM ATIVA') : T('badge_local', 'LOCAL')}
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded bg-surface2 border border-line/60 text-xs space-y-1.5 mb-2.5">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted">{T('lbl_warrior', 'Guerreiro:')}</span>
-                  <b className="text-gold font-mono truncate max-w-[200px]">{auth.email || '—'}</b>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted">{T('lbl_subscription', 'Assinatura:')}</span>
-                  <span className="flex items-center gap-1.5">
-                    <b className={sub === 'active' || sub === 'trialing' ? 'text-ok font-bold' : 'text-gold2 font-bold'}>
-                      {subLabels[sub] || sub}
-                    </b>
-                    <button
-                      className="underline text-[10px] text-muted hover:text-gold"
-                      onClick={() => { refreshSub(2); toast(T('ok_subUpd', '🔄 Status atualizado.')); }}
-                    >
-                      {T('sub_refresh', '(atualizar)')}
-                    </button>
+            {/* ZONA CRÍTICA */}
+            <div className="rounded-xl border border-danger/40 bg-gradient-to-br from-[#181215] via-[#121217] to-[#181215] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-danger/30">
+                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-danger uppercase flex items-center gap-1.5">
+                    <Skull size={15} />
+                    <span>{T('sec_danger', 'ZONA CRÍTICA')}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-danger/90 uppercase px-2 py-0.5 rounded bg-danger/10 border border-danger/30 font-bold">
+                    {T('badge_irreversible', 'AÇÕES IRREVERSÍVEIS')}
                   </span>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button className="btn-ghost text-xs py-1.5" onClick={syncNow}>
-                  <RefreshCw size={13} /> {T('btn_sync', 'Sincronizar Agora')}
-                </button>
-                <button className="btn-red text-xs py-1.5" onClick={signOut}>
-                  <LogOut size={13} /> {T('btn_signout', 'Sair da Conta')}
-                </button>
-              </div>
-
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => { AF.click(); setTab('admin'); }}
-                  className="w-full mt-2.5 flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-gold/15 border border-gold/40 text-gold text-xs font-mono font-bold hover:bg-gold/25 transition-all shadow-sm"
-                >
-                  <Crown size={14} className="text-gold" />
-                  <span>ABRIR PAINEL DO COMANDO (ADMIN)</span>
-                </button>
-              )}
-            </div>
-          </Card>
-
-          {/* BACKUP LOCAL */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <K><Download size={13} className="mr-1 inline text-gold" /> {T('sec_backup', 'BACKUP EM ARQUIVO')}</K>
-                <span className="text-[10px] font-mono text-muted">{T('backup_format', 'FORMATO .JSON')}</span>
-              </div>
-              <p className="text-xs text-muted mb-2.5 leading-relaxed">
-                {T('backup_desc', 'Exporte uma cópia completa dos seus dados criptografados para backup físico ou migração de aparelho.')}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button className="btn-ghost text-xs py-1.5" onClick={exportBk}>
-                  <Download size={13} /> {T('btn_export', 'Exportar Backup')}
-                </button>
-                <button className="btn-ghost text-xs py-1.5" onClick={() => fileRef.current && fileRef.current.click()}>
-                  <Upload size={13} /> {T('btn_import', 'Importar Arquivo')}
-                </button>
-              </div>
-              <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) importBk(f); e.target.value = ''; }} />
-            </div>
-          </Card>
-
-          {/* FRASES DO CÓDIGO DO GUERREIRO */}
-          <Card className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <K>📜 {T('sec_phrases', 'FRASES DO CÓDIGO DO GUERREIRO')}</K>
-                <span className="text-[10px] font-mono text-muted">{S.phrases.length} {T('lbl_extras', 'EXTRAS')}</span>
-              </div>
-
-              <div className="mb-2 flex flex-col gap-1.5">
-                <div className="flex gap-1.5 items-start">
-                  <textarea
-                    rows={2}
-                    className="field flex-1 text-xs py-2 px-2.5 resize-y min-h-[44px] max-h-[160px] leading-relaxed"
-                    maxLength={3000}
-                    placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 3000 caracteres)...')}
-                    value={ph}
-                    onChange={(e) => setPh(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey && ph.trim()) {
-                        e.preventDefault();
-                        update((s) => { s.phrases.push(ph.trim()); });
-                        setPh('');
-                        toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn-gold flex-none px-3.5 h-[44px] flex items-center justify-center"
-                    onClick={() => {
-                      if (!ph.trim()) return;
-                      update((s) => { s.phrases.push(ph.trim()); });
-                      setPh('');
-                      toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                    }}
-                    title={T('btn_add_phrase_title', 'Adicionar Frase')}
-                  >
-                    <Plus size={15} />
+                <p className="text-xs text-muted mb-3.5 leading-relaxed">
+                  {T('danger_desc', 'Ações definitivas que redefinem o banco de dados local ou apagam sua conta na nuvem.')}
+                </p>
+                <div className="space-y-2">
+                  <button className="py-2.5 px-4 rounded-xl border border-danger/40 bg-danger/20 hover:bg-danger/30 text-danger text-xs font-mono font-bold uppercase w-full flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95" onClick={() => confirmBox(T('c_wipeTitle', 'APAGAR TUDO?'), T('c_wipeBody', 'Onboarding, streaks, diário, hábitos, tarefas e notas serão destruídos para sempre.'), () => { try { localStorage.removeItem(LSKEY); } catch (e) {} location.reload(); }, T('c_wipeOk', 'SIM, QUEIMAR TUDO E RECOMEÇAR'))}>
+                    <Skull size={14} /> {T('btn_wipe', 'Resetar Dados Locais')}
+                  </button>
+                  <button className="py-2.5 px-4 rounded-xl border border-danger/40 bg-transparent text-danger/80 hover:text-danger hover:bg-danger/10 text-xs font-mono font-bold uppercase w-full flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95" onClick={deleteAccount}>
+                    <UserX size={14} /> {T('btn_delAcct', 'Excluir Conta & Dados (LGPD)')}
                   </button>
                 </div>
-                <div className="flex justify-between items-center text-[10px] font-mono text-muted px-0.5">
-                  <span>{T('phrases_hint', 'Enter para salvar (Shift+Enter para nova linha)')}</span>
-                  <span className={ph.length >= 2800 ? 'text-danger font-bold' : ''}>
-                    {ph.length}/3000
-                  </span>
-                </div>
-              </div>
-
-              <div className="max-h-[220px] overflow-y-auto space-y-1.5 pr-1">
-                {S.phrases.length ? (
-                  S.phrases.map((p, i) => (
-                    <div key={i} className="flex items-start justify-between gap-2 rounded border border-line/60 bg-surface2/60 p-2 text-xs">
-                      <span className="italic text-ink whitespace-pre-wrap leading-relaxed break-words flex-1">"{p}"</span>
-                      <button
-                        className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5"
-                        onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), (T('del_phrase_prefix', 'Remover "') + p + T('del_phrase_suffix', '" do Código?')), () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
-                        title={T('del_phrase_btn', 'Excluir frase')}
-                      >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <Empty className="py-2 text-[11px]">{T('phrases_empty', 'Nenhuma frase customizada adicionada ainda.')}</Empty>
-                )}
               </div>
             </div>
-          </Card>
-
-          {/* ZONA CRÍTICA */}
-          <Card className="border-danger/30 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <K className="text-danger flex items-center gap-1"><Skull size={13} /> {T('sec_danger', 'ZONA CRÍTICA')}</K>
-                <span className="text-[10px] font-mono text-danger/80">{T('badge_irreversible', 'AÇÕES IRREVERSÍVEIS')}</span>
-              </div>
-              <p className="text-xs text-muted mb-2.5 leading-relaxed">
-                {T('danger_desc', 'Ações definitivas que redefinem o banco de dados local ou apagam sua conta na nuvem.')}
-              </p>
-              <div className="space-y-1.5">
-                <button className="btn-red w-full text-xs py-1.5" onClick={() => confirmBox(T('c_wipeTitle', 'APAGAR TUDO?'), T('c_wipeBody', 'Onboarding, streaks, diário, hábitos, tarefas e notas serão destruídos para sempre.'), () => { try { localStorage.removeItem(LSKEY); } catch (e) {} location.reload(); }, T('c_wipeOk', 'SIM, QUEIMAR TUDO E RECOMEÇAR'))}>
-                  <Skull size={13} /> {T('btn_wipe', 'Resetar Dados Locais')}
-                </button>
-                <button className="btn-red w-full border border-danger/40 bg-transparent text-danger hover:bg-danger/10 text-xs py-1.5" onClick={deleteAccount}>
-                  <UserX size={13} /> {T('btn_delAcct', 'Excluir Conta & Dados (LGPD)')}
-                </button>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>
