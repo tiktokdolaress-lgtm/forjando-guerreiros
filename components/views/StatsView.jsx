@@ -24,6 +24,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import Leaderboard from '@/components/Leaderboard';
 import { Card, K, Empty, Chk } from '@/components/ui';
 import * as L from '@/lib/logic';
 import { cx, cxHabits } from '@/lib/content-i18n';
@@ -339,7 +340,7 @@ function VitalityCurve({ curve, peakVitality, avgVitality, curVitality, T }) {
 }
 
 export default function StatsView() {
-  const { S, update, openModal, closeModal, toast } = useApp();
+  const { S, update, openModal, closeModal, toast, setTab } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = (k, fb) => (STATS_I18N[k] ? STATS_I18N[k][curLang] || STATS_I18N[k].pt : fb);
@@ -1633,52 +1634,8 @@ export default function StatsView() {
             </div>
           </div>
 
-          {/* Salão da Fama Anônimo */}
-          <div className="rounded-xl border border-line/80 bg-[#121217] p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Trophy size={15} className="text-gold" />
-                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase">
-                    {T('hall_k', 'SALÃO DA FAMA ANÔNIMO')}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-muted px-2 py-0.5 rounded bg-surface2 border border-line/60">
-                  {S.hallOptIn ? `🛡️ ${T('hall_joined', 'Participando')}` : T('hall_priv_mode', 'Modo Privado')}
-                </span>
-              </div>
-              {hall === null ? (
-                <Empty>{T('loading', 'Carregando...')}</Empty>
-              ) : hall.length ? (
-                <div className="max-h-[300px] space-y-1.5 overflow-y-auto pr-1">
-                  {hall.map((h, i) => (
-                    <div
-                      key={i}
-                      className={`flex items-center gap-2.5 rounded-lg border p-2.5 text-[12px] font-bold ${
-                        h.name === S.hallName ? 'border-gold/60 bg-gold/10 text-gold' : 'border-line/70 bg-surface2/70'
-                      }`}
-                    >
-                      <span className="w-7 text-center font-display text-sm text-gold2 font-black">
-                        {i + 1}º
-                      </span>
-                      <span className="flex-1 truncate">
-                        {h.name} {h.name === S.hallName ? T('you', '(você)') : ''}
-                      </span>
-                      <span className="text-xs text-muted font-mono">{h.tier}</span>
-                      <span className="font-mono text-gold text-xs font-bold">{h.days}d</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-3 rounded-xl bg-surface2/60 border border-line/70 text-xs text-muted">
-                  {T('hall_empty_act', 'Nenhum guerreiro optou pelo Salão ainda. Ative nas Configurações para ingressar.')}
-                </div>
-              )}
-            </div>
-            <p className="fnote mt-3 pt-2 border-t border-line/60" style={{ textAlign: 'left' }}>
-              {T('hall_note', 'Ranking anônimo com pseudônimos — apenas dias e patamar.')}
-            </p>
-          </div>
+          {/* Leaderboard Oficial de Guerra & Retenção */}
+          <Leaderboard onNavigateToSettings={() => { if (typeof setTab === 'function') setTab('settings'); }} />
         </div>
       )}
     </div>
