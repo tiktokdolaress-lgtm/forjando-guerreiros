@@ -309,7 +309,7 @@ const I18N = {
   lblTaskSpecs: { pt: 'Ficha Técnica da Missão', en: 'Mission Technical Specs', es: 'Ficha Técnica de la Misión' },
   lblCreatedOn: { pt: 'Criada em:', en: 'Created on:', es: 'Creada en:' },
   lblTargetDaysInProject: { pt: 'Meta de Duração:', en: 'Target Duration:', es: 'Meta de Duración:' },
-  lblExecutionsOrDays: { pt: 'dias', en: 'days', es: 'días' },
+  lblExecutionsOrDays: { pt: 'execuções', en: 'executions', es: 'ejecuciones' },
   lblDoneTodayTag: { pt: 'Feita hoje', en: 'Done today', es: 'Hecha hoy' },
   lblPendingTodayTag: { pt: 'Pendente hoje', en: 'Pending today', es: 'Pendiente hoy' },
   lblTaskDaysCompletedBadge: { pt: 'dias cumpridos', en: 'days completed', es: 'días cumplidos' },
@@ -320,6 +320,11 @@ const I18N = {
   lblDaysCompletedInGoal: { pt: 'dias cumpridos na meta', en: 'days completed in goal', es: 'días cumplidos en la meta' },
   lblNoTasksInProjNotice: { pt: 'Nenhuma tarefa vinculada a este projeto ainda.', en: 'No tasks linked to this project yet.', es: 'Ninguna tarea vinculada a este proyecto aún.' },
   lblTodayBadge: { pt: 'HOJE', en: 'TODAY', es: 'HOY' },
+  lblTimeElapsed: { pt: 'CRONOGRAMA DO PROJETO', en: 'PROJECT TIMELINE', es: 'CRONOGRAMA DEL PROYECTO' },
+  lblDaysElapsedCount: { pt: 'dias decorridos', en: 'days elapsed', es: 'días transcurridos' },
+  lblTaskProgress: { pt: 'EXECUÇÃO DAS TAREFAS', en: 'TASK EXECUTION', es: 'EJECUCIÓN DE TAREAS' },
+  lblTaskExecutions: { pt: 'execuções', en: 'executions', es: 'ejecuciones' },
+  lblItemsDoneCount: { pt: 'itens concluídos', en: 'items completed', es: 'elementos completados' },
 };
 
 export default function OpsView() {
@@ -452,22 +457,35 @@ export default function OpsView() {
 
   const calcProjectProgress = useCallback((proj, allTasks = tasks) => {
     const isCompleted = proj.status === 'concluido';
+    const projDuration = (proj.start && proj.deadline)
+      ? Math.max(1, daysBetween(proj.start, proj.deadline) + 1)
+      : (proj.days ? Number(proj.days) : 0);
+    const tod = today();
+    let curDay = 0;
+    if (proj.start && projDuration > 0) {
+      curDay = Math.min(Math.max(daysBetween(proj.start, tod) + 1, 0), projDuration);
+    }
+    const timePct = projDuration > 0 ? Math.min(100, Math.round((curDay / projDuration) * 100)) : 0;
+
     if (isCompleted) {
       return {
         pct: 100,
+        timePct: 100,
+        curDay: projDuration,
+        projDuration,
         isCompleted: true,
         hasRecurring: false,
         recurringDone: 0,
         recurringTarget: 0,
         todayDue: 0,
         todayDone: 0,
+        stepsTotal: (proj.steps || []).length,
+        stepsDone: (proj.steps || []).length,
+        singleTotal: 0,
+        singleDone: 0,
         taskStats: [],
       };
     }
-
-    const projDuration = proj.days
-      ? Number(proj.days)
-      : (proj.start && proj.deadline ? Math.max(1, daysBetween(proj.start, proj.deadline) + 1) : 0);
 
     const steps = proj.steps || [];
     const stepsDone = steps.filter((s) => s.done).length;
@@ -484,7 +502,6 @@ export default function OpsView() {
     let recurringDoneSum = 0;
     let todayDueCount = 0;
     let todayDoneCount = 0;
-    const tod = today();
 
     const taskStats = projTasks.map((t) => {
       const isExplicitRec = (t.rep || 'unica') !== 'unica';
@@ -560,6 +577,8 @@ export default function OpsView() {
 
     return {
       pct,
+      timePct,
+      curDay,
       projDuration,
       stepsTotal: steps.length,
       stepsDone,
@@ -3075,24 +3094,52 @@ export default function OpsView() {
                         </p>
                       )}
 
-                      {/* Barra de Progresso do Projeto (Sempre Visível) */}
-                      <div className="mb-2.5">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
-                          <span className="flex items-center gap-1.5 font-bold text-ink">
-                            <span>{tx.lblTotalProgress[curLang]}</span>
-                            {projStats.hasRecurring && projStats.recurringTarget > 0 && (
-                              <span className="text-gold font-mono font-normal text-[9.5px]">
-                                · {projStats.recurringDone}/{projStats.recurringTarget} {tx.lblExecutionsOrDays[curLang]}
+                      {/* Progresso do Projeto: Duplo (Cronograma Temporal + Execução de Tarefas) */}
+                      <div className="space-y-2 mb-2.5">
+                        {/* 1. Barra de Cronograma Temporal (Dias Decorridos) */}
+                        {projStats.projDuration > 0 && (
+                          <div>
+                            <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
+                              <span className="flex items-center gap-1.5 font-bold text-ink">
+                                <span>📅 {tx.lblTimeElapsed[curLang]}</span>
+                                <span className="text-gold font-mono font-normal text-[9.5px]">
+                                  · {projStats.curDay}/{projStats.projDuration} {tx.lblDaysElapsedCount[curLang]}
+                                </span>
                               </span>
-                            )}
-                          </span>
-                          <span className="font-bold text-gold text-xs">{projPct}%</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-line/50">
-                          <div
-                            className="h-full bg-gradient-to-r from-amber-600 via-gold to-amber-300 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.3)]"
-                            style={{ width: `${projPct}%` }}
-                          />
+                              <span className="font-bold text-gold text-xs">{projStats.timePct}%</span>
+                            </div>
+                            <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden border border-line/50">
+                              <div
+                                className="h-full bg-gradient-to-r from-amber-600 via-gold to-amber-300 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.3)]"
+                                style={{ width: `${projStats.timePct}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 2. Barra de Execução de Tarefas / Metas Cumpridas */}
+                        <div>
+                          <div className="flex items-center justify-between text-[10px] font-mono text-muted mb-1">
+                            <span className="flex items-center gap-1.5 font-bold text-ink">
+                              <span>🎯 {tx.lblTaskProgress[curLang]}</span>
+                              {projStats.hasRecurring && projStats.recurringTarget > 0 ? (
+                                <span className="text-muted font-mono font-normal text-[9.5px]">
+                                  · {projStats.recurringDone}/{projStats.recurringTarget} {tx.lblTaskExecutions[curLang]}
+                                </span>
+                              ) : (projStats.singleTotal > 0 || projStats.stepsTotal > 0) ? (
+                                <span className="text-muted font-mono font-normal text-[9.5px]">
+                                  · {projStats.singleDone + projStats.stepsDone}/{projStats.singleTotal + projStats.stepsTotal} {tx.lblItemsDoneCount[curLang]}
+                                </span>
+                              ) : null}
+                            </span>
+                            <span className="font-bold text-emerald-400 text-xs">{projPct}%</span>
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-surface overflow-hidden border border-line/50">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-400 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                              style={{ width: `${projPct}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -3142,7 +3189,7 @@ export default function OpsView() {
                               }`}>
                                 <span>🎯</span>
                                 {projStats.hasRecurring ? (
-                                  <span>{projStats.recurringDone}/{projStats.recurringTarget} {tx.lblExecutionsOrDays[curLang]} ({projStats.todayDone}/{projStats.todayDue || projTasks.length} {tx.lblDoneTodayCount[curLang]})</span>
+                                  <span>{projStats.recurringDone}/{projStats.recurringTarget} {tx.lblTaskExecutions[curLang]} ({projStats.todayDone}/{projStats.todayDue || projTasks.length} {tx.lblDoneTodayCount[curLang]})</span>
                                 ) : (
                                   <span>{projTasksDone}/{projTasks.length} {tx.lblCompactTasks[curLang]}</span>
                                 )}
