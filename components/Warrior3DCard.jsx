@@ -430,18 +430,15 @@ export default function Warrior3DCard({
             </span>
           </div>
 
-          {/* Badges de Guerra Integrados dentro do Card */}
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-            <span className="rounded-md border border-gold/40 bg-gold/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-gold font-bold whitespace-nowrap shadow-sm">
-              💎 {purity}%
+          {/* Resumo de campanha: apenas os 3 sinais essenciais no primeiro olhar */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="rounded-md border border-amber-500/35 bg-amber-950/35 px-2.5 py-1 text-[10px] sm:text-[11px] font-mono text-amber-200 font-black whitespace-nowrap">
+              🔥 {d} {TXT.days[curLang] || TXT.days.pt}
             </span>
-            <span className="rounded-md border border-amber-500/40 bg-amber-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-300 font-bold whitespace-nowrap shadow-sm">
-              🔥 {streak} {TXT.days[curLang] || TXT.days.pt}
+            <span className="rounded-md border border-gold/35 bg-gold/10 px-2.5 py-1 text-[10px] sm:text-[11px] font-mono text-gold font-black whitespace-nowrap">
+              ⚔️ {Math.round(Math.min(100, Math.max(0, lvlPct)))}%
             </span>
-            <span className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-emerald-300 font-bold whitespace-nowrap shadow-sm">
-              🛡️ {sosWins} SOS
-            </span>
-            <span className="rounded-md border border-amber-800/40 bg-black/40 px-2 py-0.5 text-[9.5px] sm:text-[10.5px] font-mono text-amber-200/80 font-bold whitespace-nowrap">
+            <span className="rounded-md border border-amber-800/40 bg-black/40 px-2.5 py-1 text-[10px] sm:text-[11px] font-mono text-amber-200/85 font-black whitespace-nowrap">
               {nt ? `${d}d / ${nt.min}d` : (curLang === 'en' ? 'MAX' : 'MÁX')}
             </span>
           </div>
