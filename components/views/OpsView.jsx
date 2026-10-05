@@ -325,10 +325,97 @@ const I18N = {
   lblTaskProgress: { pt: 'EXECUÇÃO DAS TAREFAS', en: 'TASK EXECUTION', es: 'EJECUCIÓN DE TAREAS' },
   lblTaskExecutions: { pt: 'execuções', en: 'executions', es: 'ejecuciones' },
   lblItemsDoneCount: { pt: 'itens concluídos', en: 'items completed', es: 'elementos completados' },
+  // Indicação e Promoção a Hábito da Forja
+  btnPromoteToHabitBadge: { pt: 'Forjar Hábito', en: 'Forge Habit', es: 'Forjar Hábito' },
+  btnPromoteToHabitTooltip: {
+    pt: '14+ dias de consistência! Clique para promover a Hábito Oficial da Forja',
+    en: '14+ days of consistency! Click to promote to Official Forge Habit',
+    es: '¡14+ días de consistencia! Haz clic para promover a Hábito Oficial de la Forja',
+  },
+  lblForgeRecommendedTitle: {
+    pt: '⚡ INDICAÇÃO DA FORJA: HÁBITO RECOMENDADO',
+    en: '⚡ FORGE RECOMMENDATION: HABIT RECOMMENDED',
+    es: '⚡ RECOMENDACIÓN DE LA FORJA: HÁBITO RECOMENDADO',
+  },
+  lblForgeRecommendedDesc: {
+    pt: 'Esta missão diária atingiu mais de 14 dias de consistência ininterrupta. Deseja transformá-la em Hábito Oficial da Forja e importar todo o seu histórico?',
+    en: 'This daily mission has reached 14+ days of uninterrupted consistency. Would you like to transform it into an Official Forge Habit and import all your metrics?',
+    es: 'Esta misión diaria ha alcanzado más de 14 días de consistencia ininterrumpida. ¿Deseas transformarla en Hábito Oficial de la Forja e importar todo tu historial?',
+  },
+  btnPromoteToHabitAction: {
+    pt: '🔥 PROMOVER A HÁBITO DA FORJA',
+    en: '🔥 PROMOTE TO FORGE HABIT',
+    es: '🔥 PROMOVER A HÁBITO DE LA FORJA',
+  },
+  btnPromoteToHabitShort: {
+    pt: 'Forjar Hábito',
+    en: 'Forge Habit',
+    es: 'Forjar Hábito',
+  },
+  modalPromoteHabitTitle: {
+    pt: 'PROMOVER A HÁBITO DA FORJA',
+    en: 'PROMOTE TO FORGE HABIT',
+    es: 'PROMOVER A HÁBITO DE LA FORJA',
+  },
+  modalPromoteHabitSub: {
+    pt: 'Transição deliberada: de tarefa operacional para disciplina forjada no aço.',
+    en: 'Deliberate transition: from operational task to steel-forged discipline.',
+    es: 'Transición deliberada: de tarea operacional a disciplina forjada en acero.',
+  },
+  modalPromoteSlotsFullTitle: {
+    pt: 'SLOTS DA FORJA OCUPADOS',
+    en: 'FORGE SLOTS FULL',
+    es: 'SLOTS DE LA FORJA OCUPADOS',
+  },
+  modalPromoteSlotsFullDesc: (used, max) => ({
+    pt: `Você está utilizando todos os seus ${used}/${max} slots de hábitos ativos da Forja. Conclua ou arquive um hábito na aba Forja para abrir vaga.`,
+    en: `You are currently using all your ${used}/${max} active Forge habit slots. Complete or archive an existing habit in the Forge tab to free up a slot.`,
+    es: `Estás utilizando todos tus ${used}/${max} slots de hábitos activos de la Forja. Completa o archiva un hábito en la pestaña Forja para liberar un cupo.`,
+  }),
+  btnGoToForge: {
+    pt: 'Ir para a Forja',
+    en: 'Go to Forge',
+    es: 'Ir a la Forja',
+  },
+  lblPromoteSlotAvailable: (next, max) => ({
+    pt: `Slot ${next} de ${max} disponível na Forja`,
+    en: `Slot ${next} of ${max} available in the Forge`,
+    es: `Slot ${next} de ${max} disponible en la Forja`,
+  }),
+  lblPromoteImportSummaryTitle: {
+    pt: 'O que acontecerá ao forjar este hábito:',
+    en: 'What happens when you forge this habit:',
+    es: 'Qué ocurrirá al forjar este hábito:',
+  },
+  lblPromoteImportPoint1: (done, streak) => ({
+    pt: `Importação de métricas: todos os ${done} dias cumpridos e sequência de ${streak} dias serão transferidos para o Hábito.`,
+    en: `Metrics import: all ${done} completed days and streak of ${streak} days will be transferred to the Habit.`,
+    es: `Importación de métricas: todos los ${done} días cumplidos y racha de ${streak} días serán transferidos al Hábito.`,
+  }),
+  lblPromoteImportPoint2: {
+    pt: 'Pontuação automática: o hábito passará a pontuar diretamente na consistência diária e semanal da Forja.',
+    en: 'Automatic scoring: the habit will score directly into your daily and weekly Forge consistency.',
+    es: 'Puntuación automática: el hábito sumará directamente a tu consistencia diaria y semanal de la Forja.',
+  },
+  lblPromoteImportPoint3: {
+    pt: 'Desativação da tarefa: esta operação sairá da lista de tarefas para evitar registros duplicados.',
+    en: 'Task deactivation: this operation will leave the task list to prevent duplicate logs.',
+    es: 'Desactivación de tarea: esta operación saldrá de la lista de tareas para evitar registros duplicados.',
+  },
+  btnConfirmForgeHabit: {
+    pt: '🔥 CONFIRMAR E FORJAR HÁBITO',
+    en: '🔥 CONFIRM & FORGE HABIT',
+    es: '🔥 CONFIRMAR Y FORJAR HÁBITO',
+  },
+  toastTaskPromotedSuccess: {
+    pt: '⚡ Tarefa promovida com honra a Hábito Oficial da Forja!',
+    en: '⚡ Task promoted with honor to Official Forge Habit!',
+    es: '⚡ ¡Tarea promovida con honor a Hábito Oficial de la Forja!',
+  },
 };
 
 export default function OpsView() {
-  const { S, update, toast, openModal, closeModal, opsTarget, setOpsTarget } = useApp();
+  const { S, update, toast, openModal, closeModal, opsTarget, setOpsTarget, setTab } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
   const curLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
   const tx = I18N;
@@ -1945,6 +2032,41 @@ export default function OpsView() {
             )}
           </div>
 
+          {/* Card de Destaque / Recomendação da Forja */}
+          {liveTask.rep === 'diaria' && streak >= 14 && (
+            <div className="p-3.5 rounded-xl border border-gold/60 bg-gradient-to-r from-amber-950/40 via-gold/15 to-[#1c1815] mb-3.5 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+              <div className="flex items-start gap-2.5 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/50 flex items-center justify-center text-gold shrink-0 mt-0.5">
+                  <Flame size={18} className="text-gold fill-gold" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                    <span className="text-[10px] font-mono font-black text-gold uppercase tracking-wider">
+                      {tx.lblForgeRecommendedTitle[curLang]}
+                    </span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-gold/25 text-gold border border-gold/50 font-bold">
+                      🔥 {streak} {tx.subConsecutiveDays[curLang]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink/90 leading-relaxed">
+                    {tx.lblForgeRecommendedDesc[curLang]}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  closeModal();
+                  setTimeout(() => openPromoteToHabitModal(liveTask), 80);
+                }}
+                className="w-full mt-1 py-2 px-3 rounded-lg bg-gradient-to-r from-amber-600 via-gold to-amber-500 text-[#121214] font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <Zap size={13} className="fill-current" />
+                <span>{tx.btnPromoteToHabitAction[curLang]}</span>
+              </button>
+            </div>
+          )}
+
           {/* Ficha Técnica & Atalhos */}
           <div className="p-2.5 rounded-xl border border-line/60 bg-surface/40 mb-3 text-[11px] font-mono space-y-1 text-muted">
             <div className="flex items-center justify-between">
@@ -1971,6 +2093,21 @@ export default function OpsView() {
 
           {/* Botões Finais de Ação */}
           <div className="flex gap-2 pt-2 border-t border-line">
+            {liveTask.rep === 'diaria' && (
+              <button
+                type="button"
+                onClick={() => {
+                  closeModal();
+                  setTimeout(() => openPromoteToHabitModal(liveTask), 80);
+                }}
+                className="btn-dark py-2 px-2.5 text-xs font-bold flex items-center justify-center gap-1 cursor-pointer border-gold/40 text-gold hover:bg-gold/10"
+                title={tx.btnPromoteToHabitAction[curLang]}
+              >
+                <Zap size={12} className="text-gold" />
+                <span>{tx.btnPromoteToHabitShort[curLang]}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {
@@ -2008,6 +2145,210 @@ export default function OpsView() {
     };
 
     openModal(<TaskAnalysisModalContent />);
+  };
+
+  /* MODAL: Promover Tarefa Diária a Hábito Oficial da Forja */
+  const openPromoteToHabitModal = (taskItem) => {
+    const liveTask = (S?.tasks || []).find((x) => String(x.id) === String(taskItem.id)) || taskItem;
+    const streak = getTaskStreak(liveTask);
+    const totalDone = getTaskTotalDone(liveTask);
+
+    const maxSlots = typeof L.slotLimit === 'function' ? L.slotLimit(S) : (typeof L.tierNow === 'function' ? L.tierNow(S).slots : 2);
+    const activeHabits = (S?.forge?.active || []);
+    const activeCount = activeHabits.length;
+    const hasSlot = activeCount < maxSlots;
+
+    const PromoteModal = () => (
+      <div className="text-left p-1 max-w-lg">
+        {/* Topo do Modal */}
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-line/60">
+          <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/40 flex items-center justify-center text-gold shadow-sm flex-none">
+            <Flame size={24} className="text-gold fill-gold" />
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-base text-ink tracking-wide">
+              {tx.modalPromoteHabitTitle[curLang]}
+            </h3>
+            <p className="text-xs text-muted leading-tight mt-0.5">
+              {tx.modalPromoteHabitSub[curLang]}
+            </p>
+          </div>
+        </div>
+
+        {/* Resumo da Missão a ser Promovida */}
+        <div className="p-3 rounded-xl border border-gold/30 bg-surface2/60 mb-3.5">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span className="text-[10px] font-mono font-bold text-gold uppercase tracking-wider">
+              {formatRepLabel(liveTask) || 'Diária'}
+            </span>
+            {liveTask.time && (
+              <span className="text-[10px] font-mono text-muted flex items-center gap-1">
+                <Clock size={11} /> {liveTask.time}
+              </span>
+            )}
+          </div>
+          <h4 className="text-sm font-bold text-ink mb-2">
+            {liveTask.txt}
+          </h4>
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            <span className="px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/40 font-bold flex items-center gap-1 text-[11px]">
+              <span>🔥</span>
+              <span>{streak} {tx.subConsecutiveDays[curLang]}</span>
+            </span>
+            <span className="px-2 py-0.5 rounded bg-surface border border-line text-muted font-bold flex items-center gap-1 text-[11px]">
+              <span>✓</span>
+              <span>{totalDone} {tx.lblTaskDaysCompletedBadge[curLang]}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Verificação de Slots da Forja */}
+        {!hasSlot ? (
+          <div className="p-3 rounded-xl border border-danger/40 bg-danger/10 mb-4">
+            <div className="flex items-center gap-2 text-danger font-bold text-xs mb-1">
+              <AlertTriangle size={15} />
+              <span>{tx.modalPromoteSlotsFullTitle[curLang]} ({activeCount}/{maxSlots})</span>
+            </div>
+            <p className="text-xs text-muted leading-relaxed">
+              {tx.modalPromoteSlotsFullDesc(activeCount, maxSlots)[curLang]}
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  closeModal();
+                  if (typeof setTab === 'function') setTab('forge');
+                }}
+                className="btn-gold flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>🔨</span>
+                <span>{tx.btnGoToForge[curLang]}</span>
+              </button>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="btn-dark py-2 px-4 text-xs font-bold cursor-pointer"
+              >
+                {tx.btnCancel[curLang]}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            {/* Slot Disponível & Explicação Tática */}
+            <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 mb-3.5">
+              <div className="flex items-center justify-between text-xs font-bold text-emerald-400 mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 size={14} />
+                  <span>{tx.lblPromoteSlotAvailable(activeCount + 1, maxSlots)[curLang]}</span>
+                </span>
+                <span className="font-mono text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">
+                  {activeCount + 1}/{maxSlots}
+                </span>
+              </div>
+              <p className="text-[11.5px] text-muted mb-2 font-medium">
+                {tx.lblPromoteImportSummaryTitle[curLang]}
+              </p>
+              <ul className="text-xs space-y-1.5 text-ink/90">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-gold font-bold">✓</span>
+                  <span>{tx.lblPromoteImportPoint1(totalDone, streak)[curLang]}</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-gold font-bold">✓</span>
+                  <span>{tx.lblPromoteImportPoint2[curLang]}</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-amber-400 font-bold">✓</span>
+                  <span>{tx.lblPromoteImportPoint3[curLang]}</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Ações */}
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const newId = 'cust_' + Date.now();
+                  const newHabit = {
+                    id: newId,
+                    n: liveTask.txt.trim(),
+                    desc: liveTask.desc || '',
+                    icon: liveTask.icon || '⚡',
+                    category: liveTask.cat || 'disciplina',
+                  };
+                  update((s) => {
+                    s.customHabits = s.customHabits || [];
+                    s.customHabits.push(newHabit);
+                    s.forge.custom = s.forge.custom || [];
+                    s.forge.custom.push(newHabit);
+
+                    if (liveTask.time) {
+                      s.forge.times = s.forge.times || {};
+                      s.forge.times[newId] = liveTask.time;
+                    }
+
+                    s.forge.since = s.forge.since || {};
+                    s.forge.since[newId] = liveTask.createdAt || today();
+
+                    s.forge.done = s.forge.done || {};
+                    (liveTask.doneDates || []).forEach((ds) => {
+                      if (!s.forge.done[ds]) s.forge.done[ds] = [];
+                      if (!s.forge.done[ds].some((x) => String(x) === String(newId))) {
+                        s.forge.done[ds].push(newId);
+                      }
+                    });
+
+                    if ((liveTask.done || L.isDone(liveTask, today())) && !((s.forge.done[today()] || []).some((x) => String(x) === String(newId)))) {
+                      if (!s.forge.done[today()]) s.forge.done[today()] = [];
+                      s.forge.done[today()].push(newId);
+                    }
+
+                    s.forge.active = s.forge.active || [];
+                    if (!s.forge.active.some((x) => String(x) === String(newId))) {
+                      s.forge.active.push(newId);
+                    }
+
+                    // Se vinculada a projeto, vincula o novo hábito ao projeto
+                    const pId = liveTask.projectId || liveTask.proj;
+                    if (pId) {
+                      const pObj = (s.projects || []).find((p) => String(p.id) === String(pId));
+                      if (pObj) {
+                        pObj.habitIds = pObj.habitIds || [];
+                        if (!pObj.habitIds.some((x) => String(x) === String(newId))) {
+                          pObj.habitIds.push(newId);
+                        }
+                      }
+                    }
+
+                    // Remove da lista de tarefas operacionais conforme solicitação
+                    s.tasks = (s.tasks || []).filter((x) => String(x.id) !== String(liveTask.id));
+                  });
+
+                  closeModal();
+                  try { AF.victory(); } catch { AF.click(); }
+                  toast(tx.toastTaskPromotedSuccess[curLang]);
+                }}
+                className="btn-gold flex-1 py-2.5 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+              >
+                <span>🔥</span>
+                <span>{tx.btnConfirmForgeHabit[curLang]}</span>
+              </button>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="btn-dark py-2.5 px-4 text-xs font-bold cursor-pointer"
+              >
+                {tx.btnCancel[curLang]}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+
+    openModal(<PromoteModal />);
   };
 
   /* MODAL: Adiar Operação */
@@ -2667,6 +3008,20 @@ export default function OpsView() {
                               <span>🔥</span>
                               <span>{streak} {tx.subConsecutiveDays[curLang]}</span>
                             </span>
+                          )}
+                          {tItem.rep === 'diaria' && streak >= 14 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openPromoteToHabitModal(tItem);
+                              }}
+                              className="px-2 py-0.2 rounded bg-gradient-to-r from-amber-500/25 via-gold/30 to-amber-500/25 text-gold border border-gold/70 font-extrabold flex items-center gap-1 hover:border-gold hover:scale-[1.03] shadow-[0_0_10px_rgba(212,175,55,0.35)] transition-all cursor-pointer animate-pulse"
+                              title={tx.btnPromoteToHabitTooltip[curLang]}
+                            >
+                              <Zap size={10} className="text-gold fill-gold" />
+                              <span>{tx.btnPromoteToHabitBadge[curLang]}</span>
+                            </button>
                           )}
                           {totalDone > 0 && streak === 0 && (
                             <span
