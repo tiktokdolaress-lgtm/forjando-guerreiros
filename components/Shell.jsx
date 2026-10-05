@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass, MoreHorizontal } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -25,6 +25,8 @@ import ErrorBoundary from './ErrorBoundary';
 
 const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, enemy: Skull, settings: Settings, admin: Crown };
 const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView, admin: AdminView };
+const MOBILE_TABS = ['qg', 'forge', 'ops', 'journal'];
+const MOBILE_MORE_I18N = { pt: 'Mais', en: 'More', es: 'Más' };
 
 const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
 
@@ -47,6 +49,7 @@ export default function Shell() {
   const TabIcon = ICONS[tab] || Castle;
 
   const [hasUnread, setHasUnread] = React.useState(false);
+  const [mobileMoreOpen, setMobileMoreOpen] = React.useState(false);
   const [commandReplies, setCommandReplies] = React.useState([]);
   const [unreadReply, setUnreadReply] = React.useState(null);
 
@@ -401,39 +404,36 @@ export default function Shell() {
           paddingBottom: 'max(0.35rem, env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <div className="grid grid-cols-7 w-full px-1 py-1.5 gap-0.5 max-w-lg mx-auto">
-          {TABS.map(([id]) => {
+        {mobileMoreOpen && (
+          <div className="absolute bottom-full right-2 mb-2 w-52 overflow-hidden rounded-xl border border-[#4a3822] bg-[rgba(18,15,12,.98)] p-1.5 shadow-[0_-8px_32px_rgba(0,0,0,.85)]">
+            {['stats', 'enemy', 'settings'].map((id) => {
+              const Ic = ICONS[id];
+              return (
+                <button key={id} type="button" onClick={() => { setMobileMoreOpen(false); go(id); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-bold text-muted transition-colors hover:bg-gold/10 hover:text-gold">
+                  <Ic size={18} /> {t(id)}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        <div className="grid grid-cols-5 w-full px-2 py-1.5 gap-1 max-w-lg mx-auto">
+          {MOBILE_TABS.map((id) => {
             const Ic = ICONS[id];
-            if (!Ic) return null;
             const active = tab === id;
             const navLabel = t(`nav_${id}`) || t(id);
             return (
-              <button
-                key={id}
-                onClick={() => go(id)}
-                type="button"
-                aria-label={t(id)}
-                className={`flex flex-col items-center justify-center py-1 px-0.5 rounded-lg transition-all min-w-0 select-none ${
-                  active ? 'text-gold' : 'text-muted hover:text-ink'
-                }`}
-              >
-                <div
-                  className={`grid h-7 w-7 place-items-center rounded-md transition-all ${
-                    active ? 'bg-gold/20 text-gold shadow-sm' : ''
-                  }`}
-                >
-                  <Ic size={18} strokeWidth={active ? 2.3 : 1.7} />
+              <button key={id} onClick={() => { setMobileMoreOpen(false); go(id); }} type="button" aria-label={t(id)} className={`flex min-w-0 flex-col items-center justify-center rounded-lg px-1 py-1.5 transition-all select-none ${active ? 'text-gold' : 'text-muted hover:text-ink'}`}>
+                <div className={`grid h-8 w-8 place-items-center rounded-lg transition-all ${active ? 'border border-gold/25 bg-gold/10 text-gold shadow-[inset_0_0_10px_rgba(229,169,60,.08)]' : ''}`}>
+                  <Ic size={19} strokeWidth={active ? 2.3 : 1.7} />
                 </div>
-                <span
-                  className={`text-[9px] font-extrabold uppercase tracking-tight truncate w-full text-center leading-tight mt-0.5 ${
-                    active ? 'text-gold' : 'text-muted/75'
-                  }`}
-                >
-                  {navLabel}
-                </span>
+                <span className={`mt-0.5 w-full truncate text-center text-[9.5px] font-extrabold uppercase leading-tight ${active ? 'text-gold' : 'text-muted/75'}`}>{navLabel}</span>
               </button>
             );
           })}
+          <button type="button" onClick={() => setMobileMoreOpen((v) => !v)} aria-label={MOBILE_MORE_I18N[lang] || MOBILE_MORE_I18N.pt} className={`flex min-w-0 flex-col items-center justify-center rounded-lg px-1 py-1.5 transition-all select-none ${['stats','enemy','settings'].includes(tab) || mobileMoreOpen ? 'text-gold' : 'text-muted'}`}>
+            <div className={`grid h-8 w-8 place-items-center rounded-lg ${['stats','enemy','settings'].includes(tab) || mobileMoreOpen ? 'border border-gold/25 bg-gold/10' : ''}`}><MoreHorizontal size={20} /></div>
+            <span className="mt-0.5 text-[9.5px] font-extrabold uppercase leading-tight">{MOBILE_MORE_I18N[lang] || MOBILE_MORE_I18N.pt}</span>
+          </button>
         </div>
       </nav>
 
