@@ -1070,15 +1070,15 @@ export default function QgView() {
                   <div className="flex items-center flex-none pl-1.5 sm:pl-2">
                     {isChecked ? (
                       <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
-                        BLINDADO
+                        {curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO'}
                       </span>
                     ) : isFailed ? (
                       <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
-                        FALHOU
+                        {curLang === 'en' ? 'FAILED' : curLang === 'es' ? 'FALLÓ' : 'FALHOU'}
                       </span>
                     ) : (
                       <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
-                        MARCAR
+                        {curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR'}
                       </span>
                     )}
                   </div>
@@ -1774,15 +1774,15 @@ export default function QgView() {
                     <div className="flex items-center flex-none pl-1.5 sm:pl-2">
                       {isChecked ? (
                         <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
-                          BLINDADO
+                          {curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO'}
                         </span>
                       ) : isFailed ? (
                         <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
-                          FALHOU
+                          {curLang === 'en' ? 'FAILED' : curLang === 'es' ? 'FALLÓ' : 'FALHOU'}
                         </span>
                       ) : (
                         <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
-                          MARCAR
+                          {curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR'}
                         </span>
                       )}
                     </div>
