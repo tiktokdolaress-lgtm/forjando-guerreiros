@@ -321,6 +321,22 @@ const LABELS_I18N = {
   habitNameLabel: { pt: 'Nome do Hábito:', en: 'Habit Name:', es: 'Nombre del Hábito:' },
   habitNamePlaceholder: { pt: 'Ex: 50 Flexões ao acordar', en: 'E.g.: 50 Push-ups upon waking', es: 'Ej.: 50 Flexiones al despertar' },
   iconLabel: { pt: 'Ícone / Emoji:', en: 'Icon / Emoji:', es: 'Ícono / Emoji:' },
+  quickIconsLabel: { pt: 'Ícones recomendados da forja:', en: 'Recommended forge icons:', es: 'Íconos recomendados de la forja:' },
+  categoryLabel: { pt: 'Pilar / Categoria da Forja:', en: 'Forge Pillar / Category:', es: 'Pilar / Categoría de la Forja:' },
+  categoryBody: { pt: '💪 Corpo & Vigor Físico', en: '💪 Body & Physical Vigor', es: '💪 Cuerpo & Vigor Físico' },
+  categoryMind: { pt: '🧠 Mente & Foco Inabalável', en: '🧠 Mind & Unshakable Focus', es: '🧠 Mente & Enfoque Inquebrantable' },
+  categoryMission: { pt: '🎯 Missão & Disciplina', en: '🎯 Mission & Discipline', es: '🎯 Misión & Disciplina' },
+  categorySpirit: { pt: '⚔️ Espírito & Autodomínio', en: '⚔️ Spirit & Self-Mastery', es: '⚔️ Espíritu & Autodominio' },
+  benefitLabel: { pt: 'Impacto Fisiológico & Mental (Opcional):', en: 'Physiological & Mental Impact (Optional):', es: 'Impacto Fisiológico y Mental (Opcional):' },
+  benefitPlaceholder: { pt: 'Ex: Fortalece o córtex pré-frontal, eleva a testosterona e drena a ansiedade.', en: 'E.g.: Strengthens prefrontal cortex, boosts testosterone and drains anxiety.', es: 'Ej.: Fortalece la corteza prefrontal, eleva la testosterona y drena la ansiedad.' },
+  protectionLabel: { pt: 'Blindagem & Antídoto Contra Recaída (Opcional):', en: 'Shielding & Relapse Antidote (Optional):', es: 'Blindaje y Antídoto Contra Recaída (Opcional):' },
+  protectionPlaceholder: { pt: 'Ex: Corta o gatilho da solidão na madrugada e quebra o transe do vício.', en: 'E.g.: Cuts late-night solitude triggers and shatters the addiction trance.', es: 'Ej.: Corta el disparador de soledad nocturna y rompe el trance de la adicción.' },
+  initialPlacementLabel: { pt: 'Destino Inicial do Hábito:', en: 'Initial Habit Destination:', es: 'Destino Inicial del Hábito:' },
+  placeInProtocol: { pt: 'Ativar direto no Protocolo Diário', en: 'Activate directly in Daily Protocol', es: 'Activar directamente en Protocolo Diario' },
+  placeInReserve: { pt: 'Guardar na Reserva da Forja', en: 'Save to Forge Reserve', es: 'Guardar en la Reserva de la Forja' },
+  slotsFullAutoReserve: { pt: '(Slots cheios — será salvo na Reserva)', en: '(Slots full — will save to Reserve)', es: '(Slots llenos — se guardará en Reserva)' },
+  editHabitBtn: { pt: 'Editar', en: 'Edit', es: 'Editar' },
+  deleteHabitBtn: { pt: 'Excluir', en: 'Delete', es: 'Eliminar' },
   timeOptionalLabel: { pt: 'Horário & Alerta 🔔 (Opcional):', en: 'Time & Alert 🔔 (Optional):', es: 'Horario y Alerta 🔔 (Opcional):' },
   timeLabel: { pt: 'Horário & Alerta 🔔:', en: 'Time & Alert 🔔:', es: 'Horario y Alerta 🔔:' },
   saveChanges: { pt: 'Salvar Alterações', en: 'Save Changes', es: 'Guardar Cambios' },
@@ -352,10 +368,20 @@ const LABELS_I18N = {
   },
 };
 
+/* Ícones Táticos & Guerreiros para Seleção Rápida */
+const WARRIOR_PRESET_ICONS = [
+  '⚡', '🔥', '🛡️', '⚔️', '🦁', '👑', '🧊', '🏋️', '📜', '⏰',
+  '🌑', '🧹', '🍯', '🚶', '🧘', '⏳', '🛏️', '🚫', '💧', '☀️',
+  '✍️', '🎯', '📵', '🦴', '🗿', '🤝', '🐺', '🦅', '🛠️'
+];
+
 /* Mapeamento de Categoria */
 function getHabitCategory(h) {
-  const idStr = String(h.id);
-  const nameLower = String(h.n || '').toLowerCase();
+  if (h && h.category && ['body', 'mind', 'mission', 'spirit'].includes(h.category)) {
+    return h.category;
+  }
+  const idStr = String(h ? h.id : '');
+  const nameLower = String((h && (h.n || h.name || h.title)) || '').toLowerCase();
 
   if (['1', '2', '13', '14', '18', '19'].includes(idStr) || nameLower.includes('banho') || nameLower.includes('shower') || nameLower.includes('ducha') || nameLower.includes('treino') || nameLower.includes('train') || nameLower.includes('água') || nameLower.includes('water') || nameLower.includes('sol') || nameLower.includes('sun') || nameLower.includes('pélvica') || nameLower.includes('pelvic') || nameLower.includes('força') || nameLower.includes('strength')) {
     return 'body';
@@ -533,20 +559,27 @@ export default function ForgeView() {
   );
 
   /* Identificar se o hábito é customizado pelo usuário */
-  const isCustomHabit = (id) => {
-    if (!id || id === 'undefined') return false;
+  const isCustomHabit = (hOrId) => {
+    if (!hOrId) return false;
+    const h = typeof hOrId === 'object' ? hOrId : null;
+    const id = h ? h.id : hOrId;
+    if (id == null || id === 'undefined') return false;
+    if (h && (h.custom || h.isCustom)) return true;
     const num = Number(id);
     if (!isNaN(num) && num >= 1 && num <= 20) return false;
-    const customList = (S && S.customHabits) || (S && S.forge && S.forge.custom) || [];
-    return customList.some((c) => String(c.id) === String(id)) || (typeof id === 'string' && (id.length > 6 || id.startsWith('cust_')));
+    return true;
   };
 
   /* Hábitos Ativos */
   const activeHabits = activeIds.map((id) => {
-    return ALLH.find((h) => String(h.id) === String(id)) || {
+    const found = ALLH.find((h) => String(h.id) === String(id));
+    if (found) return found;
+    return {
       id,
-      n: curLang === 'en' ? `Habit #${id}` : `Hábito #${id}`,
+      n: curLang === 'en' ? `Habit #${id}` : curLang === 'es' ? `Hábito #${id}` : `Hábito #${id}`,
+      name: curLang === 'en' ? `Habit #${id}` : curLang === 'es' ? `Hábito #${id}` : `Hábito #${id}`,
       icon: '⚡',
+      custom: true,
     };
   });
 
@@ -628,8 +661,8 @@ export default function ForgeView() {
 
   /* Excluir Hábito Personalizado com Confirmação In-App */
   const deleteCustomHabit = (id) => {
-    const habit = (S.customHabits || []).find((h) => String(h.id) === String(id));
-    const habitName = habit ? habit.n : '';
+    const habit = (ALLH || []).find((h) => String(h.id) === String(id));
+    const habitName = habit ? (habit.n || habit.name || habit.title || '') : '';
 
     const ConfirmModal = () => (
       <div className="text-center p-1">
@@ -652,6 +685,7 @@ export default function ForgeView() {
               update((s) => {
                 s.customHabits = (s.customHabits || []).filter((x) => String(x.id) !== String(id));
                 s.forge = s.forge || {};
+                s.forge.custom = (s.forge.custom || []).filter((x) => String(x.id) !== String(id));
                 s.forge.active = (s.forge.active || []).filter((x) => String(x) !== String(id));
                 s.forge.archived = (s.forge.archived || []).filter((x) => String(x) !== String(id));
                 if (s.forge.times) delete s.forge.times[id];
@@ -678,17 +712,24 @@ export default function ForgeView() {
   /* Modal de Edição de Hábito Personalizado */
   const openEditModal = (h) => {
     const EditH = () => {
-      const [name, setName] = useState(h.n || '');
+      const [name, setName] = useState(h.n || h.name || h.title || '');
       const [icon, setIcon] = useState(h.icon || '⚡');
+      const [category, setCategory] = useState(h.category || getHabitCategory(h) || 'body');
+      const [benefit, setBenefit] = useState(h.b || h.desc || '');
+      const [protection, setProtection] = useState(h.p || h.why || '');
       const [time, setTime] = useState((S.forge && S.forge.times && S.forge.times[h.id]) || '');
 
       return (
-        <div className="text-center">
-          <h3 className="mb-2 font-display text-2xl tracking-wide text-gold">{LBL.editHabitTitle[curLang]}</h3>
-          <p className="mb-4 text-xs text-muted">{LBL.editHabitSub[curLang]}</p>
-          <div className="flex flex-col gap-3 text-left">
+        <div className="text-left max-h-[85vh] overflow-y-auto pr-1">
+          <div className="text-center mb-3">
+            <h3 className="mb-1 font-display text-2xl tracking-wide text-gold">{LBL.editHabitTitle[curLang]}</h3>
+            <p className="text-xs text-muted leading-relaxed">{LBL.editHabitSub[curLang]}</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {/* Nome do Hábito */}
             <label>
-              <span className="lbl">{LBL.habitNameLabel[curLang]}</span>
+              <span className="lbl">{LBL.habitNameLabel[curLang]} *</span>
               <input
                 type="text"
                 className="field"
@@ -697,43 +738,134 @@ export default function ForgeView() {
                 autoFocus
               />
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label>
-                <span className="lbl">{LBL.iconLabel[curLang]}</span>
-                <input
-                  type="text"
-                  className="field text-center text-lg"
-                  maxLength={4}
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                />
-              </label>
-              <label>
-                <span className="lbl">{LBL.timeLabel[curLang]}</span>
-                <input
-                  type="time"
-                  className="field"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
-              </label>
+
+            {/* Ícone com Paleta Rápida */}
+            <div>
+              <div className="grid grid-cols-2 gap-2 mb-1.5">
+                <label>
+                  <span className="lbl">{LBL.iconLabel[curLang]}</span>
+                  <input
+                    type="text"
+                    className="field text-center text-xl"
+                    maxLength={4}
+                    value={icon}
+                    onChange={(e) => setIcon(e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span className="lbl">{LBL.timeLabel[curLang]}</span>
+                  <input
+                    type="time"
+                    className="field"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="mt-1">
+                <span className="text-[10px] font-mono text-muted block mb-1">{LBL.quickIconsLabel[curLang]}</span>
+                <div className="flex flex-wrap gap-1 p-1.5 rounded-lg border border-line/60 bg-surface/50 max-h-20 overflow-y-auto">
+                  {WARRIOR_PRESET_ICONS.map((em, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setIcon(em)}
+                      className={`h-7 w-7 text-sm rounded flex items-center justify-center transition-all cursor-pointer ${
+                        icon === em ? 'bg-gold/30 border border-gold scale-110' : 'hover:bg-surface2'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* Pilar / Categoria */}
+            <div>
+              <span className="lbl">{LBL.categoryLabel[curLang]}</span>
+              <div className="grid grid-cols-2 gap-1.5 mt-1">
+                {[
+                  { id: 'body', label: LBL.categoryBody[curLang] },
+                  { id: 'mind', label: LBL.categoryMind[curLang] },
+                  { id: 'mission', label: LBL.categoryMission[curLang] },
+                  { id: 'spirit', label: LBL.categorySpirit[curLang] },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.id)}
+                    className={`py-1.5 px-2 rounded-lg border text-left text-[11px] font-bold transition-all cursor-pointer ${
+                      category === cat.id
+                        ? 'border-gold bg-gold/15 text-gold'
+                        : 'border-line bg-surface text-muted hover:border-gold/40'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Impacto Biológico / Mental */}
+            <label>
+              <span className="lbl">{LBL.benefitLabel[curLang]}</span>
+              <textarea
+                rows={2}
+                placeholder={LBL.benefitPlaceholder[curLang]}
+                className="field text-xs py-1.5 resize-none"
+                value={benefit}
+                onChange={(e) => setBenefit(e.target.value)}
+              />
+            </label>
+
+            {/* Proteção Contra Recaída & Antídoto */}
+            <label>
+              <span className="lbl">{LBL.protectionLabel[curLang]}</span>
+              <textarea
+                rows={2}
+                placeholder={LBL.protectionPlaceholder[curLang]}
+                className="field text-xs py-1.5 resize-none"
+                value={protection}
+                onChange={(e) => setProtection(e.target.value)}
+              />
+            </label>
           </div>
+
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="btn-gold flex-1 py-2 font-bold text-xs"
+              className="btn-gold flex-1 py-2 font-bold text-xs uppercase tracking-wider cursor-pointer"
               onClick={() => {
                 if (!name.trim()) return toast(LBL.toastNameRequired[curLang]);
                 update((s) => {
-                  const target = (s.customHabits || []).find((c) => String(c.id) === String(h.id));
-                  if (target) {
-                    target.n = name.trim();
-                    target.icon = icon || '⚡';
-                  }
+                  s.customHabits = s.customHabits || [];
+                  s.forge = s.forge || {};
+                  s.forge.custom = s.forge.custom || [];
+
+                  const syncObj = (t) => {
+                    t.n = name.trim();
+                    t.name = name.trim();
+                    t.icon = icon || '⚡';
+                    t.category = category;
+                    t.b = benefit.trim();
+                    t.p = protection.trim();
+                    t.custom = true;
+                  };
+
+                  const target1 = s.customHabits.find((c) => String(c.id) === String(h.id));
+                  if (target1) syncObj(target1);
+                  else s.customHabits.push({ id: h.id, n: name.trim(), name: name.trim(), icon: icon || '⚡', category, b: benefit.trim(), p: protection.trim(), custom: true });
+
+                  const target2 = s.forge.custom.find((c) => String(c.id) === String(h.id));
+                  if (target2) syncObj(target2);
+                  else s.forge.custom.push({ id: h.id, n: name.trim(), name: name.trim(), icon: icon || '⚡', category, b: benefit.trim(), p: protection.trim(), custom: true });
+
+                  s.forge.times = s.forge.times || {};
                   if (time) {
-                    s.forge.times = s.forge.times || {};
                     s.forge.times[h.id] = time;
+                  } else {
+                    delete s.forge.times[h.id];
                   }
                 });
                 closeModal();
@@ -751,7 +883,7 @@ export default function ForgeView() {
               }}
             >
               <Trash2 size={13} />
-              <span>{LBL.deleteHabit[curLang]}</span>
+              <span>{LBL.deleteHabitBtn[curLang]}</span>
             </button>
             <button type="button" className="btn-dark py-2 px-4 text-xs font-bold cursor-pointer" onClick={closeModal}>
               {LBL.cancelBtn[curLang]}
@@ -808,15 +940,25 @@ export default function ForgeView() {
     const CreateH = () => {
       const [name, setName] = useState('');
       const [icon, setIcon] = useState('⚡');
+      const [category, setCategory] = useState('body');
+      const [benefit, setBenefit] = useState('');
+      const [protection, setProtection] = useState('');
       const [time, setTime] = useState('');
+      const [startActive, setStartActive] = useState(activeCount < maxSlots);
+
+      const slotsAvailable = activeCount < maxSlots;
 
       return (
-        <div className="text-center">
-          <h3 className="mb-2 font-display text-2xl tracking-wide text-gold">{LBL.createNewHabit[curLang]}</h3>
-          <p className="mb-4 text-xs text-muted">{LBL.createHabitSub[curLang]}</p>
-          <div className="flex flex-col gap-3 text-left">
+        <div className="text-left max-h-[85vh] overflow-y-auto pr-1">
+          <div className="text-center mb-3">
+            <h3 className="mb-1 font-display text-2xl tracking-wide text-gold">{LBL.createNewHabit[curLang]}</h3>
+            <p className="text-xs text-muted leading-relaxed">{LBL.createHabitSub[curLang]}</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {/* Nome do Hábito */}
             <label>
-              <span className="lbl">{LBL.habitNameLabel[curLang]}</span>
+              <span className="lbl">{LBL.habitNameLabel[curLang]} *</span>
               <input
                 type="text"
                 placeholder={LBL.habitNamePlaceholder[curLang]}
@@ -826,51 +968,177 @@ export default function ForgeView() {
                 autoFocus
               />
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <label>
-                <span className="lbl">{LBL.iconLabel[curLang]}</span>
-                <input
-                  type="text"
-                  placeholder="⚡"
-                  className="field text-center text-lg"
-                  maxLength={4}
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                />
-              </label>
-              <label>
-                <span className="lbl">{LBL.timeOptionalLabel[curLang]}</span>
-                <input
-                  type="time"
-                  className="field"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
-              </label>
+
+            {/* Ícone com Paleta Rápida de Emojis Guerreiros */}
+            <div>
+              <div className="grid grid-cols-2 gap-2 mb-1.5">
+                <label>
+                  <span className="lbl">{LBL.iconLabel[curLang]}</span>
+                  <input
+                    type="text"
+                    placeholder="⚡"
+                    className="field text-center text-xl"
+                    maxLength={4}
+                    value={icon}
+                    onChange={(e) => setIcon(e.target.value)}
+                  />
+                </label>
+                <label>
+                  <span className="lbl">{LBL.timeOptionalLabel[curLang]}</span>
+                  <input
+                    type="time"
+                    className="field"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="mt-1">
+                <span className="text-[10px] font-mono text-muted block mb-1">{LBL.quickIconsLabel[curLang]}</span>
+                <div className="flex flex-wrap gap-1 p-1.5 rounded-lg border border-line/60 bg-surface/50 max-h-20 overflow-y-auto">
+                  {WARRIOR_PRESET_ICONS.map((em, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setIcon(em)}
+                      className={`h-7 w-7 text-sm rounded flex items-center justify-center transition-all cursor-pointer ${
+                        icon === em ? 'bg-gold/30 border border-gold scale-110' : 'hover:bg-surface2'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Pilar / Categoria */}
+            <div>
+              <span className="lbl">{LBL.categoryLabel[curLang]}</span>
+              <div className="grid grid-cols-2 gap-1.5 mt-1">
+                {[
+                  { id: 'body', label: LBL.categoryBody[curLang] },
+                  { id: 'mind', label: LBL.categoryMind[curLang] },
+                  { id: 'mission', label: LBL.categoryMission[curLang] },
+                  { id: 'spirit', label: LBL.categorySpirit[curLang] },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.id)}
+                    className={`py-1.5 px-2 rounded-lg border text-left text-[11px] font-bold transition-all cursor-pointer ${
+                      category === cat.id
+                        ? 'border-gold bg-gold/15 text-gold'
+                        : 'border-line bg-surface text-muted hover:border-gold/40'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Impacto Biológico / Mental */}
+            <label>
+              <span className="lbl">{LBL.benefitLabel[curLang]}</span>
+              <textarea
+                rows={2}
+                placeholder={LBL.benefitPlaceholder[curLang]}
+                className="field text-xs py-1.5 resize-none"
+                value={benefit}
+                onChange={(e) => setBenefit(e.target.value)}
+              />
+            </label>
+
+            {/* Proteção Contra Recaída & Antídoto */}
+            <label>
+              <span className="lbl">{LBL.protectionLabel[curLang]}</span>
+              <textarea
+                rows={2}
+                placeholder={LBL.protectionPlaceholder[curLang]}
+                className="field text-xs py-1.5 resize-none"
+                value={protection}
+                onChange={(e) => setProtection(e.target.value)}
+              />
+            </label>
+
+            {/* Destino Inicial */}
+            <div className="p-2.5 rounded-lg border border-line/60 bg-surface/40">
+              <span className="text-[10.5px] font-mono font-bold text-muted block mb-1.5 uppercase">
+                {LBL.initialPlacementLabel[curLang]}
+              </span>
+              <div className="flex flex-col gap-1.5 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="initialDest"
+                    checked={startActive && slotsAvailable}
+                    disabled={!slotsAvailable}
+                    onChange={() => setStartActive(true)}
+                  />
+                  <span className={slotsAvailable ? 'text-ink font-medium' : 'text-muted line-through'}>
+                    {LBL.placeInProtocol[curLang]}
+                    {!slotsAvailable && (
+                      <span className="text-danger text-[10px] ml-1">{LBL.slotsFullAutoReserve[curLang]}</span>
+                    )}
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="initialDest"
+                    checked={!startActive || !slotsAvailable}
+                    onChange={() => setStartActive(false)}
+                  />
+                  <span className="text-ink font-medium">{LBL.placeInReserve[curLang]}</span>
+                </label>
+              </div>
             </div>
           </div>
+
           <div className="mt-4 flex gap-2">
             <button
               type="button"
-              className="btn-gold flex-1 py-2 font-bold text-xs"
+              className="btn-gold flex-1 py-2.5 font-bold text-xs uppercase tracking-wider cursor-pointer"
               onClick={() => {
                 if (!name.trim()) return toast(LBL.toastNameRequired[curLang]);
                 const newId = Date.now();
+                const newHabit = {
+                  id: newId,
+                  n: name.trim(),
+                  name: name.trim(),
+                  icon: icon || '⚡',
+                  category: category || 'body',
+                  b: benefit.trim(),
+                  p: protection.trim(),
+                  custom: true,
+                };
                 update((s) => {
                   s.customHabits = s.customHabits || [];
-                  s.customHabits.push({ id: newId, n: name.trim(), icon: icon || '⚡' });
+                  s.customHabits.push(newHabit);
+                  s.forge = s.forge || {};
+                  s.forge.custom = s.forge.custom || [];
+                  s.forge.custom.push(newHabit);
+
                   if (time) {
                     s.forge.times = s.forge.times || {};
                     s.forge.times[newId] = time;
                   }
+
+                  if (startActive && slotsAvailable) {
+                    s.forge.active = s.forge.active || [];
+                    if (!s.forge.active.some((x) => String(x) === String(newId))) {
+                      s.forge.active.push(newId);
+                    }
+                  }
                 });
                 closeModal();
-                toast(LBL.toastHabitCreated[curLang]);
+                toast(startActive && slotsAvailable ? LBL.toastHabitActivated[curLang] : LBL.toastHabitCreated[curLang]);
               }}
             >
               {LBL.createHabitBtn[curLang]}
             </button>
-            <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
+            <button type="button" className="btn-dark py-2.5 px-4 text-xs font-bold cursor-pointer" onClick={closeModal}>
               {LBL.cancelBtn[curLang]}
             </button>
           </div>
@@ -1095,25 +1363,26 @@ export default function ForgeView() {
                               <span className={`text-xs sm:text-[13px] font-bold block truncate leading-tight ${
                                 isDone ? 'text-gold' : isFail ? 'line-through text-danger' : 'text-[#F5EEDC]'
                               }`}>
-                                {h.n}
+                                {h.n || h.name || h.title || ''}
                               </span>
                               {isCustom && (
-                                <div className="flex items-center gap-0.5 flex-none">
+                                <div className="flex items-center gap-1 flex-none">
                                   <button
                                     type="button"
-                                    title={LBL.editHabit[curLang]}
+                                    title={LBL.editHabitBtn[curLang]}
                                     onClick={() => openEditModal(h)}
-                                    className="text-muted hover:text-gold p-0.5"
+                                    className="px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                                   >
-                                    <Edit3 size={11} />
+                                    <Edit3 size={10} />
+                                    <span>{LBL.editHabitBtn[curLang]}</span>
                                   </button>
                                   <button
                                     type="button"
-                                    title={LBL.deleteHabit[curLang]}
+                                    title={LBL.deleteHabitBtn[curLang]}
                                     onClick={() => deleteCustomHabit(h.id)}
-                                    className="text-muted hover:text-danger p-0.5"
+                                    className="p-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] transition-colors cursor-pointer"
                                   >
-                                    <Trash2 size={11} />
+                                    <Trash2 size={10} />
                                   </button>
                                 </div>
                               )}
@@ -1367,26 +1636,27 @@ export default function ForgeView() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="text-xs font-bold text-ink truncate">
-                              {h.n}
+                              {h.n || h.name || h.title || ''}
                             </span>
                             {/* Botão de Editar/Excluir se for customizado na reserva */}
                             {isCustom && (
                               <div className="flex items-center gap-1 flex-none">
                                 <button
                                   type="button"
-                                  title={LBL.editHabit[curLang]}
+                                  title={LBL.editHabitBtn[curLang]}
                                   onClick={() => openEditModal(h)}
-                                  className="text-muted hover:text-gold p-0.5"
+                                  className="px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                                 >
-                                  <Edit3 size={11} />
+                                  <Edit3 size={10} />
+                                  <span>{LBL.editHabitBtn[curLang]}</span>
                                 </button>
                                 <button
                                   type="button"
-                                  title={LBL.deleteHabit[curLang]}
+                                  title={LBL.deleteHabitBtn[curLang]}
                                   onClick={() => deleteCustomHabit(h.id)}
-                                  className="text-muted hover:text-danger p-0.5"
+                                  className="p-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] transition-colors cursor-pointer"
                                 >
-                                  <Trash2 size={11} />
+                                  <Trash2 size={10} />
                                 </button>
                               </div>
                             )}
@@ -1585,7 +1855,17 @@ export default function ForgeView() {
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <span className="text-base flex-none">{h.icon}</span>
-                          <span className="text-xs font-semibold text-ink truncate">{h.n}</span>
+                          <span className="text-xs font-semibold text-ink truncate">{h.n || h.name || h.title || ''}</span>
+                          {isCustomHabit(h) && (
+                            <button
+                              type="button"
+                              title={LBL.editHabitBtn[curLang]}
+                              onClick={() => openEditModal(h)}
+                              className="text-muted hover:text-gold p-0.5"
+                            >
+                              <Edit3 size={11} />
+                            </button>
+                          )}
                         </div>
                         <button
                           type="button"

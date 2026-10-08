@@ -1122,12 +1122,12 @@ export default function QgView() {
         {act.length ? (
           <div className="flex flex-col gap-1.5 mt-1">
             {act.map((id) => {
-              const h = ALLH.find((x) => x.id === id); if (!h) return null;
-              const dn = fd.includes(id), isF = ff.includes(id), tm = L.hTime(S, id);
+              const h = ALLH.find((x) => String(x.id) === String(id)); if (!h) return null;
+              const dn = fd.some((x) => String(x) === String(id)), isF = ff.some((x) => String(x) === String(id)), tm = L.hTime(S, id);
               return (
                 <div key={id} className={`flex items-center gap-2 rounded-r border p-2 text-left text-xs sm:text-[13px] font-semibold transition-colors ${dn ? 'border-gold/50 bg-gold/10' : isF ? 'border-danger/50 bg-danger/10' : 'border-line bg-surface2'}`}>
                   <span className="w-[22px] text-center text-base">{h.icon}</span>
-                  <span className={`min-w-0 flex-1 truncate ${dn ? 'text-muted line-through' : isF ? 'text-danger line-through opacity-80' : ''}`}>{h.n}</span>
+                  <span className={`min-w-0 flex-1 truncate ${dn ? 'text-muted line-through' : isF ? 'text-danger line-through opacity-80' : ''}`}>{h.n || h.name || h.title || ''}</span>
                   {tm && <span className="font-mono text-[10px] text-gold2">⏰{tm}</span>}
                   <div className="flex items-center gap-1.5 flex-none">
                     <button
