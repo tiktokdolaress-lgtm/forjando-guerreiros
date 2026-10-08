@@ -677,8 +677,11 @@ export default function ForgeView() {
 
   /* Modal de Edição de Hábito Personalizado */
   const openEditModal = (h) => {
-    let name = h.n || '', icon = h.icon || '⚡', time = (S.forge && S.forge.times && S.forge.times[h.id]) || '';
     const EditH = () => {
+      const [name, setName] = useState(h.n || '');
+      const [icon, setIcon] = useState(h.icon || '⚡');
+      const [time, setTime] = useState((S.forge && S.forge.times && S.forge.times[h.id]) || '');
+
       return (
         <div className="text-center">
           <h3 className="mb-2 font-display text-2xl tracking-wide text-gold">{LBL.editHabitTitle[curLang]}</h3>
@@ -689,8 +692,9 @@ export default function ForgeView() {
               <input
                 type="text"
                 className="field"
-                defaultValue={name}
-                onChange={(e) => (name = e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
               />
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -700,8 +704,8 @@ export default function ForgeView() {
                   type="text"
                   className="field text-center text-lg"
                   maxLength={4}
-                  defaultValue={icon}
-                  onChange={(e) => (icon = e.target.value)}
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
                 />
               </label>
               <label>
@@ -709,14 +713,15 @@ export default function ForgeView() {
                 <input
                   type="time"
                   className="field"
-                  defaultValue={time}
-                  onChange={(e) => (time = e.target.value)}
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
                 />
               </label>
             </div>
           </div>
           <div className="mt-4 flex gap-2">
             <button
+              type="button"
               className="btn-gold flex-1 py-2 font-bold text-xs"
               onClick={() => {
                 if (!name.trim()) return toast(LBL.toastNameRequired[curLang]);
@@ -800,8 +805,11 @@ export default function ForgeView() {
   };
 
   const openCreateModal = () => {
-    let name = '', icon = '⚡', time = '';
     const CreateH = () => {
+      const [name, setName] = useState('');
+      const [icon, setIcon] = useState('⚡');
+      const [time, setTime] = useState('');
+
       return (
         <div className="text-center">
           <h3 className="mb-2 font-display text-2xl tracking-wide text-gold">{LBL.createNewHabit[curLang]}</h3>
@@ -814,7 +822,8 @@ export default function ForgeView() {
                 placeholder={LBL.habitNamePlaceholder[curLang]}
                 className="field"
                 value={name}
-                onChange={(e) => (name = e.target.value)}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
               />
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -826,7 +835,7 @@ export default function ForgeView() {
                   className="field text-center text-lg"
                   maxLength={4}
                   value={icon}
-                  onChange={(e) => (icon = e.target.value)}
+                  onChange={(e) => setIcon(e.target.value)}
                 />
               </label>
               <label>
@@ -835,13 +844,14 @@ export default function ForgeView() {
                   type="time"
                   className="field"
                   value={time}
-                  onChange={(e) => (time = e.target.value)}
+                  onChange={(e) => setTime(e.target.value)}
                 />
               </label>
             </div>
           </div>
           <div className="mt-4 flex gap-2">
             <button
+              type="button"
               className="btn-gold flex-1 py-2 font-bold text-xs"
               onClick={() => {
                 if (!name.trim()) return toast(LBL.toastNameRequired[curLang]);
@@ -860,7 +870,7 @@ export default function ForgeView() {
             >
               {LBL.createHabitBtn[curLang]}
             </button>
-            <button className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
+            <button type="button" className="btn-dark py-2 px-4 text-xs font-bold" onClick={closeModal}>
               {LBL.cancelBtn[curLang]}
             </button>
           </div>
