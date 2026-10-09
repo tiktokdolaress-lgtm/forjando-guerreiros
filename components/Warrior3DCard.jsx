@@ -65,6 +65,29 @@ export const BATTLE_FOCUS_AXIOMS = [
   },
 ];
 
+const DISPLAY_MODE_I18N = {
+  medieval: {
+    pt: '🛡️ Brasão Medieval (Leve)',
+    en: '🛡️ Medieval Crest (Light)',
+    es: '🛡️ Blasón Medieval (Ligero)',
+  },
+  threeD: {
+    pt: '⚔️ Guerreiro 3D',
+    en: '⚔️ 3D Warrior',
+    es: '⚔️ Guerrero 3D',
+  },
+  tooltipMedieval: {
+    pt: 'Modo medieval ultra-rápido, leve e sem consumo de bateria',
+    en: 'Ultra-fast lightweight medieval mode with zero battery drain',
+    es: 'Modo medieval ultra rápido, ligero y sin consumo de batería',
+  },
+  tooltip3D: {
+    pt: 'Visualização tridimensional interativa com WebGL',
+    en: 'Interactive 3D visualization powered by WebGL',
+    es: 'Visualización tridimensional interactiva con WebGL',
+  },
+};
+
 export default function Warrior3DCard({
   tier,
   d = 0,
@@ -83,6 +106,24 @@ export default function Warrior3DCard({
   quoteTotal = null,
 }) {
   const [selectedPillar, setSelectedPillar] = useState(0);
+  const [displayMode, setDisplayMode] = useState('medieval');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('fg_warrior_display_mode');
+      if (saved === '3d' || saved === 'medieval') {
+        setDisplayMode(saved);
+      }
+    }
+  }, []);
+
+  const handleSetDisplayMode = (mode) => {
+    try { AF.click(); } catch (e) {}
+    setDisplayMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('fg_warrior_display_mode', mode);
+    }
+  };
 
   // Alternância automática dos lemas táticos durante o dia
   const [battleAxiomIdx, setBattleAxiomIdx] = useState(0);
@@ -539,37 +580,123 @@ export default function Warrior3DCard({
         </div>
       </div>
 
-      {/* CANVAS 3D INTERATIVO (O GUERREIRO E OS 3 ESTANDARTES GIRAM JUNTOS) */}
-      <div className="relative z-10 w-full min-h-[350px] flex flex-col items-center justify-center">
-        <ErrorBoundary
-          fallback={
-            <div className="h-[350px] w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1b120a] to-[#0a0704] border border-amber-600/30">
-              <div className="text-7xl mb-2 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse">
-                {safeTier.icon || '🛡️'}
+      {/* ALTERNADOR DO MODO DE EXIBIÇÃO: BRASÃO MEDIEVAL (LEVE/RÁPIDO) vs GUERREIRO 3D */}
+      <div className="relative z-20 my-2 flex items-center justify-center">
+        <div className="inline-flex items-center rounded-xl border border-amber-900/60 bg-black/70 p-1 shadow-inner gap-1">
+          <button
+            type="button"
+            onClick={() => handleSetDisplayMode('medieval')}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              displayMode === 'medieval'
+                ? 'bg-gradient-to-r from-amber-600/40 via-amber-500/30 to-amber-600/40 text-amber-200 border border-amber-500/60 shadow-[0_0_12px_rgba(245,158,11,0.25)] font-black'
+                : 'text-stone-400 hover:text-stone-200 border border-transparent'
+            }`}
+            title={DISPLAY_MODE_I18N.tooltipMedieval[curLang] || DISPLAY_MODE_I18N.tooltipMedieval.pt}
+          >
+            <span>🛡️</span>
+            <span>{DISPLAY_MODE_I18N.medieval[curLang] || DISPLAY_MODE_I18N.medieval.pt}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSetDisplayMode('3d')}
+            className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              displayMode === '3d'
+                ? 'bg-gradient-to-r from-amber-600/40 via-amber-500/30 to-amber-600/40 text-amber-200 border border-amber-500/60 shadow-[0_0_12px_rgba(245,158,11,0.25)] font-black'
+                : 'text-stone-400 hover:text-stone-200 border border-transparent'
+            }`}
+            title={DISPLAY_MODE_I18N.tooltip3D[curLang] || DISPLAY_MODE_I18N.tooltip3D.pt}
+          >
+            <span>⚔️</span>
+            <span>{DISPLAY_MODE_I18N.threeD[curLang] || DISPLAY_MODE_I18N.threeD.pt}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ÁREA VISUAL PRINCIPAL: BRASÃO HERÁLDICO MEDIEVAL (0ms, LEVE) OU CANVAS 3D */}
+      <div className="relative z-10 w-full min-h-[300px] sm:min-h-[340px] flex flex-col items-center justify-center">
+        {displayMode === 'medieval' ? (
+          <div className="relative z-10 w-full min-h-[290px] sm:min-h-[320px] flex flex-col items-center justify-center p-3 sm:p-5 select-none rounded-2xl bg-gradient-to-b from-[#1c120a] via-[#100a06] to-[#070402] border border-amber-600/40 shadow-[inset_0_0_35px_rgba(245,158,11,0.08)] mb-2 overflow-hidden group">
+            {/* Brilho radial heráldico de fundo */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.18)_0%,rgba(180,83,9,0.06)_45%,transparent_75%)]" />
+
+            {/* Brasão Heráldico Central */}
+            <div className="relative z-10 flex flex-col items-center text-center max-w-md w-full">
+              {/* Moldura do Escudo da Patente */}
+              <div className="relative mb-2.5 flex items-center justify-center">
+                {/* Halo dourado pulsante */}
+                <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-amber-500/25 via-gold/35 to-amber-600/25 blur-lg opacity-80 animate-pulse pointer-events-none" />
+                
+                {/* Escudo com rebites medievais */}
+                <div className="relative h-24 w-24 sm:h-28 sm:w-28 rounded-2xl bg-gradient-to-b from-[#2a1a0f] via-[#1a100a] to-[#0e0805] border-2 border-amber-500/70 p-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center">
+                  <div className="absolute inset-1 rounded-xl border border-amber-500/30 bg-gradient-to-b from-amber-500/10 to-transparent flex items-center justify-center">
+                    <span className="text-4xl sm:text-5xl drop-shadow-[0_4px_16px_rgba(245,158,11,0.7)] transition-transform group-hover:scale-110 duration-300">
+                      {safeTier.icon || '🛡️'}
+                    </span>
+                  </div>
+                  {/* Badge do Estágio */}
+                  <div className="absolute -bottom-2.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 border border-amber-300 text-[9px] sm:text-[9.5px] font-mono font-black text-[#140f07] uppercase tracking-wider shadow">
+                    {curLang === 'en' ? 'STAGE' : curLang === 'es' ? 'ETAPA' : 'ESTÁGIO'} {arm.stageNum}
+                  </div>
+                </div>
               </div>
-              <div className="font-display text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
+
+              {/* Nome Nobre da Patente */}
+              <h3 className="text-base sm:text-xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 tracking-wider uppercase drop-shadow-sm mt-1">
                 {safeTier.name}
-              </div>
-              <div className="text-xs font-mono text-amber-200/80 mt-1 max-w-xs">
-                {safeTier.reward || 'Armadura Forjada'}
-              </div>
+              </h3>
+
+              {/* Subtítulo / Marco Biológico & Mental */}
+              <p className="text-[11px] sm:text-xs font-mono text-amber-200/90 font-bold mt-0.5">
+                {safeTier.subtitle || safeTier.reward}
+              </p>
+
+              {/* Lema Heroico do Estágio */}
+              <p className="text-[10.5px] sm:text-[11.5px] font-serif italic text-stone-300/90 max-w-sm mt-1.5 px-3 py-1 rounded-lg bg-black/40 border border-amber-900/40 leading-snug">
+                {TXT.stageQuotes[arm.stageNum]
+                  ? (TXT.stageQuotes[arm.stageNum][curLang] || TXT.stageQuotes[arm.stageNum].pt)
+                  : TXT.quote[curLang]}
+              </p>
+
+              {/* Recompensa Forjada */}
+              {safeTier.reward && (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-950/70 border border-amber-600/40 text-[9.5px] sm:text-[10px] font-mono text-amber-300 font-bold shadow-sm">
+                  <span>🎁</span>
+                  <span>{safeTier.reward}</span>
+                </div>
+              )}
             </div>
-          }
-        >
-          <Warrior3DCanvas
-            tier={safeTier}
-            days={d}
-            height={350}
-            curLang={curLang}
-            interactive={true}
-            autoRotate={true}
-            pillarsData={pillarsData}
-            targetPillarIndex={selectedPillar}
-            onPillarChange={(idx) => {
-              if (idx !== selectedPillar) setSelectedPillar(idx);
-            }}
-          />
-        </ErrorBoundary>
+          </div>
+        ) : (
+          <ErrorBoundary
+            fallback={
+              <div className="h-[350px] w-full flex flex-col items-center justify-center p-6 text-center select-none rounded-xl bg-gradient-to-b from-[#1b120a] to-[#0a0704] border border-amber-600/30">
+                <div className="text-7xl mb-2 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)] animate-pulse">
+                  {safeTier.icon || '🛡️'}
+                </div>
+                <div className="font-display text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
+                  {safeTier.name}
+                </div>
+                <div className="text-xs font-mono text-amber-200/80 mt-1 max-w-xs">
+                  {safeTier.reward || 'Armadura Forjada'}
+                </div>
+              </div>
+            }
+          >
+            <Warrior3DCanvas
+              tier={safeTier}
+              days={d}
+              height={350}
+              curLang={curLang}
+              interactive={true}
+              autoRotate={true}
+              pillarsData={pillarsData}
+              targetPillarIndex={selectedPillar}
+              onPillarChange={(idx) => {
+                if (idx !== selectedPillar) setSelectedPillar(idx);
+              }}
+            />
+          </ErrorBoundary>
+        )}
 
         {/* SELETOR INTERATIVO MINIMALISTA DOS 3 ESTANDARTES HERÁLDICOS */}
         <div className="mt-1 mb-2.5 flex items-center justify-center gap-2 sm:gap-3 flex-wrap z-20">
