@@ -442,6 +442,31 @@ const LABELS_I18N = {
     en: 'Hide Biological Effects',
     es: 'Ocultar Efectos Biológicos',
   },
+  retroHintTitle: {
+    pt: 'TOQUE EM QUALQUER DIA PARA EDITAR (RETROATIVO)',
+    en: 'TAP ANY DAY TO EDIT (RETROACTIVE)',
+    es: 'TOCA CUALQUIER DÍA PARA EDITAR (RETROACTIVO)',
+  },
+  retroHintLegend: {
+    pt: '✓ Feito · ✕ Falhou · · Limpar',
+    en: '✓ Done · ✕ Failed · · Clear',
+    es: '✓ Hecho · ✕ Falló · · Limpiar',
+  },
+  toastRetroDone: {
+    pt: (date) => `Marcado como concluído em ${date} ✓`,
+    en: (date) => `Logged as done on ${date} ✓`,
+    es: (date) => `Marcado como cumplido el ${date} ✓`,
+  },
+  toastRetroFailed: {
+    pt: (date) => `Marcado como falha em ${date} ✕`,
+    en: (date) => `Logged as failed on ${date} ✕`,
+    es: (date) => `Marcado como fallido el ${date} ✕`,
+  },
+  toastRetroCleared: {
+    pt: (date) => `Registro limpo para ${date}`,
+    en: (date) => `Log cleared for ${date}`,
+    es: (date) => `Registro borrado para ${date}`,
+  },
 };
 
 /* Ícones Táticos & Guerreiros para Seleção Rápida */
@@ -1296,6 +1321,48 @@ export default function ForgeView() {
     openModal(<CreateH />);
   };
 
+  const toggleRetroHabit = (habitId, dateStr) => {
+    const doneMap = (S && S.forge && S.forge.done) || {};
+    const failMap = (S && S.forge && S.forge.failed) || {};
+    const listDone = doneMap[dateStr] || [];
+    const listFail = failMap[dateStr] || [];
+    const isD = listDone.some((x) => String(x) === String(habitId));
+    const isF = listFail.some((x) => String(x) === String(habitId));
+
+    update((s) => {
+      s.forge.done = s.forge.done || {};
+      s.forge.failed = s.forge.failed || {};
+      const dList = s.forge.done[dateStr] = s.forge.done[dateStr] || [];
+      const fList = s.forge.failed[dateStr] = s.forge.failed[dateStr] || [];
+
+      if (!isD && !isF) {
+        // Estado inicial (·): marcar como CONCLUÍDO (✓)
+        dList.push(habitId);
+      } else if (isD) {
+        // Estado CONCLUÍDO (✓): alternar para FALHOU (✕)
+        const dIdx = dList.findIndex((x) => String(x) === String(habitId));
+        if (dIdx >= 0) dList.splice(dIdx, 1);
+        fList.push(habitId);
+      } else {
+        // Estado FALHOU (✕): limpar para NÃO REGISTRADO (·)
+        const fIdx = fList.findIndex((x) => String(x) === String(habitId));
+        if (fIdx >= 0) fList.splice(fIdx, 1);
+      }
+    });
+
+    const dateFormatted = fmtD(dateStr);
+    if (!isD && !isF) {
+      AF.click();
+      toast(LBL.toastRetroDone[curLang](dateFormatted));
+    } else if (isD) {
+      AF.tone(110, 0.35, 'sine', 0.18, 0, 55);
+      toast(LBL.toastRetroFailed[curLang](dateFormatted));
+    } else {
+      AF.click();
+      toast(LBL.toastRetroCleared[curLang](dateFormatted));
+    }
+  };
+
   const renderLast7Days = (habitId) => {
     const days = [];
     const doneMap = (S && S.forge && S.forge.done) || {};
@@ -1311,23 +1378,41 @@ export default function ForgeView() {
     }
 
     return (
-      <div className="flex items-center justify-between gap-1 mt-2 p-2 rounded bg-surface border border-line">
-        {days.map((dItem, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-1">
-            <span className="text-[8.5px] font-mono text-muted">{dItem.label}</span>
-            <div
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${
-                dItem.isD
-                  ? 'border-gold bg-gold text-[#141414]'
-                  : dItem.isF
-                  ? 'border-danger bg-danger text-white'
-                  : 'border-line/60 bg-surface2 text-muted'
-              }`}
+      <div className="mt-2 p-2 rounded-lg bg-surface border border-line flex flex-col gap-1.5 select-none">
+        <div className="flex items-center justify-between text-[9px] font-mono text-muted">
+          <span className="flex items-center gap-1 text-gold/90 font-bold">
+            <span>📅</span>
+            <span>{LBL.retroHintTitle[curLang]}</span>
+          </span>
+          <span className="text-[8.5px] opacity-75 hidden sm:inline">
+            {LBL.retroHintLegend[curLang]}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-1">
+          {days.map((dItem, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => toggleRetroHabit(habitId, dItem.ds)}
+              title={`${dItem.label}: ${dItem.isD ? '✓' : dItem.isF ? '✕' : '·'} - ${curLang === 'en' ? 'Tap to toggle (Done / Failed / Clear)' : curLang === 'es' ? 'Toca para alternar (Hecho / Falló / Limpiar)' : 'Toque para alternar (Feito / Falha / Limpar)'}`}
+              className="flex flex-col items-center gap-1 group cursor-pointer hover:opacity-95 active:scale-90 transition-all p-0.5 rounded"
             >
-              {dItem.isD ? '✓' : dItem.isF ? '✕' : '·'}
-            </div>
-          </div>
-        ))}
+              <span className="text-[8.5px] font-mono text-muted group-hover:text-gold transition-colors">{dItem.label}</span>
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border transition-all shadow-xs ${
+                  dItem.isD
+                    ? 'border-gold bg-gold text-[#141414] shadow-[0_0_8px_rgba(255,200,70,0.35)]'
+                    : dItem.isF
+                    ? 'border-danger bg-danger text-white'
+                    : 'border-line/60 bg-surface2 text-muted group-hover:border-gold/50 group-hover:text-ink'
+                }`}
+              >
+                {dItem.isD ? '✓' : dItem.isF ? '✕' : '·'}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
