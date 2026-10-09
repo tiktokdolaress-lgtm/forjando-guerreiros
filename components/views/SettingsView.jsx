@@ -40,7 +40,7 @@ export const SETTINGS_I18N = {
   subtitleSecurity: { pt: 'Bloqueio por PIN de 4 dígitos, motor duplo de alertas e parceiro de responsabilidade.', en: '4-digit PIN lock, dual alert engine, and accountability partner link.', es: 'Bloqueo por PIN de 4 dígitos, motor doble de alertas y compañero de responsabilidad.' },
 
   headlineData: { pt: 'SOBERANIA DE DADOS, NUVEM & CÓDIGO', en: 'DATA SOVEREIGNTY, CLOUD & CODE', es: 'SOBERANÍA DE DATOS, NUBE Y CÓDIGO' },
-  subtitleData: { pt: 'Sincronização na nuvem, backups em JSON, frases customizadas e controle de conta.', en: 'Cloud sync, JSON backups, custom principles, and account control.', es: 'Sincronización en la nube, copias de seguridad en JSON, frases personalizadas y control de cuenta.' },
+  subtitleData: { pt: 'Sincronização na nuvem, backups em JSON, calibragem dos pilares e controle de conta.', en: 'Cloud sync, JSON backups, pillar calibration, and account control.', es: 'Sincronización en la nube, copias de seguridad en JSON, calibración de pilares y control de cuenta.' },
 
   badgeSystem: { pt: 'SISTEMA FORJA', en: 'FORGE SYSTEM', es: 'SISTEMA FORJA' },
   badgeCommand: { pt: 'CANAL DO COMANDO', en: 'COMMAND CHANNEL', es: 'CANAL DEL COMANDO' },
@@ -228,7 +228,6 @@ export default function SettingsView() {
   
   const [pinCur, setPinCur] = useState('');
   const [pinNew, setPinNew] = useState('');
-  const [ph, setPh] = useState('');
   const fileRef = useRef(null);
   const [perm, setPerm] = useState(() => (pushSupported() ? Notification.permission : 'denied'));
   const [notifBusy, setNotifBusy] = useState(false);
@@ -1290,80 +1289,6 @@ export default function SettingsView() {
                   </button>
                 </div>
                 <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={(e) => { const f = e.target.files[0]; if (f) importBk(f); e.target.value = ''; }} />
-              </div>
-            </div>
-
-            {/* FRASES DO CÓDIGO DO GUERREIRO */}
-            <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-line/50">
-                  <span className="font-display text-xs sm:text-sm font-bold tracking-wider text-gold uppercase flex items-center gap-1.5">
-                    <span>📜</span>
-                    <span>{T('sec_phrases', 'FRASES DO CÓDIGO DO GUERREIRO')}</span>
-                  </span>
-                  <span className="text-[10px] font-mono text-muted uppercase px-2 py-0.5 rounded bg-surface2 border border-line/60">
-                    {S.phrases.length} {T('lbl_extras', 'EXTRAS')}
-                  </span>
-                </div>
-
-                <div className="mb-3 flex flex-col gap-1.5">
-                  <div className="flex gap-2 items-start">
-                    <textarea
-                      rows={2}
-                      className="rounded-xl border border-line/80 bg-surface2/60 p-2.5 text-xs text-ink placeholder:text-muted/60 focus:border-gold focus:outline-none flex-1 resize-y min-h-[46px] max-h-[160px] leading-relaxed"
-                      maxLength={3000}
-                      placeholder={T('phrases_placeholder', 'Adicionar lema ou princípio de guerra (até 3000 caracteres)...')}
-                      value={ph}
-                      onChange={(e) => setPh(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && ph.trim()) {
-                          e.preventDefault();
-                          update((s) => { s.phrases.push(ph.trim()); });
-                          setPh('');
-                          toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                        }
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="py-2 px-3.5 h-[46px] rounded-xl border border-gold/40 bg-gold hover:brightness-110 text-[#141414] flex items-center justify-center cursor-pointer shadow-sm active:scale-95 flex-none"
-                      onClick={() => {
-                        if (!ph.trim()) return;
-                        update((s) => { s.phrases.push(ph.trim()); });
-                        setPh('');
-                        toast(T('ok_phraseAdd', '✨ Frase adicionada.'));
-                      }}
-                      title={T('btn_add_phrase_title', 'Adicionar Frase')}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] font-mono text-muted px-1">
-                    <span>{T('phrases_hint', 'Enter para salvar (Shift+Enter para nova linha)')}</span>
-                    <span className={ph.length >= 2800 ? 'text-danger font-bold' : ''}>
-                      {ph.length}/3000
-                    </span>
-                  </div>
-                </div>
-
-                <div className="max-h-[220px] overflow-y-auto space-y-2 pr-1 no-scrollbar">
-                  {S.phrases.length ? (
-                    S.phrases.map((p, i) => (
-                      <div key={i} className="flex items-start justify-between gap-2.5 rounded-xl border border-line/60 bg-surface2/60 p-2.5 text-xs">
-                        <span className="italic text-ink whitespace-pre-wrap leading-relaxed break-words flex-1 font-serif text-[12.5px]">"{p}"</span>
-                        <button
-                          className="text-muted hover:text-danger flex-none p-1 transition-colors mt-0.5 cursor-pointer"
-                          onClick={() => confirmBox(T('c_phTitle', 'EXCLUIR FRASE?'), (T('del_phrase_prefix', 'Remover "') + p + T('del_phrase_suffix', '" do Código?')), () => update((s) => { s.phrases.splice(i, 1); s.phraseIdx = 0; }))}
-                          title={T('del_phrase_btn', 'Excluir frase')}
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <Empty className="py-3 text-[11px]">{T('phrases_empty', 'Nenhuma frase customizada adicionada ainda.')}</Empty>
-                  )}
-                </div>
               </div>
             </div>
 

@@ -3,8 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Chk } from '@/components/ui';
-import { FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS, QUOTES } from '@/lib/data';
-import { cx, cxHabits, cxTiers, cxQuotes } from '@/lib/content-i18n';
+import { FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS } from '@/lib/data';
+import { cx, cxHabits, cxTiers } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF, metaSfx } from '@/lib/audio';
 import { today, fdmy, pad, yesterday } from '@/lib/utils';
@@ -121,7 +121,6 @@ export default function QgView() {
       localStorage.setItem('fg_last_celebrated_tier', String(currentTierMin));
     } catch (e) {}
   }, [currentTierMin, tier]);
-  const quotes = cxQuotes(lang, QUOTES);
   const ALLH = cxHabits(lang, L.allH(S));
   const TR = (x, i) => cx(lang, 'ob', 'trig' + i) || x;
   const fallLbl = (x) => { const k = t('fall_' + x); return k === 'fall_' + x ? (FAIL_LBL[x] || x) : k; };
@@ -130,8 +129,6 @@ export default function QgView() {
   const streak = L.currentStreak(S);
   const lvlPct = nt ? Math.min(100, ((d - tier.min) / (nt.min - tier.min)) * 100) : 100;
   const lvlTxt = nt ? <>{t('lvl_a')}<b className="text-gold">{nt.min - d}{t('dayw')}</b>{t('lvl_b')}{nt.icon} {nt.name}</> : t('lvl_max');
-  const mantraPool = L.mantraPool(S, quotes);
-  const mantra = mantraPool[S.phraseIdx % mantraPool.length];
   const pornFree = S.lastPorn ? Math.max(0, L.daysBetweenSafe(S.lastPorn)) : d;
   const mastFree = S.lastMast ? Math.max(0, L.daysBetweenSafe(S.lastMast)) : d;
 
@@ -434,13 +431,6 @@ export default function QgView() {
     </div>
   );
 
-  const nextMantra = () => {
-    AF.click();
-    update((s) => {
-      s.phraseIdx = (s.phraseIdx + 1) % L.mantraPool(s, quotes).length;
-    });
-  };
-
   /* 2. O GUERREIRO VIVO DA FORJA (CARD COM MODO BRASÃO MEDIEVAL OU GUERREIRO 3D) */
   const renderPillars3DTowers = (isDesktop = false) => {
     return (
@@ -458,10 +448,6 @@ export default function QgView() {
             lvlPct={lvlPct}
             lvlTxt={lvlTxt}
             onGoToArmors={() => setShowEvolutionGallery(true)}
-            dailyQuote={mantra}
-            onNextQuote={nextMantra}
-            quoteIdx={(S.phraseIdx % mantraPool.length) + 1}
-            quoteTotal={mantraPool.length}
           />
         </ErrorBoundary>
       </div>
