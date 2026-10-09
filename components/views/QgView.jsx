@@ -922,36 +922,55 @@ export default function QgView() {
   };
 
   const renderDailyCheckin = () => {
-    const SHIELD_DATA = {
+    const tTx = TACTICAL_ENERGY_I18N;
+    const reqPil = L.pillars(S);
+    const donePil = reqPil.filter((k) => !!cView[k]).length;
+    const totPil = reqPil.length || 3;
+
+    const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
+    const totMissions = timelineItems.length;
+    const doneMissions = timelineItems.filter((i) => i.done).length;
+
+    const totalWeight = totPil + totMissions;
+    const doneWeight = donePil + doneMissions;
+    const energyPct = totalWeight > 0 ? Math.round((doneWeight / totalWeight) * 100) : 0;
+
+    const SHIELD_I18N = {
       r: {
         icon: '🛡️',
-        title: curLang === 'en' ? 'Semen Retention Maintained' : curLang === 'es' ? 'Retención Seminal Mantenida' : 'Retenção Seminal Mantida',
-        sub: curLang === 'en' ? 'Vital energy preserved (No ejaculation)' : curLang === 'es' ? 'Energía vital preservada (Sin eyaculación)' : 'Energia vital preservada (Sem ejaculação)',
+        shortName: { pt: 'Retenção', en: 'Retention', es: 'Retención' },
+        title: { pt: 'Retenção Seminal', en: 'Semen Retention', es: 'Retención Seminal' },
+        sub: { pt: 'Energia Vital', en: 'Vital Energy', es: 'Energía Vital' },
       },
       p: {
         icon: '👁️',
-        title: curLang === 'en' ? 'Zero Pornography' : curLang === 'es' ? 'Cero Pornografía' : 'Zero Pornografia',
-        sub: curLang === 'en' ? 'Mind guarded, clean gaze' : curLang === 'es' ? 'Mente blindada, mirada limpia' : 'Mente blindada, olhar firme e limpo',
+        shortName: { pt: 'Sem Pornô', en: 'No Porn', es: 'Sin Porno' },
+        title: { pt: 'Zero Pornografia', en: 'Zero Pornography', es: 'Cero Pornografía' },
+        sub: { pt: 'Olhar Firme', en: 'Clean Gaze', es: 'Mirada Limpia' },
       },
       m: {
         icon: '⚡',
-        title: curLang === 'en' ? 'Unshakable Self-Mastery' : curLang === 'es' ? 'Autodominio Inquebrantable' : 'Autodomínio Inabalável',
-        sub: curLang === 'en' ? 'Zero masturbation, impulse conquered' : curLang === 'es' ? 'Cero masturbación, impulso dominado' : 'Zero masturbação, soberania sobre o impulso',
+        shortName: { pt: 'Autodomínio', en: 'Self-Mastery', es: 'Autodominio' },
+        title: { pt: 'Sem Masturbação', en: 'No Masturbation', es: 'Sin Masturbación' },
+        sub: { pt: 'Vontade de Aço', en: 'Iron Will', es: 'Voluntad Firme' },
       },
     };
 
+    const isAllShielded = cView.ok || (donePil === totPil && totPil > 0);
+
     return (
-      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0 select-none">
-        <div className="flex items-center justify-between gap-2.5 mb-2.5 min-w-0">
+      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0 select-none transition-all">
+        {/* Topo: Título, Data e Seletor Ontem / Hoje */}
+        <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-line/60 flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
-              <ShieldCheck size={18} />
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+              <ShieldCheck size={16} />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
                 {curLang === 'en' ? 'DAILY COMBAT SHIELDING' : curLang === 'es' ? 'BLINDAJE DE COMBATE DIARIO' : 'BLINDAGEM DE COMBATE DIÁRIO'}
               </span>
-              <span className="text-[10px] text-muted font-mono truncate">
+              <span className="text-[9.5px] text-muted font-mono truncate">
                 {ciDate === today() ? `${t('today_b')} · ${fdmy(today())}` : `${t('editing_r')} ${fdmy(ciDate)}`}
               </span>
             </div>
@@ -961,7 +980,7 @@ export default function QgView() {
             <button
               type="button"
               className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
-              onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
+              onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); }}
               title={t('prev_d')}
             >
               ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
@@ -976,125 +995,112 @@ export default function QgView() {
               </button>
             )}
             <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-lg border ${
-              cView.ok ? 'border-gold/40 bg-gold/25 text-gold' : 'border-line bg-surface text-muted'
+              isAllShielded ? 'border-gold/50 bg-gold/25 text-gold shadow-sm' : 'border-line bg-surface text-muted'
             }`}>
-              {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
+              {donePil}/{totPil} {curLang === 'en' ? 'SHIELDS' : curLang === 'es' ? 'ESCUDOS' : 'ESCUDOS'}
             </span>
           </div>
         </div>
 
-        {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
-        <button
-          type="button"
-          onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
-          className={`w-full mb-2 p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer active:scale-[0.99] ${
-            cView.ok
-              ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
-              : 'border-line/90 bg-surface hover:border-gold/40'
-          }`}
-        >
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <span className="text-base sm:text-lg flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className={`text-xs font-bold leading-tight truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
-                {cView.ok
-                  ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
-                  : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
+        {/* Carga Tática Integrada: Mini Barra de Foco e Energia */}
+        <div className="mb-2.5 px-2 py-1.5 rounded-lg bg-black/40 border border-line/40 flex flex-col gap-1">
+          <div className="flex items-center justify-between text-[9.5px] font-mono text-muted">
+            <span className="flex items-center gap-1 text-gold/90 font-bold truncate">
+              <Zap size={11} className="text-gold shrink-0" />
+              <span>{tTx.title[curLang]}:</span>
+              <span className="text-stone-300 font-normal truncate">
+                {energyPct >= 100 ? tTx.subFull[curLang] : energyPct > 0 ? tTx.subAdvanced[curLang] : tTx.subZero[curLang]}
               </span>
-              <span className="text-[10px] text-muted truncate mt-0.5">
-                {pillarsOpen
-                  ? (curLang === 'en' ? 'Tap to hide the 3 pillars' : curLang === 'es' ? 'Toca para ocultar los 3 pilares' : 'Toque para ocultar os 3 pilares')
-                  : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir y registrar los 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-none">
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
-              cView.ok
-                ? 'border-gold/40 bg-gold/25 text-gold'
-                : 'border-line bg-surface2 text-muted'
-            }`}>
-              {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
             </span>
-            {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
+            <span className="font-black text-gold ml-1 shrink-0">{energyPct}%</span>
           </div>
-        </button>
+          <div className="h-1.5 w-full rounded-full bg-[#101015] border border-line/60 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                energyPct >= 100
+                  ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]'
+                  : 'bg-gradient-to-r from-amber-600 via-gold to-yellow-300'
+              }`}
+              style={{ width: `${Math.max(energyPct, 2)}%` }}
+            />
+          </div>
+        </div>
 
-        {/* OS 3 ESCUDOS INTERATIVOS TÁTEIS */}
-        {pillarsOpen && (
-          <div className="flex flex-col gap-2 pt-0.5 pb-1">
-            {L.pillars(S).map((k) => {
-              const isChecked = !!cView[k];
-              const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-              const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-              const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+        {/* Os 3 Escudos Interativos de 1 Toque Direto (3 Colunas Lado a Lado) */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          {reqPil.map((k) => {
+            const isChecked = !!cView[k];
+            const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+            const failTypes = String(cView.fail || '').split('+').filter(Boolean);
+            const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+            const conf = SHIELD_I18N[k] || {
+              icon: '⚔️',
+              shortName: { pt: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), en: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), es: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3') },
+              sub: { pt: '', en: '', es: '' },
+            };
 
-              const item = SHIELD_DATA[k] || { icon: '⚔️', title: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), sub: '' };
+            return (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setCI(k, !isChecked, ciDate)}
+                className={`group flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-xl border text-center transition-all active:scale-[0.96] cursor-pointer min-h-[94px] select-none ${
+                  isChecked
+                    ? 'border-gold/70 bg-gradient-to-b from-gold/25 via-amber-500/10 to-[#14121a] shadow-[0_2px_12px_rgba(255,200,70,0.18)]'
+                    : isFailed
+                    ? 'border-danger/70 bg-danger/15 shadow-[0_2px_10px_rgba(239,68,68,0.15)]'
+                    : 'border-line/80 bg-surface hover:border-gold/50 hover:bg-surface2'
+                }`}
+              >
+                {/* Ícone */}
+                <div className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-sm sm:text-base transition-all ${
+                  isChecked
+                    ? 'border-gold bg-gold text-[#121214] font-black shadow-md scale-105'
+                    : isFailed
+                    ? 'border-danger bg-danger/25 text-danger font-black'
+                    : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50 group-hover:text-gold'
+                }`}>
+                  {isChecked ? '✓' : conf.icon}
+                </div>
 
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setCI(k, !isChecked, ciDate)}
-                  className={`group flex items-center justify-between rounded-xl border p-2 sm:p-2.5 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
-                    isChecked
-                      ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
-                      : isFailed
-                      ? 'border-danger/60 bg-danger/10'
-                      : 'border-line/70 bg-surface2/60 hover:border-gold/40'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                    <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
-                      isChecked
-                        ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
-                        : isFailed
-                        ? 'border-danger bg-danger/20 text-danger'
-                        : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50'
-                    }`}>
-                      {isChecked ? '✓' : item.icon}
-                    </span>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className={`text-xs font-bold leading-tight truncate ${
-                        isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
-                      }`}>
-                        {item.title}
-                      </span>
-                      <span className="text-[9.5px] text-muted truncate mt-0.5">
-                        {item.sub}
-                      </span>
-                    </div>
-                  </div>
+                {/* Nome do Pilar */}
+                <div className="flex flex-col items-center mt-1 w-full min-w-0">
+                  <span className={`text-[11px] sm:text-xs font-bold leading-tight truncate w-full ${
+                    isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
+                  }`}>
+                    {conf.shortName[curLang] || conf.shortName.pt}
+                  </span>
+                  <span className="text-[9px] text-muted/80 truncate w-full mt-0.5">
+                    {conf.sub[curLang] || conf.sub.pt}
+                  </span>
+                </div>
 
-                  <div className="flex items-center flex-none pl-1.5 sm:pl-2">
-                    {isChecked ? (
-                      <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
-                        {curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO'}
-                      </span>
-                    ) : isFailed ? (
-                      <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
-                        {curLang === 'en' ? 'FAILED' : curLang === 'es' ? 'FALLÓ' : 'FALHOU'}
-                      </span>
-                    ) : (
-                      <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
-                        {curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR'}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Selo de Vitória Se Hoje For 100% Blindado */}
-            {cView.ok && (
-              <div className="mt-1 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
-                <span className="flex-none">🏆</span>
-                <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
-                  {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
+                {/* Tag de Status */}
+                <span className={`mt-1 px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider w-full truncate border ${
+                  isChecked
+                    ? 'border-gold/50 bg-gold/20 text-gold shadow-sm'
+                    : isFailed
+                    ? 'border-danger/50 bg-danger/25 text-danger'
+                    : 'border-line bg-surface2 text-muted group-hover:text-gold group-hover:border-gold/30'
+                }`}>
+                  {isChecked
+                    ? (curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO')
+                    : isFailed
+                    ? (curLang === 'en' ? 'FALL' : curLang === 'es' ? 'CAÍDO' : 'FALHOU')
+                    : (curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR')}
                 </span>
-              </div>
-            )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Selo de Vitória Se Hoje For 100% Blindado */}
+        {isAllShielded && (
+          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-lg border border-gold/50 bg-gradient-to-r from-gold/15 via-amber-500/20 to-gold/15 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse">
+            <span className="flex-none">🏆</span>
+            <span className="tracking-wide leading-tight truncate">
+              {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
+            </span>
           </div>
         )}
 
@@ -1102,7 +1108,7 @@ export default function QgView() {
         {ciDate === today() ? (
           <button
             type="button"
-            className="mt-2.5 w-full py-2 px-3 rounded-xl border border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm"
+            className="mt-2 w-full py-1.5 px-3 rounded-lg border border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm"
             onClick={failFlow}
           >
             <span>🩸</span>
@@ -1625,199 +1631,13 @@ export default function QgView() {
   const renderMobileOneScreen = () => {
     return (
       <div className="flex flex-col gap-3 w-full min-w-0 max-w-full">
-        {/* 1. OS 3 MONÓLITOS DA FORJA (3 Torres 3D Animadas / Pilares do Guerreiro com Frase do Dia e Contador 24h Integrados) */}
+        {/* 1. OS 3 MONÓLITOS DA FORJA (Torres / Brasão Heráldico do Guerreiro com Frase do Dia e Contador 24h Integrados) */}
         {renderPillars3DTowers(false)}
 
-        {/* CARGA TÁTICA DO DIA: Bateria & Foco de Batalha em Tempo Real */}
-        {renderDailyTacticalEnergy()}
+        {/* 2. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO COM OS 3 ESCUDOS E CARGA TÁTICA INTEGRADA */}
+        {renderDailyCheckin()}
 
-        {/* 2. BLINDAGEM DO DIA: REGISTRO TÁTICO DIRETO (Os 3 Escudos do Guerreiro) */}
-        <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm w-full max-w-full overflow-hidden min-w-0 select-none">
-          <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2.5 min-w-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
-                <ShieldCheck size={16} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
-                  {curLang === 'en' ? 'DAILY COMBAT SHIELDING' : curLang === 'es' ? 'BLINDAJE DE COMBATE DIARIO' : 'BLINDAGEM DE COMBATE DIÁRIO'}
-                </span>
-                <span className="text-[9.5px] font-mono text-gold/90 truncate">
-                  {ciDate === today() ? fdmy(today()) : fdmy(ciDate)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 flex-none ml-auto">
-              <button
-                type="button"
-                className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
-                onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); setPillarsOpen(true); }}
-                title={t('prev_d')}
-              >
-                ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
-              </button>
-              {ciDate !== today() && (
-                <button
-                  type="button"
-                  className="text-[10px] text-gold px-2 py-1 rounded-lg border border-gold/40 bg-gold/15 font-mono font-bold transition-all cursor-pointer"
-                  onClick={() => { AF.click(); setCiDate(today()); }}
-                >
-                  {curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'} ▶
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* BOTÃO DE CONTROLE TÁTIL: PERGUNTA SE VENCEU O DIA E ABRE OS 3 PILARES AO TOCAR */}
-          <button
-            type="button"
-            onClick={() => { AF.click(); setPillarsOpen(!pillarsOpen); }}
-            className={`w-full mb-2 p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer active:scale-[0.99] ${
-              cView.ok
-                ? 'border-gold/50 bg-gradient-to-r from-gold/15 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.1)]'
-                : 'border-line/90 bg-surface hover:border-gold/40'
-            }`}
-          >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span className="text-base sm:text-lg flex-none">{cView.ok ? '🏆' : '⚔️'}</span>
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className={`text-xs font-bold leading-tight truncate ${cView.ok ? 'text-gold' : 'text-[#EDE5D5]'}`}>
-                  {cView.ok
-                    ? (curLang === 'en' ? 'Daily Battle Won · Honor Intact' : curLang === 'es' ? 'Batalla Diaria Ganada · Honor Intacto' : 'Batalha de Hoje Vencida · Honra Intacta')
-                    : (curLang === 'en' ? 'Did you conquer today, Warrior?' : curLang === 'es' ? '¿Venciste el día hoy, Guerrero?' : 'Você venceu o dia hoje, Guerreiro?')}
-                </span>
-                <span className="text-[10px] text-muted truncate mt-0.5">
-                  {pillarsOpen
-                    ? (curLang === 'en' ? 'Tap to hide the 3 pillars' : curLang === 'es' ? 'Toca para ocultar los 3 pilares' : 'Toque para ocultar os 3 pilares')
-                    : (curLang === 'en' ? 'Tap to open and log the 3 pillars' : curLang === 'es' ? 'Toca para abrir y registrar los 3 pilares' : 'Toque para abrir e registrar os 3 pilares')}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 flex-none">
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-md border ${
-                cView.ok
-                  ? 'border-gold/40 bg-gold/25 text-gold'
-                  : 'border-line bg-surface2 text-muted'
-              }`}>
-                {L.pillars(S).filter((k) => !!cView[k]).length}/{L.pillars(S).length}
-              </span>
-              {pillarsOpen ? <ChevronUp size={16} className="text-gold" /> : <ChevronDown size={16} className="text-muted" />}
-            </div>
-          </button>
-
-          {/* OS 3 ESCUDOS INTERATIVOS TÁTEIS (EXIBIDOS APENAS QUANDO ABERTO PELO TOQUE) */}
-          {pillarsOpen && (
-            <div className="flex flex-col gap-2 pt-0.5 pb-1">
-              {L.pillars(S).map((k) => {
-                const isChecked = !!cView[k];
-                const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-                const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-                const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
-
-                const SHIELD_DATA = {
-                  r: {
-                    icon: '🛡️',
-                    title: curLang === 'en' ? 'Semen Retention Maintained' : curLang === 'es' ? 'Retención Seminal Mantenida' : 'Retenção Seminal Mantida',
-                    sub: curLang === 'en' ? 'Vital energy preserved (No ejaculation)' : curLang === 'es' ? 'Energía vital preservada (Sin eyaculación)' : 'Energia vital preservada (Sem ejaculação)',
-                  },
-                  p: {
-                    icon: '👁️',
-                    title: curLang === 'en' ? 'Zero Pornography' : curLang === 'es' ? 'Cero Pornografía' : 'Zero Pornografia',
-                    sub: curLang === 'en' ? 'Mind guarded, clean gaze' : curLang === 'es' ? 'Mente blindada, mirada limpia' : 'Mente blindada, olhar firme e limpo',
-                  },
-                  m: {
-                    icon: '⚡',
-                    title: curLang === 'en' ? 'Unshakable Self-Mastery' : curLang === 'es' ? 'Autodominio Inquebrantable' : 'Autodomínio Inabalável',
-                    sub: curLang === 'en' ? 'Zero masturbation, impulse conquered' : curLang === 'es' ? 'Cero masturbación, impulso dominado' : 'Zero masturbação, soberania sobre o impulso',
-                  },
-                };
-
-                const item = SHIELD_DATA[k] || { icon: '⚔️', title: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), sub: '' };
-
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={() => setCI(k, !isChecked, ciDate)}
-                    className={`group flex items-center justify-between rounded-xl border p-2 sm:p-3 text-left transition-all active:scale-[0.98] cursor-pointer w-full min-w-0 ${
-                      isChecked
-                        ? 'border-gold/60 bg-gradient-to-r from-gold/20 via-amber-500/10 to-surface2 shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
-                        : isFailed
-                        ? 'border-danger/60 bg-danger/10'
-                        : 'border-line/70 bg-surface2/60 hover:border-gold/40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                      <span className={`grid h-8 w-8 sm:h-9 sm:w-9 flex-none place-items-center rounded-lg border text-sm sm:text-base transition-all ${
-                        isChecked
-                          ? 'border-gold bg-gold text-[#141414] shadow-md scale-105 font-black'
-                          : isFailed
-                          ? 'border-danger bg-danger/20 text-danger'
-                          : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50'
-                      }`}>
-                        {isChecked ? '✓' : item.icon}
-                      </span>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className={`text-xs font-bold leading-tight truncate ${
-                          isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
-                        }`}>
-                          {item.title}
-                        </span>
-                        <span className="text-[9.5px] text-muted truncate mt-0.5">
-                          {item.sub}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center flex-none pl-1.5 sm:pl-2">
-                      {isChecked ? (
-                        <span className="rounded-md border border-gold/40 bg-gold/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-gold shadow-sm">
-                          {curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO'}
-                        </span>
-                      ) : isFailed ? (
-                        <span className="rounded-md border border-danger/40 bg-danger/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-danger">
-                          {curLang === 'en' ? 'FAILED' : curLang === 'es' ? 'FALLÓ' : 'FALHOU'}
-                        </span>
-                      ) : (
-                        <span className="rounded-md border border-line bg-surface px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted group-hover:text-gold group-hover:border-gold/30">
-                          {curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR'}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-
-              {/* Selo de Vitória Se Hoje For 100% Blindado */}
-              {cView.ok && (
-                <div className="mt-1 flex items-center justify-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 py-1.5 px-2 text-center text-gold text-[11px] sm:text-xs font-extrabold shadow-sm animate-pulse max-w-full">
-                  <span className="flex-none">🏆</span>
-                  <span className="tracking-wide leading-tight text-center truncate sm:whitespace-normal">
-                    {curLang === 'en' ? 'DAILY BATTLE WON · HONOR INTACT' : curLang === 'es' ? 'BATALLA DIARIA GANADA · HONOR INTACTO' : 'BATALHA DE HOJE VENCIDA · HONRA INTACTA'}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Botão de Queda Solene em Combate */}
-          {ciDate === today() ? (
-            <button
-              type="button"
-              className="mt-2.5 w-full py-2 px-3 rounded-xl border border-danger/40 bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm"
-              onClick={failFlow}
-            >
-              <span>🩸</span>
-              <span>{curLang === 'en' ? 'Register Battle Fall' : curLang === 'es' ? 'Registrar Caída' : 'Registrar Queda em Combate'}</span>
-            </button>
-          ) : (
-            <p className="fnote mt-1.5 text-center">{t('retro')}</p>
-          )}
-        </div>
-
-        {/* AGENDA OPERACIONAL DE HOJE (Único hub de missões, hábitos e projetos) */}
+        {/* 3. AGENDA OPERACIONAL DE HOJE (Único hub de missões, hábitos e projetos) */}
         {renderCombatScheduleMiniCard()}
       </div>
     );
@@ -1825,7 +1645,7 @@ export default function QgView() {
 
   return (
     <div className="grid gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-12 lg:pb-6">
-      {/* NO MOBILE: OPÇÃO A (Super Otimizada, 3 Torres 3D, Agenda Operacional) */}
+      {/* NO MOBILE: OPÇÃO A (Super Otimizada, Brasão / Torres 3D, Agenda Operacional) */}
       <div className="lg:hidden w-full min-w-0 max-w-full">
         {renderMobileOneScreen()}
       </div>
@@ -1839,7 +1659,6 @@ export default function QgView() {
 
         {/* Coluna Direita Desktop: Registro Diário de Combate e Agenda Operacional de Hoje */}
         <div className="lg:col-span-5 flex flex-col gap-3.5">
-          {renderDailyTacticalEnergy()}
           {renderDailyCheckin()}
           {renderCombatScheduleMiniCard()}
         </div>
