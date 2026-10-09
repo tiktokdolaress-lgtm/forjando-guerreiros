@@ -366,6 +366,82 @@ const LABELS_I18N = {
     en: (slots) => `Limit of ${slots} slots reached!`,
     es: (slots) => `¡Límite de ${slots} slots alcanzado!`
   },
+  
+  // Melhorias da Forja Suprema
+  forgeHeatTitle: { pt: 'TEMPERATURA DA FORJA', en: 'FORGE HEAT', es: 'TEMPERATURA DE LA FORJA' },
+  forgeHeatCold: {
+    pt: 'FORJA FRIA · Aqueça o aço cumprindo seus hábitos',
+    en: 'COLD FORGE · Heat the steel by completing habits',
+    es: 'FORJA FRÍA · Calienta el acero cumpliendo tus hábitos',
+  },
+  forgeHeatHeating: {
+    pt: (c, t, p) => `FORJA EM AQUECIMENTO · ${c}/${t} cumpridos (${p}%)`,
+    en: (c, t, p) => `FORGE HEATING UP · ${c}/${t} completed (${p}%)`,
+    es: (c, t, p) => `FORJA CALENTANDO · ${c}/${t} cumplidos (${p}%)`,
+  },
+  forgeHeatGlowing: {
+    pt: (c, t, p) => `FORJA INCANDESCENTE · ${c}/${t} cumpridos (${p}%)`,
+    en: (c, t, p) => `INCANDESCENT FORGE · ${c}/${t} completed (${p}%)`,
+    es: (c, t, p) => `FORJA INCANDESCENTE · ${c}/${t} cumplidos (${p}%)`,
+  },
+  forgeHeatDamascus: {
+    pt: 'AÇO DE DAMASCO FORJADO · 100% dos hábitos cumpridos hoje!',
+    en: 'DAMASCUS STEEL FORGED · 100% of habits fulfilled today!',
+    es: '¡ACERO DE DAMASCO FORJADO · 100% de hábitos cumplidos hoy!',
+  },
+  sealAllHabitsBtn: {
+    pt: '⚡ FORJAR PROTOCOLO (1 TOQUE)',
+    en: '⚡ FORGE PROTOCOL (1 TAP)',
+    es: '⚡ FORJAR PROTOCOLO (1 TOQUE)',
+  },
+  allHabitsForgedBadge: {
+    pt: '⚔️ PROTOCOLO 100% FORJADO',
+    en: '⚔️ PROTOCOL 100% FORGED',
+    es: '⚔️ PROTOCOLO 100% FORJADO',
+  },
+  undoAllHabitsBtn: {
+    pt: 'Desfazer Todos',
+    en: 'Undo All',
+    es: 'Deshacer Todos',
+  },
+  toastProtocolSealed: {
+    pt: '⚔️ PROTOCOLO COMPLETO FORJADO! Todos os hábitos ativos cumpridos hoje!',
+    en: '⚔️ FULL PROTOCOL FORGED! All active habits completed today!',
+    es: '⚔️ ¡PROTOCOLO COMPLETO FORJADO! ¡Todos los hábitos activos cumplidos hoy!',
+  },
+  toastProtocolUndone: {
+    pt: 'Conclusões dos hábitos ativos desfeitas',
+    en: 'Active habit completions undone',
+    es: 'Conclusiones de hábitos activos deshechas',
+  },
+  habitStreak: {
+    pt: (d) => `${d} ${d === 1 ? 'dia seguido' : 'dias seguidos'}`,
+    en: (d) => `${d} ${d === 1 ? 'day streak' : 'days streak'}`,
+    es: (d) => `${d} ${d === 1 ? 'día seguido' : 'días seguidos'}`,
+  },
+  activeFilterAll: { pt: 'Todos', en: 'All', es: 'Todos' },
+  activeFilterPending: { pt: 'Pendentes', en: 'Pending', es: 'Pendientes' },
+  activeFilterDone: { pt: 'Concluídos', en: 'Done', es: 'Completados' },
+  victoryBannerTitle: {
+    pt: 'PROTOCOLO DO DIA CUMPRIDO COM HONRA!',
+    en: 'TODAY\'S PROTOCOL FULFILLED WITH HONOR!',
+    es: '¡PROTOCOLO DEL DÍA CUMPLIDO CON HONOR!',
+  },
+  victoryBannerDesc: {
+    pt: 'Sua disciplina hoje forjou seu caráter e blindou sua mente contra qualquer fraqueza.',
+    en: 'Your discipline today forged your character and shielded your mind against any weakness.',
+    es: 'Tu disciplina hoy forjó tu carácter y blindó tu mente contra cualquier debilidad.',
+  },
+  bioEffectsToggle: {
+    pt: 'Efeitos Biológicos Ativos do Patamar',
+    en: 'Active Biological Effects for Tier',
+    es: 'Efectos Biológicos Activos del Rango',
+  },
+  bioEffectsHide: {
+    pt: 'Ocultar Efeitos Biológicos',
+    en: 'Hide Biological Effects',
+    es: 'Ocultar Efectos Biológicos',
+  },
 };
 
 /* Ícones Táticos & Guerreiros para Seleção Rápida */
@@ -471,6 +547,8 @@ export default function ForgeView() {
   const [showRulesTable, setShowRulesTable] = useState(false);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [activeCategory, setActiveCategory] = useState('active');
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'pending', 'done'
+  const [showBioBanner, setShowBioBanner] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
 
@@ -587,6 +665,76 @@ export default function ForgeView() {
   const nonActiveHabits = ALLH.filter((h) => !activeIds.some((aid) => String(aid) === String(h.id)));
   const reserveHabits = nonActiveHabits.filter((h) => !archivedIds.some((arid) => String(arid) === String(h.id)));
   const archivedHabits = nonActiveHabits.filter((h) => archivedIds.some((arid) => String(arid) === String(h.id)));
+
+  /* Carga Térmica e Status Geral do Protocolo */
+  const completedHabitsCount = activeHabits.filter((h) => fd.some((x) => String(x) === String(h.id))).length;
+  const forgeHeatPct = activeHabits.length > 0 ? Math.round((completedHabitsCount / activeHabits.length) * 100) : 0;
+  const isAllActiveDone = activeHabits.length > 0 && completedHabitsCount === activeHabits.length;
+
+  /* Sequência Consecutiva (Streak) de Cada Hábito */
+  const getHabitStreak = (habitId) => {
+    try {
+      const doneMap = (S && S.forge && S.forge.done) || {};
+      const todayStr = today();
+      const isDoneToday = (doneMap[todayStr] || []).some((x) => String(x) === String(habitId));
+      let streak = isDoneToday ? 1 : 0;
+      let offset = 1;
+      while (offset < 365) {
+        const past = new Date(Date.now() - offset * 86400000);
+        const ds = dstr(past);
+        const list = doneMap[ds] || [];
+        if (list.some((x) => String(x) === String(habitId))) {
+          streak++;
+          offset++;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    } catch {
+      return 0;
+    }
+  };
+
+  /* Forjar / Selar Todos os Hábitos Ativos em 1 Toque */
+  const markAllDone = () => {
+    if (!activeHabits.length) return;
+    const allAlreadyDone = activeHabits.every((h) => fd.some((x) => String(x) === String(h.id)));
+    const dd = today();
+    update((s) => {
+      s.forge.done = s.forge.done || {};
+      s.forge.failed = s.forge.failed || {};
+      const doneList = s.forge.done[dd] = s.forge.done[dd] || [];
+      const failList = s.forge.failed[dd] = s.forge.failed[dd] || [];
+
+      if (allAlreadyDone) {
+        s.forge.done[dd] = doneList.filter((id) => !activeHabits.some((h) => String(h.id) === String(id)));
+      } else {
+        activeHabits.forEach((h) => {
+          if (!doneList.some((x) => String(x) === String(h.id))) {
+            doneList.push(h.id);
+          }
+          const fi = failList.findIndex((x) => String(x) === String(h.id));
+          if (fi >= 0) failList.splice(fi, 1);
+        });
+      }
+    });
+    if (allAlreadyDone) {
+      AF.click();
+      toast(LBL.toastProtocolUndone[curLang]);
+    } else {
+      AF.seal();
+      toast(LBL.toastProtocolSealed[curLang]);
+    }
+  };
+
+  /* Hábitos Ativos Filtrados (Todos, Pendentes, Concluídos) */
+  const displayedActiveHabits = activeHabits.filter((h) => {
+    const isDone = fd.some((x) => String(x) === String(h.id));
+    if (activeFilter === 'pending') return !isDone;
+    if (activeFilter === 'done') return isDone;
+    return true;
+  });
 
   /* Filtrar reserva por categoria selecionada */
   const filteredReserve = selectedPillar === 'archived'
@@ -1279,15 +1427,130 @@ export default function ForgeView() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={openCreateModal}
-              className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer self-start sm:self-auto flex-none"
-            >
-              <Plus size={14} strokeWidth={3} className="text-[#141414]" />
-              <span>{LBL.createHabit[curLang]}</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto flex-none">
+              {activeHabits.length > 0 && (
+                <button
+                  type="button"
+                  onClick={markAllDone}
+                  title={isAllActiveDone ? LBL.undoAllHabitsBtn[curLang] : LBL.sealAllHabitsBtn[curLang]}
+                  className={`py-1.5 px-3 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg transition-all active:scale-95 cursor-pointer flex-none ${
+                    isAllActiveDone
+                      ? 'bg-gold/20 border border-gold text-gold hover:bg-gold/30'
+                      : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,70,0.25)]'
+                  }`}
+                >
+                  <CheckCircle2 size={13} strokeWidth={2.5} />
+                  <span>{isAllActiveDone ? LBL.allHabitsForgedBadge[curLang] : LBL.sealAllHabitsBtn[curLang]}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer flex-none"
+              >
+                <Plus size={14} strokeWidth={3} className="text-[#141414]" />
+                <span>{LBL.createHabit[curLang]}</span>
+              </button>
+            </div>
           </div>
+
+          {/* TERMÔMETRO & CARGA TÉRMICA DA FORJA */}
+          {activeHabits.length > 0 && (
+            <div className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
+              isAllActiveDone
+                ? 'border-gold/50 bg-gradient-to-r from-gold/15 via-[#181622] to-amber-950/20 shadow-[0_0_15px_rgba(255,200,70,0.15)]'
+                : forgeHeatPct >= 50
+                ? 'border-orange-500/40 bg-gradient-to-r from-orange-950/30 via-[#181622] to-surface2'
+                : forgeHeatPct > 0
+                ? 'border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-[#16151D] to-surface2'
+                : 'border-line/70 bg-[#16151D]'
+            }`}>
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Flame size={14} className={isAllActiveDone ? 'text-gold animate-pulse' : forgeHeatPct >= 50 ? 'text-orange-400' : forgeHeatPct > 0 ? 'text-amber-400' : 'text-muted'} />
+                  <span className={`text-[11px] font-bold uppercase tracking-wider truncate font-mono ${
+                    isAllActiveDone ? 'text-gold' : forgeHeatPct >= 50 ? 'text-orange-300' : forgeHeatPct > 0 ? 'text-amber-300' : 'text-muted'
+                  }`}>
+                    {isAllActiveDone
+                      ? LBL.forgeHeatDamascus[curLang]
+                      : forgeHeatPct >= 50
+                      ? LBL.forgeHeatGlowing[curLang](completedHabitsCount, activeHabits.length, forgeHeatPct)
+                      : forgeHeatPct > 0
+                      ? LBL.forgeHeatHeating[curLang](completedHabitsCount, activeHabits.length, forgeHeatPct)
+                      : LBL.forgeHeatCold[curLang]}
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono font-black text-gold flex-none">
+                  {completedHabitsCount}/{activeHabits.length} ({forgeHeatPct}%)
+                </span>
+              </div>
+
+              {/* Barra de Temperatura */}
+              <div className="w-full h-2 rounded-full bg-surface border border-line/60 overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    isAllActiveDone
+                      ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-gold shadow-[0_0_10px_rgba(255,200,70,0.5)]'
+                      : forgeHeatPct >= 50
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'
+                      : 'bg-gradient-to-r from-amber-600 to-amber-400'
+                  }`}
+                  style={{ width: `${forgeHeatPct}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* BANNER DE VITÓRIA: 100% FORJADO NO AÇO */}
+          {isAllActiveDone && (
+            <div className="p-3 sm:p-3.5 rounded-xl border border-gold/50 bg-gradient-to-r from-gold/15 via-[#181622] to-amber-950/20 shadow-[0_2px_15px_rgba(255,200,70,0.15)] flex items-center justify-between gap-3 animate-fade-in">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/20 border border-gold text-gold text-lg flex-none shadow-sm">
+                  🛡️
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-display font-black text-xs sm:text-sm text-gold tracking-wide uppercase truncate">
+                    {LBL.victoryBannerTitle[curLang]}
+                  </h4>
+                  <p className="text-[10.5px] text-[#EDE5D5] font-mono leading-tight mt-0.5">
+                    {LBL.victoryBannerDesc[curLang]}
+                  </p>
+                </div>
+              </div>
+              <span className="hidden sm:inline-flex text-[10px] font-mono font-bold px-2 py-1 rounded bg-gold text-black flex-none">
+                100% {curLang === 'en' ? 'DONE' : curLang === 'es' ? 'COMPLETO' : 'CONCLUÍDO'}
+              </span>
+            </div>
+          )}
+
+          {/* EFEITOS BIOLÓGICOS DO PATAMAR (CARD COMPACTO) */}
+          {curTier && (
+            <div className="p-2 sm:p-2.5 rounded-xl border border-line/70 bg-surface2/50 text-left">
+              <button
+                type="button"
+                onClick={() => setShowBioBanner(!showBioBanner)}
+                className="flex items-center justify-between w-full text-[11px] font-mono font-bold text-muted hover:text-gold transition-colors cursor-pointer select-none"
+              >
+                <span className="flex items-center gap-1.5 truncate">
+                  <Sparkles size={13} className="text-gold flex-none" />
+                  <span className="text-gold uppercase tracking-wider">{curTier.name} ({d} {LBL.daysWord[curLang]}):</span>
+                  <span className="text-ink truncate">{showBioBanner ? LBL.bioEffectsHide[curLang] : LBL.bioEffectsToggle[curLang]}</span>
+                </span>
+                {showBioBanner ? <ChevronUp size={13} className="text-gold flex-none" /> : <ChevronDown size={13} className="text-muted flex-none" />}
+              </button>
+              {showBioBanner && (
+                <div className="mt-2 pt-2 border-t border-line/40 grid grid-cols-1 sm:grid-cols-3 gap-1.5 animate-fade-in">
+                  {getBioPerksI18n(d, curLang).perks.map((perk, pIdx) => (
+                    <div key={pIdx} className="p-1.5 rounded bg-surface/70 border border-line/50 text-[10px] text-muted flex items-start gap-1.5">
+                      <span className="text-gold font-bold">✓</span>
+                      <span className="leading-tight">{perk}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 2. ALERTA DE NEGLIGÊNCIA COMPACTO */}
           {neglected.length > 0 && (
@@ -1320,217 +1583,257 @@ export default function ForgeView() {
 
           {/* 3. ATIVOS NO PROTOCOLO */}
           <div className="w-full max-w-full min-w-0">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <K className="mb-0">{LBL.activeInProtocolTitle[curLang]} ({activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.slotsWord[curLang]})</K>
+
+              {activeHabits.length > 1 && (
+                <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
+                  {[
+                    { id: 'all', label: `${LBL.activeFilterAll[curLang]} (${activeHabits.length})` },
+                    { id: 'pending', label: `${LBL.activeFilterPending[curLang]} (${activeHabits.length - completedHabitsCount})` },
+                    { id: 'done', label: `${LBL.activeFilterDone[curLang]} (${completedHabitsCount})` },
+                  ].map((btn) => (
+                    <button
+                      key={btn.id}
+                      type="button"
+                      onClick={() => setActiveFilter(btn.id)}
+                      className={`text-[9.5px] font-mono px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                        activeFilter === btn.id
+                          ? 'bg-gold text-black shadow-xs'
+                          : 'text-muted hover:text-ink'
+                      }`}
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {activeHabits.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 w-full max-w-full min-w-0">
-                {activeHabits.map((h) => {
-                  const isDone = fd.some((x) => String(x) === String(h.id));
-                  const isFail = ff.some((x) => String(x) === String(h.id));
-                  const tm = (L.hTime && L.hTime(S, h.id)) || (S.forge && S.forge.times && S.forge.times[h.id]) || '';
-                  const isDetailsOpen = openDetailsId === h.id;
-                  const benefitText = getHabitBenefitText(h, lang);
-                  const isCustom = isCustomHabit(h.id);
+              displayedActiveHabits.length > 0 ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 w-full max-w-full min-w-0">
+                  {displayedActiveHabits.map((h) => {
+                    const isDone = fd.some((x) => String(x) === String(h.id));
+                    const isFail = ff.some((x) => String(x) === String(h.id));
+                    const tm = (L.hTime && L.hTime(S, h.id)) || (S.forge && S.forge.times && S.forge.times[h.id]) || '';
+                    const isDetailsOpen = openDetailsId === h.id;
+                    const benefitText = getHabitBenefitText(h, lang);
+                    const isCustom = isCustomHabit(h.id);
+                    const habitStreakCount = getHabitStreak(h.id);
 
-                  return (
-                    <Card
-                      key={h.id}
-                      className={`p-2.5 sm:p-3 transition-all border w-full max-w-full min-w-0 rounded-xl select-none ${
-                        isDone
-                          ? 'border-gold/60 bg-gradient-to-r from-gold/15 via-[#181622] to-[#131219] shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
-                          : isFail
-                          ? 'border-danger/50 bg-danger/10'
-                          : 'border-line/80 bg-[#16151D] hover:border-gold/40'
-                      }`}
-                    >
-                      {/* Linha Principal: Ícone + Título/Horário + Ações Táteis */}
-                      <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <div className={`grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg border text-lg flex-none transition-all ${
-                            isDone
-                              ? 'border-gold bg-gold/20 text-gold shadow-sm'
-                              : isFail
-                              ? 'border-danger/40 bg-danger/15 text-danger'
-                              : 'border-[#3c3c46] bg-[#1D1B26] text-ink'
-                          }`}>
-                            {h.icon}
+                    return (
+                      <Card
+                        key={h.id}
+                        className={`p-2.5 sm:p-3 transition-all border w-full max-w-full min-w-0 rounded-xl select-none ${
+                          isDone
+                            ? 'border-gold/60 bg-gradient-to-r from-gold/15 via-[#181622] to-[#131219] shadow-[0_2px_12px_rgba(255,200,70,0.12)]'
+                            : isFail
+                            ? 'border-danger/50 bg-danger/10'
+                            : 'border-line/80 bg-[#16151D] hover:border-gold/40'
+                        }`}
+                      >
+                        {/* Linha Principal: Ícone + Título/Horário + Ações Táteis */}
+                        <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div className={`grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg border text-lg flex-none transition-all ${
+                              isDone
+                                ? 'border-gold bg-gold/20 text-gold shadow-sm'
+                                : isFail
+                                ? 'border-danger/40 bg-danger/15 text-danger'
+                                : 'border-[#3c3c46] bg-[#1D1B26] text-ink'
+                            }`}>
+                              {h.icon}
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className={`text-xs sm:text-[13px] font-bold block truncate leading-tight ${
+                                  isDone ? 'text-gold' : isFail ? 'line-through text-danger' : 'text-[#F5EEDC]'
+                                }`}>
+                                  {h.n || h.name || h.title || ''}
+                                </span>
+                                {isCustom && (
+                                  <div className="flex items-center gap-1 flex-none">
+                                    <button
+                                      type="button"
+                                      title={LBL.editHabitBtn[curLang]}
+                                      onClick={() => openEditModal(h)}
+                                      className="px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                    >
+                                      <Edit3 size={10} />
+                                      <span>{LBL.editHabitBtn[curLang]}</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      title={LBL.deleteHabitBtn[curLang]}
+                                      onClick={() => deleteCustomHabit(h.id)}
+                                      className="p-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] transition-colors cursor-pointer"
+                                    >
+                                      <Trash2 size={10} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted truncate flex-wrap">
+                                <div className="flex items-center gap-1 bg-surface px-1.5 py-0.2 rounded border border-line/60 flex-none">
+                                  <Clock size={10} className="text-gold flex-none" />
+                                  <input
+                                    type="time"
+                                    value={tm}
+                                    onChange={(e) => setTime(h.id, e.target.value)}
+                                    className="bg-transparent text-ink focus:outline-none w-[42px] sm:w-[48px] text-center"
+                                  />
+                                </div>
+                                {habitStreakCount > 0 && (
+                                  <span className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/25 text-[9.5px] font-mono font-bold text-amber-300 flex-none">
+                                    <Flame size={10} className="text-amber-400" />
+                                    <span>{LBL.habitStreak[curLang](habitStreakCount)}</span>
+                                  </span>
+                                )}
+                                {isCustom && (
+                                  <span className="text-gold/90 font-semibold truncate flex-none">
+                                    {LBL.customStar[curLang]}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className={`text-xs sm:text-[13px] font-bold block truncate leading-tight ${
-                                isDone ? 'text-gold' : isFail ? 'line-through text-danger' : 'text-[#F5EEDC]'
-                              }`}>
-                                {h.n || h.name || h.title || ''}
-                              </span>
-                              {isCustom && (
-                                <div className="flex items-center gap-1 flex-none">
-                                  <button
-                                    type="button"
-                                    title={LBL.editHabitBtn[curLang]}
-                                    onClick={() => openEditModal(h)}
-                                    className="px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                                  >
-                                    <Edit3 size={10} />
-                                    <span>{LBL.editHabitBtn[curLang]}</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    title={LBL.deleteHabitBtn[curLang]}
-                                    onClick={() => deleteCustomHabit(h.id)}
-                                    className="p-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] transition-colors cursor-pointer"
-                                  >
-                                    <Trash2 size={10} />
-                                  </button>
+                          {/* Ações Rápidas: Mover Reserva, Falhar e Botão Concluir */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 flex-none">
+                            <button
+                              type="button"
+                              title={LBL.moveToReserve[curLang]}
+                              onClick={() => toggleActive(h.id)}
+                              className="text-muted/60 hover:text-gold p-1.5 rounded hover:bg-surface2 transition-colors flex-none"
+                            >
+                              <Archive size={14} />
+                            </button>
+
+                            {!isDone && (
+                              <button
+                                type="button"
+                                title={LBL.failBtn[curLang]}
+                                onClick={() => toggleFailed(h.id)}
+                                className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                                  isFail
+                                    ? 'border-danger bg-danger text-white shadow-sm'
+                                    : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-danger hover:text-danger'
+                                }`}
+                              >
+                                <X size={13} strokeWidth={2.5} />
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              title={isDone ? LBL.undoCompletion[curLang] : LBL.toCompleteBtn[curLang]}
+                              onClick={() => toggleDone(h.id)}
+                              className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
+                                isDone
+                                  ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)] font-black'
+                                  : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
+                              }`}
+                            >
+                              <Check size={16} strokeWidth={isDone ? 3 : 2} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Linha Expansível Discreta: Detalhes & Histórico 7D */}
+                        <div className="mt-2 pt-1.5 border-t border-line/40 w-full min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setOpenDetailsId(isDetailsOpen ? null : h.id)}
+                            className="text-[10px] text-muted hover:text-gold flex items-center justify-between w-full font-mono py-0.5 select-none cursor-pointer"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <ShieldCheck size={11} className="text-gold" />
+                              <span className="font-semibold">{isDetailsOpen ? LBL.hideDetails[curLang] : LBL.viewDetails[curLang]}</span>
+                            </span>
+                            {isDetailsOpen ? <ChevronUp size={12} className="text-gold" /> : <ChevronDown size={12} className="text-muted" />}
+                          </button>
+
+                          {isDetailsOpen && (
+                            <div className="mt-2 flex flex-col gap-2 pt-1 border-t border-line/30">
+                              <div>
+                                <span className="text-[9px] font-mono text-muted uppercase font-bold block mb-1">
+                                  {LBL.viewHistory[curLang]}
+                                </span>
+                                {renderLast7Days(h.id)}
+                              </div>
+
+                              {benefitText && (
+                                <div className="text-[11px] text-[#EDE5D5] bg-surface/90 p-2 rounded-lg border border-gold/30 leading-relaxed shadow-sm">
+                                  <p className="flex items-start gap-1.5">
+                                    <Sparkles size={12} className="text-gold flex-none mt-0.5" />
+                                    <span>{benefitText}</span>
+                                  </p>
                                 </div>
                               )}
                             </div>
-
-                            <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted truncate">
-                              <div className="flex items-center gap-1 bg-surface px-1.5 py-0.2 rounded border border-line/60 flex-none">
-                                <Clock size={10} className="text-gold flex-none" />
-                                <input
-                                  type="time"
-                                  value={tm}
-                                  onChange={(e) => setTime(h.id, e.target.value)}
-                                  className="bg-transparent text-ink focus:outline-none w-[42px] sm:w-[48px] text-center"
-                                />
-                              </div>
-                              {isCustom && (
-                                <span className="text-gold/90 font-semibold truncate flex-none">
-                                  {LBL.customStar[curLang]}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Ações Rápidas: Mover Reserva, Falhar e Botão Concluir */}
-                        <div className="flex items-center gap-1 sm:gap-1.5 flex-none">
-                          <button
-                            type="button"
-                            title={LBL.moveToReserve[curLang]}
-                            onClick={() => toggleActive(h.id)}
-                            className="text-muted/60 hover:text-gold p-1.5 rounded hover:bg-surface2 transition-colors flex-none"
-                          >
-                            <Archive size={14} />
-                          </button>
-
-                          {!isDone && (
-                            <button
-                              type="button"
-                              title={LBL.failBtn[curLang]}
-                              onClick={() => toggleFailed(h.id)}
-                              className={`grid h-8 w-8 place-items-center rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                                isFail
-                                  ? 'border-danger bg-danger text-white shadow-sm'
-                                  : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-danger hover:text-danger'
-                              }`}
-                            >
-                              <X size={13} strokeWidth={2.5} />
-                            </button>
                           )}
-
-                          <button
-                            type="button"
-                            title={isDone ? LBL.undoCompletion[curLang] : LBL.toCompleteBtn[curLang]}
-                            onClick={() => toggleDone(h.id)}
-                            className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-xs font-bold transition-all duration-150 cursor-pointer active:scale-90 select-none ${
-                              isDone
-                                ? 'border-gold bg-gold text-[#141414] shadow-[0_0_12px_rgba(255,200,70,0.35)] font-black'
-                                : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold hover:text-gold'
-                            }`}
-                          >
-                            <Check size={16} strokeWidth={isDone ? 3 : 2} />
-                          </button>
                         </div>
-                      </div>
+                      </Card>
+                    );
+                  })}
 
-                      {/* Linha Expansível Discreta: Detalhes & Histórico 7D */}
-                      <div className="mt-2 pt-1.5 border-t border-line/40 w-full min-w-0">
+                  {/* CARD DE SLOT DISPONÍVEL */}
+                  {activeFilter === 'all' && activeCount < maxSlots && (
+                    <div
+                      onClick={() => setActiveCategory('reserve')}
+                      className="cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all min-h-[145px] group w-full min-w-0"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gold/15 border border-gold/35 text-gold flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
+                        <Plus size={20} strokeWidth={2.5} />
+                      </div>
+                      <b className="text-xs text-gold font-bold uppercase tracking-wider block">
+                        {LBL.availableSlot[curLang]} ({activeCount + 1}/{maxSlots >= 99 ? '∞' : maxSlots})
+                      </b>
+                      <span className="text-[11px] text-muted mt-1">
+                        {LBL.tapToActivate[curLang]}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* CARD DE PRÓXIMO PATAMAR */}
+                  {activeCount >= maxSlots && activeHabits.length % 2 === 1 && (
+                    <div className="border border-line/70 bg-surface2/70 rounded-lg p-4 flex flex-col justify-between min-h-[145px] w-full min-w-0">
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10.5px] font-mono font-bold uppercase text-gold2 tracking-wider flex items-center gap-1.5">
+                            <ShieldCheck size={13} className="text-gold" /> {LBL.nextUnlock[curLang]}
+                          </span>
+                          <span className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted">{LBL.slotsFull[curLang]}</span>
+                        </div>
+                        <p className="text-xs text-ink font-semibold mt-1">
+                          {nextRule ? LBL.nextUnlockDesc[curLang](nextRule.min, nextRule.slots) : LBL.supremeRankReached[curLang]}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t border-line/60 flex items-center justify-between text-[11px] text-muted">
+                        <span>{LBL.slotsInUse[curLang]} <b className="text-gold font-mono">{activeCount}/{maxSlots >= 99 ? '∞' : maxSlots}</b></span>
                         <button
                           type="button"
-                          onClick={() => setOpenDetailsId(isDetailsOpen ? null : h.id)}
-                          className="text-[10px] text-muted hover:text-gold flex items-center justify-between w-full font-mono py-0.5 select-none cursor-pointer"
+                          onClick={() => setActiveCategory('reserve')}
+                          className="text-gold hover:underline text-[11px] font-semibold"
                         >
-                          <span className="flex items-center gap-1.5">
-                            <ShieldCheck size={11} className="text-gold" />
-                            <span className="font-semibold">{isDetailsOpen ? LBL.hideDetails[curLang] : LBL.viewDetails[curLang]}</span>
-                          </span>
-                          {isDetailsOpen ? <ChevronUp size={12} className="text-gold" /> : <ChevronDown size={12} className="text-muted" />}
+                          {LBL.viewReserve[curLang]}
                         </button>
-
-                        {isDetailsOpen && (
-                          <div className="mt-2 flex flex-col gap-2 pt-1 border-t border-line/30">
-                            <div>
-                              <span className="text-[9px] font-mono text-muted uppercase font-bold block mb-1">
-                                {LBL.viewHistory[curLang]}
-                              </span>
-                              {renderLast7Days(h.id)}
-                            </div>
-
-                            {benefitText && (
-                              <div className="text-[11px] text-[#EDE5D5] bg-surface/90 p-2 rounded-lg border border-gold/30 leading-relaxed shadow-sm">
-                                <p className="flex items-start gap-1.5">
-                                  <Sparkles size={12} className="text-gold flex-none mt-0.5" />
-                                  <span>{benefitText}</span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
-                    </Card>
-                  );
-                })}
-
-                {/* CARD DE SLOT DISPONÍVEL */}
-                {activeCount < maxSlots && (
-                  <div
-                    onClick={() => setActiveCategory('reserve')}
-                    className="cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all min-h-[145px] group w-full min-w-0"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gold/15 border border-gold/35 text-gold flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm">
-                      <Plus size={20} strokeWidth={2.5} />
                     </div>
-                    <b className="text-xs text-gold font-bold uppercase tracking-wider block">
-                      {LBL.availableSlot[curLang]} ({activeCount + 1}/{maxSlots >= 99 ? '∞' : maxSlots})
-                    </b>
-                    <span className="text-[11px] text-muted mt-1">
-                      {LBL.tapToActivate[curLang]}
-                    </span>
-                  </div>
-                )}
-
-                {/* CARD DE PRÓXIMO PATAMAR */}
-                {activeCount >= maxSlots && activeHabits.length % 2 === 1 && (
-                  <div className="border border-line/70 bg-surface2/70 rounded-lg p-4 flex flex-col justify-between min-h-[145px] w-full min-w-0">
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10.5px] font-mono font-bold uppercase text-gold2 tracking-wider flex items-center gap-1.5">
-                          <ShieldCheck size={13} className="text-gold" /> {LBL.nextUnlock[curLang]}
-                        </span>
-                        <span className="text-[9.5px] font-mono px-2 py-0.5 rounded bg-surface border border-line text-muted">{LBL.slotsFull[curLang]}</span>
-                      </div>
-                      <p className="text-xs text-ink font-semibold mt-1">
-                        {nextRule ? LBL.nextUnlockDesc[curLang](nextRule.min, nextRule.slots) : LBL.supremeRankReached[curLang]}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-line/60 flex items-center justify-between text-[11px] text-muted">
-                      <span>{LBL.slotsInUse[curLang]} <b className="text-gold font-mono">{activeCount}/{maxSlots >= 99 ? '∞' : maxSlots}</b></span>
-                      <button
-                        type="button"
-                        onClick={() => setActiveCategory('reserve')}
-                        className="text-gold hover:underline text-[11px] font-semibold"
-                      >
-                        {LBL.viewReserve[curLang]}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : (
+                <Card className="text-center py-6 w-full min-w-0">
+                  <p className="text-xs text-muted">
+                    {activeFilter === 'pending'
+                      ? (curLang === 'en' ? 'All active habits completed for today! ⚔️' : curLang === 'es' ? '¡Todos los hábitos activos completados para hoy! ⚔️' : 'Todos os hábitos ativos concluídos por hoje! ⚔️')
+                      : (curLang === 'en' ? 'No habits completed yet.' : curLang === 'es' ? 'Ningún hábito completado aún.' : 'Nenhum hábito concluído ainda.')}
+                  </p>
+                </Card>
+              )
             ) : (
               <Card className="text-center py-6 w-full min-w-0">
                 <Empty>{LBL.noActiveHabits[curLang]}</Empty>
