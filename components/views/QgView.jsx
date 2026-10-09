@@ -1,166 +1,18 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import { RefreshCw, Trophy, CalendarDays, Flame, ShieldCheck, Droplets, Hand, HeartPulse, Check, X, Zap, Sparkles, ShieldAlert, Target, Compass, MoreVertical, LayoutDashboard, ChevronDown, ChevronUp, Clock, Link as LinkIcon, Eye, Play, ArrowRight } from 'lucide-react';
+import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { Card, K, Bar, Chk, Empty } from '@/components/ui';
-import { METAS, NEXTF, FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS, QUOTES } from '@/lib/data';
+import { Chk } from '@/components/ui';
+import { FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS, QUOTES } from '@/lib/data';
 import { cx, cxHabits, cxTiers, cxQuotes } from '@/lib/content-i18n';
 import * as L from '@/lib/logic';
 import { AF, metaSfx } from '@/lib/audio';
-import { today, dstr, fdmy, fmtD, pad, yesterday } from '@/lib/utils';
-import WarriorLogo from '@/components/WarriorLogo';
+import { today, fdmy, pad, yesterday } from '@/lib/utils';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 import Warrior3DCard from '@/components/Warrior3DCard';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { getTodayCombatTimeline } from '@/lib/notify';
-
-/* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
-const BIO_EFFECTS_I18N = {
-  header: {
-    pt: 'EFEITOS BIOLÓGICOS & MENTAIS ATIVOS NESTE MARCO:',
-    en: 'ACTIVE BIOLOGICAL & MENTAL EFFECTS AT THIS MILESTONE:',
-    es: 'EFECTOS BIOLÓGICOS Y MENTALES ACTIVOS EN ESTE HITO:',
-  },
-  tiers: [
-    {
-      min: 0, max: 3,
-      perks: {
-        pt: ['Quebra do ciclo automático', 'Redução do pico de cortisol', 'Recuperação inicial da dopamina'],
-        en: ['Automatic loop broken', 'Cortisol spike reduction', 'Initial dopamine recovery'],
-        es: ['Ruptura del ciclo automático', 'Reducción del pico de cortisol', 'Recuperación inicial de dopamina'],
-      }
-    },
-    {
-      min: 4, max: 7,
-      perks: {
-        pt: ['Pico natural de testosterona (+45%)', 'Aumento de energia física', 'Fim gradual da névoa mental'],
-        en: ['Natural testosterone surge (+45%)', 'Boost in physical energy', 'Gradual end of brain fog'],
-        es: ['Pico natural de testosterona (+45%)', 'Aumento de energía física', 'Fin gradual de la niebla mental'],
-      }
-    },
-    {
-      min: 8, max: 14,
-      perks: {
-        pt: ['Sono profundo restaurador', 'Vontade e assertividade reforçadas', 'Olhar firme e redução da timidez'],
-        en: ['Deep restorative sleep', 'Enhanced willpower & assertiveness', 'Steady gaze and less shyness'],
-        es: ['Sueño profundo y reparador', 'Voluntad y asertividad reforzadas', 'Mirada firme y menos timidez'],
-      }
-    },
-    {
-      min: 15, max: 30,
-      perks: {
-        pt: ['Receptores de dopamina rebalanceados', 'Redução drástica de ansiedade social', 'Magnetismo pessoal e foco aguçado'],
-        en: ['Rebalanced dopamine receptors', 'Drastic drop in social anxiety', 'Personal magnetism & sharp focus'],
-        es: ['Receptores de dopamina equilibrados', 'Reducción drástica de ansiedad social', 'Magnetismo personal y enfoque agudo'],
-      }
-    },
-    {
-      min: 31, max: 60,
-      perks: {
-        pt: ['Controle absoluto de pensamentos invasivos', 'Aura de respeito natural', 'Vitalidade transmutada em criação'],
-        en: ['Total control over invasive thoughts', 'Aura of natural respect', 'Vitality transmuted into creation'],
-        es: ['Control total sobre pensamientos intrusivos', 'Aura de respeto natural', 'Vitalidad transmutada en creación'],
-      }
-    },
-    {
-      min: 61, max: 90,
-      perks: {
-        pt: ['Superação da flatline (platô)', 'Alta performance física e cognitiva', 'Autodomínio e disciplina inabaláveis'],
-        en: ['Flatline conquered', 'High physical & cognitive performance', 'Unshakable self-mastery and discipline'],
-        es: ['Superación de la flatline (meseta)', 'Alto rendimiento físico y cognitivo', 'Autodominio y disciplina inquebrantables'],
-      }
-    },
-    {
-      min: 91, max: 120,
-      perks: {
-        pt: ['Blindagem neural contra recaídas tardias', 'Foco cirúrgico em metas de vida e carreira', 'Paz mental profunda e presença inabalável'],
-        en: ['Neural shield against late-stage relapses', 'Surgical focus on life & career goals', 'Deep mental peace and unshakable presence'],
-        es: ['Blindaje neural contra recaídas tardías', 'Enfoque quirúrgico en metas de vida y carrera', 'Paz mental profunda y presencia inquebrantable'],
-      }
-    },
-    {
-      min: 121, max: 180,
-      perks: {
-        pt: ['Aço de Damasco mental: 6 meses limpo', 'Cérebro completamente reconfigurado', 'Fogo criativo alimentando novos impérios'],
-        en: ['Mental Damascus steel: 6 months clean', 'Brain fully rewired and reset', 'Creative fire fueling new empires'],
-        es: ['Acero de Damasco mental: 6 meses limpio', 'Cerebro completamente reconfigurado', 'Fuego creativo alimentando nuevos imperios'],
-      }
-    },
-    {
-      min: 181, max: 270,
-      perks: {
-        pt: ['Transmutação seminal em força física e patrimônio', 'Aura magnética e liderança natural', 'Zero necessidade de aprovação externa'],
-        en: ['Seminal transmutation into wealth & physical power', 'Magnetic aura and natural leadership', 'Zero need for external validation'],
-        es: ['Transmutación seminal en riqueza y fuerza física', 'Aura magnética y liderazgo natural', 'Cero necesidad de aprobación externa'],
-      }
-    },
-    {
-      min: 271, max: 365,
-      perks: {
-        pt: ['1 Ano Completo: soberania absoluta da mente', 'Poder transformador de legado e exemplo', 'O homem forjado que você prometeu se tornar'],
-        en: ['1 Full Year: absolute mind sovereignty', 'Transformative power of legacy and example', 'The forged man you swore to become'],
-        es: ['1 Año Completo: soberanía mental absoluta', 'Poder transformador de legado y ejemplo', 'El hombre forjado que prometiste ser'],
-      }
-    },
-    {
-      min: 366, max: 9999,
-      perks: {
-        pt: ['Mito vivo: 2+ anos de disciplina suprema', 'Panteão dos mestres inquebrantáveis', 'Caráter de aço eterno'],
-        en: ['Living myth: 2+ years of supreme discipline', 'Pantheon of unshakable masters', 'Eternal steel character'],
-        es: ['Mito vivo: 2+ años de disciplina suprema', 'Panteón de maestros inquebrantables', 'Carácter de acero eterno'],
-      }
-    },
-  ]
-};
-
-/* Textos Trilíngues do Bloco de Protocolo Tático */
-const TACTICAL_BLOCK_I18N = {
-  title: {
-    pt: 'PROTOCOLO TÁTICO & BLINDAGEM DO DIA',
-    en: 'TACTICAL PROTOCOL & DAILY SHIELDING',
-    es: 'PROTOCOLO TÁCTICO Y BLINDAJE DIARIO',
-  },
-  riskTitle: {
-    pt: 'ZONA DE RISCO ELEVADO',
-    en: 'HIGH RISK ZONE',
-    es: 'ZONA DE ALTO RIESGO',
-  },
-  riskDesc: {
-    pt: 'Noite / Cansaço (22h - 01h). Mantenha as telas fora do quarto.',
-    en: 'Night / Fatigue (10 PM - 1 AM). Keep screens away from bed.',
-    es: 'Noche / Cansancio (22h - 01h). Mantén las pantallas fuera del cuarto.',
-  },
-  goldenRuleTitle: {
-    pt: 'REGRA DE CONDUTA',
-    en: 'RULE OF CONDUCT',
-    es: 'REGLA DE CONDUCTA',
-  },
-  goldenRuleDesc: {
-    pt: 'A tentação dura 10 minutos. O arrependimento dura dias inteiros.',
-    en: 'The urge lasts 10 minutes. Regret lingers for days.',
-    es: 'La tentación dura 10 minutos. El arrepentimiento dura días enteros.',
-  },
-  energyTitle: {
-    pt: 'ENERGIA VITAL',
-    en: 'VITAL ENERGY',
-    es: 'ENERGÍA VITAL',
-  },
-  energyDesc: {
-    pt: 'Transmute o fogo interno em treino, estudo e trabalho.',
-    en: 'Transmute inner fire into training, studying, and building.',
-    es: 'Transmuta el fuego interno en entrenamiento, estudio y trabajo.',
-  },
-};
-
-function getBioPerksI18n(days, lang) {
-  const currentLang = ['pt', 'en', 'es'].includes(lang) ? lang : 'pt';
-  const found = BIO_EFFECTS_I18N.tiers.find((b) => days >= b.min && days <= b.max) || BIO_EFFECTS_I18N.tiers[0];
-  return {
-    header: BIO_EFFECTS_I18N.header[currentLang] || BIO_EFFECTS_I18N.header.pt,
-    perks: found.perks[currentLang] || found.perks.pt,
-  };
-}
 
 /* Hook de Cronômetro Tático em Tempo Real (Segundo a Segundo) */
 function useLiveTimer(startDateStr, daysTotal) {
@@ -241,107 +93,6 @@ const TACTICAL_ENERGY_I18N = {
   },
 };
 
-/* Batalha das 24 Horas & Pacto de Honra de Hoje (Trilíngue: PT, EN, ES) */
-const BATTLE_24H_I18N = {
-  cardTitle: {
-    pt: 'A BATALHA DAS 24 HORAS',
-    en: 'THE 24-HOUR BATTLE',
-    es: 'LA BATALLA DE LAS 24 HORAS',
-  },
-  cardSubtitle: {
-    pt: 'VENÇA O HOJE · O AMANHÃ NÃO EXISTE',
-    en: 'CONQUER TODAY · TOMORROW DOES NOT EXIST',
-    es: 'VENCE EL HOY · EL MAÑANA NO EXISTE',
-  },
-  badgeToday: {
-    pt: 'HOJE',
-    en: 'TODAY',
-    es: 'HOY',
-  },
-  timeRemaining: {
-    pt: (h, m) => `${h}h ${m}m restantes nestas 24h`,
-    en: (h, m) => `${h}h ${m}m left in these 24h`,
-    es: (h, m) => `${h}h ${m}m restantes en estas 24h`,
-  },
-  dayPassed: {
-    pt: (pct) => `${pct}% do dia de hoje decorrido`,
-    en: (pct) => `${pct}% of today elapsed`,
-    es: (pct) => `${pct}% del día transcurrido`,
-  },
-  pactButtonUnpledged: {
-    pt: '⚔️ SELAR PACTO DE HOJE: "HOJE EU NÃO CAIO"',
-    en: '⚔️ SEAL TODAY\'S PACT: "TODAY I WILL NOT FALL"',
-    es: '⚔️ SELLAR PACTO DE HOY: "HOY NO CAIGO"',
-  },
-  pactButtonPledged: {
-    pt: '🛡️ PACTO DE HOJE SELADO: SOBERANIA ATIVA',
-    en: '🛡️ TODAY\'S PACT SEALED: SOVEREIGNTY ACTIVE',
-    es: '🛡️ PACTO DE HOY SELLADO: SOBERANÍA ACTIVA',
-  },
-  pactToastPledged: {
-    pt: '⚔️ PACTO DE HONRA SELADO: O dia de hoje pertence à sua vitória!',
-    en: '⚔️ HONOR PACT SEALED: Today belongs to your victory!',
-    es: '⚔️ PACTO DE HONOR SELLADO: ¡El día de hoy pertenece a tu victoria!',
-  },
-  pactToastUnpledged: {
-    pt: 'Pacto reaberto para confirmação.',
-    en: 'Pact reopened for confirmation.',
-    es: 'Pacto reabierto para confirmación.',
-  },
-  allCleanHonor: {
-    pt: '3 Pilares invictos hoje. Mantenha a honra até o último segundo!',
-    en: '3 Pillars undefeated today. Hold honor until the final second!',
-    es: '3 Pilares invictos hoy. ¡Mantén el honor hasta el último segundo!',
-  },
-  pillarsPendingHonor: {
-    pt: 'Sua única missão é manter sua honra nestas 24 horas.',
-    en: 'Your sole mission is to preserve your honor in these 24 hours.',
-    es: 'Tu única misión es preservar tu honor en estas 24 horas.',
-  },
-  switchAxiomTooltip: {
-    pt: 'Toque para alternar o axioma de guerra de hoje',
-    en: 'Tap to switch today\'s battle axiom',
-    es: 'Toca para cambiar el axioma de guerra de hoy',
-  },
-  pactRegistered: {
-    pt: '✓ PACTO REGISTRADO',
-    en: '✓ PACT REGISTERED',
-    es: '✓ PACTO REGISTRADO',
-  },
-  pactPending: {
-    pt: 'AGUARDANDO PACTO',
-    en: 'AWAITING PACT',
-    es: 'ESPERANDO PACTO',
-  },
-  axioms: [
-    {
-      pt: 'Ontem virou cinzas e estatística. O amanhã ainda não existe. Toda a sua guerra se resume a vencer as próximas 24 horas. Faça deste dia épico.',
-      en: 'Yesterday turned to ash and statistics. Tomorrow does not yet exist. Your entire war comes down to conquering the next 24 hours. Make today epic.',
-      es: 'El ayer se convirtió en cenizas y estadísticas. El mañana aún no existe. Toda tu guerra se reduce a vencer las próximas 24 horas. Haz de hoy un día épico.',
-    },
-    {
-      pt: 'Não prometa 1 ano de pureza. Prometa vencer apenas o dia de hoje. A disciplina inquebrantável é forjada um único dia por vez.',
-      en: 'Do not promise a year of purity. Promise only to conquer today. Unshakable discipline is forged a single day at a time.',
-      es: 'No prometas un año de pureza. Promete vencer solo el día de hoy. La disciplina inquebrantable se forja un solo día a la vez.',
-    },
-    {
-      pt: 'O passado não pode ser reescrito e o futuro é construído agora. Domine seus impulsos nestas 24 horas e o império será erguido.',
-      en: 'The past cannot be rewritten and the future is built right now. Master your impulses during these 24 hours and the empire will rise.',
-      es: 'El pasado no se puede reescribir y el futuro se construye ahora. Domina tus impulsos en estas 24 horas y el imperio será levantado.',
-    },
-    {
-      pt: 'Hoje é o único dia em que você pode lutar, transmutar e honrar seu nome. Deixe o suor no campo e chegue invicto à noite.',
-      en: 'Today is the only day you can fight, transmute, and honor your name. Leave everything on the battlefield and finish the night undefeated.',
-      es: 'Hoy es el único día en que puedes luchar, transmutar y honrar tu nombre. Deja todo en el campo de batalla y llega invicto a la noche.',
-    },
-    {
-      pt: 'A mente fraca se apavora com a distância da jornada. O guerreiro de aço foca apenas no próximo passo e na vitória de hoje.',
-      en: 'A weak mind trembles before the length of the journey. A warrior of steel focuses only on the next step and today\'s victory.',
-      es: 'La mente débil se aterra ante la distancia del viaje. El guerrero de acero se enfoca solo en el siguiente paso y en la victoria de hoy.',
-    },
-  ],
-};
-
 export default function QgView() {
   const { S, update, t, openModal, closeModal, toast, setTab, navigateToProject } = useApp();
   const lang = (S && S.settings && S.settings.lang) || 'pt';
@@ -349,9 +100,7 @@ export default function QgView() {
   const [ciDate, setCiDate] = useState(today());
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
-  const [pactAxiomIdx, setPactAxiomIdx] = useState(0);
   const [showCompletedInSchedule, setShowCompletedInSchedule] = useState(false);
-  const [pillarsOpen, setPillarsOpen] = useState(false);
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
@@ -374,16 +123,10 @@ export default function QgView() {
   }, [currentTierMin, tier]);
   const quotes = cxQuotes(lang, QUOTES);
   const ALLH = cxHabits(lang, L.allH(S));
-  const MT = (m) => (m ? Object.assign({}, m, cx(lang, 'metas', m.d) || {}) : m);
   const TR = (x, i) => cx(lang, 'ob', 'trig' + i) || x;
   const fallLbl = (x) => { const k = t('fall_' + x); return k === 'fall_' + x ? (FAIL_LBL[x] || x) : k; };
 
   const cView = L.ci(S, ciDate);
-  const fd = L.fDone(S, today()), ff = L.fFailed(S, today());
-  const act = S.forge.active.slice().sort((a, b) => (L.hTime(S, a) || '99:99').localeCompare(L.hTime(S, b) || '99:99'));
-  const doneF = S.forge.active.filter((id) => fd.includes(id)).length;
-  const pendingHabits = S.forge.active.filter((id) => !fd.includes(id) && !ff.includes(id)).length;
-  const totalHabits = S.forge.active.length;
   const streak = L.currentStreak(S);
   const lvlPct = nt ? Math.min(100, ((d - tier.min) / (nt.min - tier.min)) * 100) : 100;
   const lvlTxt = nt ? <>{t('lvl_a')}<b className="text-gold">{nt.min - d}{t('dayw')}</b>{t('lvl_b')}{nt.icon} {nt.name}</> : t('lvl_max');
@@ -391,17 +134,7 @@ export default function QgView() {
   const mantra = mantraPool[S.phraseIdx % mantraPool.length];
   const pornFree = S.lastPorn ? Math.max(0, L.daysBetweenSafe(S.lastPorn)) : d;
   const mastFree = S.lastMast ? Math.max(0, L.daysBetweenSafe(S.lastMast)) : d;
-  const isTaskActive = (x) => {
-    if (!x || x.archived) return false;
-    return true;
-  };
-  const openTasks = (S.tasks || [])
-    .filter((x) => isTaskActive(x) && L.repDue(x, today()) && !L.isDone(x, today()))
-    .slice(0, 5);
-  const goalMeta = MT(METAS.find((m) => m.d === S.goal));
-  const lw = L.sosLast(S);
-  const bioData = getBioPerksI18n(d, lang);
-  const tac = TACTICAL_BLOCK_I18N;
+
   const liveTime = useLiveTimer(S.retStart || S.created || today(), d);
   const pornTime = useLiveTimer(S.lastPorn || S.retStart || S.created || today(), pornFree);
   const mastTime = useLiveTimer(S.lastMast || S.retStart || S.created || today(), mastFree);
@@ -701,11 +434,6 @@ export default function QgView() {
     </div>
   );
 
-  const ring = 213.6 * (1 - S.purity / 100);
-
-  const totalTasksToday = (S.tasks || []).filter((x) => isTaskActive(x) && L.repDue(x, today()));
-  const pendingTasksCount = totalTasksToday.filter((x) => !L.isDone(x, today())).length;
-
   const nextMantra = () => {
     AF.click();
     update((s) => {
@@ -713,188 +441,7 @@ export default function QgView() {
     });
   };
 
-  /* Blocos Modulares de Renderização */
-  const renderMantra = () => (
-    <Card className="border-gold/40 bg-gradient-to-br from-surface to-gold/5 py-2.5 px-3.5 sm:px-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
-        {/* Frase Clicável com feedback visual de transição e contador */}
-        <div
-          onClick={nextMantra}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') nextMantra(); }}
-          title={curLang === 'en' ? 'Click to show next phrase' : curLang === 'es' ? 'Haz clic para la siguiente frase' : 'Clique para ver a próxima frase'}
-          className="group min-w-0 flex-1 cursor-pointer select-none transition-all active:scale-[0.99]"
-        >
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="k text-[10px] text-gold flex items-center gap-1">
-              ⚡ {t('code')}
-            </span>
-            <span className="text-[10px] text-muted/70 font-mono group-hover:text-gold transition-colors">
-              ({(S.phraseIdx % mantraPool.length) + 1}/{mantraPool.length} · {curLang === 'en' ? 'click phrase to rotate' : curLang === 'es' ? 'clic en la frase para cambiar' : 'clique na frase para alternar'})
-            </span>
-          </div>
-          <p className="border-l-[3px] border-gold2 pl-3 text-[14px] sm:text-[15.5px] font-bold italic leading-snug text-[#f3ead2] group-hover:text-gold transition-colors">
-            "{mantra}"
-          </p>
-        </div>
-
-        {/* Botão Tarefas do Dia no lugar do botão anterior */}
-        <div className="flex items-center gap-2 flex-none justify-end pt-1 sm:pt-0">
-          <button
-            type="button"
-            onClick={() => { AF.click(); setTab('ops'); }}
-            className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-extrabold flex items-center gap-2 rounded-r shadow-[0_2px_10px_rgba(255,200,70,0.15)] hover:shadow-[0_2px_15px_rgba(255,200,70,0.3)] transition-all active:scale-95 whitespace-nowrap"
-            title={curLang === 'en' ? 'Open Daily Tasks' : curLang === 'es' ? 'Abrir Tareas del Día' : 'Abrir Tarefas do Dia'}
-          >
-            <Target size={14} className="text-deep flex-none" />
-            <span>{curLang === 'en' ? 'Daily Tasks' : curLang === 'es' ? 'Tareas del Día' : 'Tarefas do Dia'}</span>
-            {pendingTasksCount > 0 ? (
-              <span className="rounded-full bg-deep text-gold px-1.5 py-0.2 text-[10px] font-black leading-none">
-                {pendingTasksCount}
-              </span>
-            ) : (
-              <span className="rounded-full bg-deep/20 text-deep px-1.5 py-0.2 text-[10px] font-black leading-none">
-                ✓
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-    </Card>
-  );
-
-  /* A BATALHA DAS 24 HORAS (VENÇA O HOJE & PACTO DE HONRA) */
-  const renderBattle24Hours = () => {
-    const isPledged = !!(S?.dailyPacts && S.dailyPacts[today()]);
-    const bTx = BATTLE_24H_I18N;
-    const now = new Date();
-    const curHour = now.getHours();
-    const curMin = now.getMinutes();
-    const minsPassed = curHour * 60 + curMin;
-    const dayPct = Math.min(100, Math.max(2, Math.round((minsPassed / 1440) * 100)));
-    const remHours = 23 - curHour;
-    const remMins = 59 - curMin;
-
-    const axiomIdx = (pactAxiomIdx !== undefined ? pactAxiomIdx : Math.abs(d) % bTx.axioms.length);
-    const curAxiom = bTx.axioms[axiomIdx % bTx.axioms.length][curLang] || bTx.axioms[0].pt;
-
-    const togglePact = () => {
-      const nextState = !isPledged;
-      update((s) => {
-        s.dailyPacts = s.dailyPacts || {};
-        s.dailyPacts[today()] = nextState;
-      });
-      if (nextState) {
-        AF.epicLevelUp();
-        toast(bTx.pactToastPledged[curLang]);
-      } else {
-        AF.click();
-        toast(bTx.pactToastUnpledged[curLang]);
-      }
-    };
-
-    const nextAxiom = (e) => {
-      e.stopPropagation();
-      setPactAxiomIdx((prev) => (prev + 1) % bTx.axioms.length);
-      AF.click();
-    };
-
-    const cToday = L.ci(S, today());
-    const reqPil = L.pillars(S);
-    const is3PillarsClean = reqPil.length > 0 && reqPil.every((p) => !!cToday[p]);
-
-    return (
-      <div className="rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-3 sm:p-3.5 shadow-sm relative overflow-hidden group w-full min-w-0 select-none">
-        {/* Glow de fundo */}
-        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-gold/10 blur-2xl pointer-events-none" />
-
-        {/* Topo: Título e Relógio das 24 Horas */}
-        <div className="flex items-center justify-between gap-2 mb-2.5 relative z-10 flex-wrap">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none text-base">
-              ⚔️
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#F5EEDC] font-display leading-tight flex items-center gap-1.5 truncate">
-                <span>{bTx.cardTitle[curLang]}</span>
-                <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/30">
-                  {bTx.badgeToday[curLang]}
-                </span>
-              </h3>
-              <p className="text-[10px] text-muted font-mono leading-none mt-0.5 truncate">
-                {bTx.cardSubtitle[curLang]}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] font-mono text-gold2 font-bold px-2 py-0.5 rounded-lg bg-surface border border-line shrink-0">
-            <Clock size={11} className="text-gold shrink-0" />
-            <span>{bTx.timeRemaining[curLang](remHours, remMins)}</span>
-          </div>
-        </div>
-
-        {/* Barra de Progresso do Dia Atual (24 Horas) */}
-        <div className="mb-3 relative z-10">
-          <div className="flex items-center justify-between text-[9.5px] font-mono text-muted mb-1">
-            <span>{bTx.dayPassed[curLang](dayPct)}</span>
-            <span className="font-bold text-gold font-mono">{dayPct}%</span>
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-[#1e1c24] overflow-hidden border border-line/60">
-            <div
-              className="h-full bg-gradient-to-r from-amber-600 via-gold to-yellow-300 transition-all duration-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-              style={{ width: `${dayPct}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Botão de Ação: Pacto de Honra de Hoje */}
-        <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <button
-            type="button"
-            onClick={togglePact}
-            className={`w-full py-2.5 px-3 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 text-center leading-snug ${
-              isPledged
-                ? 'border border-gold bg-gold text-[#141414] shadow-[0_0_15px_rgba(245,158,11,0.25)] font-black'
-                : 'border border-gold/60 bg-gold/15 hover:bg-gold/25 text-gold'
-            }`}
-          >
-            {isPledged ? (
-              <>
-                <Check size={15} strokeWidth={3} className="text-[#141414] shrink-0" />
-                <span className="break-words">{bTx.pactButtonPledged[curLang]}</span>
-              </>
-            ) : (
-              <>
-                <Flame size={15} className="text-gold animate-bounce shrink-0" />
-                <span className="break-words">{bTx.pactButtonUnpledged[curLang]}</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Status dos Pilares neste dia */}
-        <div className="mt-2 pt-2 border-t border-line/40 flex items-center justify-between text-[10px] font-mono text-muted relative z-10 flex-wrap gap-1">
-          <span className="flex items-center gap-1">
-            {is3PillarsClean ? (
-              <span className="text-ok font-bold flex items-center gap-1">
-                <span>🛡️</span> {bTx.allCleanHonor[curLang]}
-              </span>
-            ) : (
-              <span className="text-amber-300 font-semibold flex items-center gap-1">
-                <span>⚔️</span> {bTx.pillarsPendingHonor[curLang]}
-              </span>
-            )}
-          </span>
-          <span className="text-muted/70 text-[9px] font-bold">
-            {isPledged ? bTx.pactRegistered[curLang] : bTx.pactPending[curLang]}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
-  /* 2. O GUERREIRO VIVO DA FORJA (CARD 3D COM OS 3 PILARES GIRATÓRIOS DO PEDESTAL) */
+  /* 2. O GUERREIRO VIVO DA FORJA (CARD COM MODO BRASÃO MEDIEVAL OU GUERREIRO 3D) */
   const renderPillars3DTowers = (isDesktop = false) => {
     return (
       <div id="tour-qg-towers" className="w-full">
@@ -1117,148 +664,6 @@ export default function QgView() {
         ) : (
           <p className="fnote mt-1.5 text-center">{t('retro')}</p>
         )}
-      </div>
-    );
-  };
-
-  const renderForgeToday = () => (
-    <Card className="flex-1 flex flex-col justify-between">
-      <div>
-        <K>🔨 {t('forgeToday')} — {doneF}{t('of_w')}{S.forge.active.length}</K>
-        {act.length ? (
-          <div className="flex flex-col gap-1.5 mt-1">
-            {act.map((id) => {
-              const h = ALLH.find((x) => String(x.id) === String(id)); if (!h) return null;
-              const dn = fd.some((x) => String(x) === String(id)), isF = ff.some((x) => String(x) === String(id)), tm = L.hTime(S, id);
-              return (
-                <div key={id} className={`flex items-center gap-2 rounded-r border p-2 text-left text-xs sm:text-[13px] font-semibold transition-colors ${dn ? 'border-gold/50 bg-gold/10' : isF ? 'border-danger/50 bg-danger/10' : 'border-line bg-surface2'}`}>
-                  <span className="w-[22px] text-center text-base">{h.icon}</span>
-                  <span className={`min-w-0 flex-1 truncate ${dn ? 'text-muted line-through' : isF ? 'text-danger line-through opacity-80' : ''}`}>{h.n || h.name || h.title || ''}</span>
-                  {tm && <span className="font-mono text-[10px] text-gold2">⏰{tm}</span>}
-                  <div className="flex items-center gap-1.5 flex-none">
-                    <button
-                      type="button"
-                      title="Marcar como Falho"
-                      onClick={(e) => toggleHabitFailed(id, e)}
-                      className={`grid h-[28px] w-[28px] place-items-center rounded border text-xs font-bold transition-all ${
-                        isF 
-                          ? 'border-danger bg-danger text-white shadow-sm' 
-                          : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-danger/60 hover:text-danger'
-                      }`}
-                    >
-                      <X size={13} strokeWidth={2.5} />
-                    </button>
-                    <button
-                      type="button"
-                      title="Marcar como Cumprido"
-                      onClick={(e) => toggleHabitDone(id, e)}
-                      className={`grid h-[28px] w-[28px] place-items-center rounded border text-xs font-bold transition-all ${
-                        dn 
-                          ? 'border-gold bg-gold text-[#141414] shadow-sm' 
-                          : 'border-[#3c3c46] bg-surface text-muted/60 hover:border-gold/60 hover:text-gold'
-                      }`}
-                    >
-                      <Check size={13} strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <><Empty>{t('ef1')}<br />{t('ef2')} <b className="text-gold">{t('forge_b')}</b>.</Empty>
-            <button className="btn-ghost btn-big mt-2" onClick={() => setTab('forge')}>{t('goforge')}</button></>
-        )}
-      </div>
-      {act.length > 0 && (
-        <div className="bar mt-3"><i style={{ width: (S.forge.active.length ? (doneF / S.forge.active.length) * 100 : 0) + '%' }} /></div>
-      )}
-    </Card>
-  );
-
-  /* CARGA TÁTICA DO DIA: Barra de Energia / Foco de Batalha com Feedback Visual e Háptico */
-  const renderDailyTacticalEnergy = () => {
-    const tTx = TACTICAL_ENERGY_I18N;
-    const reqPil = L.pillars(S);
-    const donePil = reqPil.filter((k) => !!cView[k]).length;
-    const totPil = reqPil.length || 3;
-
-    const timelineItems = getTodayCombatTimeline(S, ALLH, curLang);
-    const totMissions = timelineItems.length;
-    const doneMissions = timelineItems.filter((i) => i.done).length;
-
-    const totalWeight = totPil + totMissions;
-    const doneWeight = donePil + doneMissions;
-    const energyPct = totalWeight > 0 ? Math.round((doneWeight / totalWeight) * 100) : 0;
-
-    const statusText =
-      energyPct >= 100
-        ? tTx.subFull[curLang]
-        : energyPct >= 60
-        ? tTx.subAdvanced[curLang]
-        : energyPct > 0
-        ? tTx.subStarting[curLang]
-        : tTx.subZero[curLang];
-
-    return (
-      <div className="w-full rounded-xl border border-gold/35 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] p-2.5 sm:p-3 shadow-sm select-none transition-all">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
-              <Zap size={14} className="animate-pulse" />
-            </div>
-            <span className="font-display font-black text-xs sm:text-[13px] uppercase tracking-wider text-[#F5EEDC] truncate">
-              {tTx.title[curLang]}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 flex-none">
-            <div className="flex items-center gap-1 text-[9px] font-mono text-muted">
-              <span className="px-1.5 py-0.2 rounded bg-surface2 border border-line/60">
-                🛡️ {donePil}/{totPil}
-              </span>
-              {totMissions > 0 && (
-                <span className="px-1.5 py-0.2 rounded bg-surface2 border border-line/60">
-                  🎯 {doneMissions}/{totMissions}
-                </span>
-              )}
-            </div>
-            <span
-              className={`text-xs font-mono font-black px-1.5 py-0.5 rounded border transition-colors ${
-                energyPct >= 100
-                  ? 'border-ok/50 bg-ok/15 text-ok shadow-[0_0_8px_rgba(74,222,128,0.25)]'
-                  : energyPct > 0
-                  ? 'border-gold/50 bg-gold/15 text-gold'
-                  : 'border-line bg-surface text-muted'
-              }`}
-            >
-              {energyPct}%
-            </span>
-          </div>
-        </div>
-
-        {/* Barra de Progresso Tático Suave */}
-        <div className="relative h-2 w-full overflow-hidden rounded-full bg-[#0D0D12] border border-line/70">
-          <div
-            className={`h-full transition-all duration-700 ease-out rounded-full ${
-              energyPct >= 100
-                ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]'
-                : energyPct > 0
-                ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400'
-                : 'bg-transparent'
-            }`}
-            style={{ width: `${Math.max(energyPct, 2)}%` }}
-          />
-        </div>
-
-        <div className="mt-1.5 flex items-center justify-between text-[9.5px] text-muted leading-tight">
-          <span className="truncate text-gold/90 font-medium">
-            {statusText}
-          </span>
-          <span className="text-[9px] font-mono text-muted/70 flex-none pl-1">
-            {doneWeight}/{totalWeight}
-          </span>
-        </div>
       </div>
     );
   };
