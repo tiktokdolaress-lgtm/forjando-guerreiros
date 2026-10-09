@@ -769,13 +769,30 @@ export default function ForgeView() {
         return getHabitCategory(h) === selectedPillar;
       });
 
-  /* Hábitos negligenciados */
+  /* Hábitos negligenciados (apenas se NÃO foi feito hoje e tiver 2+ dias reais sem fazer) */
   const neglected = activeHabits.filter((h) => {
     try {
+      // 1. Se o hábito já foi concluído hoje, NUNCA é negligenciado!
+      const isDoneToday = fd.some((x) => String(x) === String(h.id));
+      if (isDoneToday) return false;
+
+      // 2. Se o hábito foi criado há menos de 2 dias, não pode estar há 2+ dias sem fazer
+      const idNum = Number(h.id);
+      const createdAt = h.createdAt || (idNum > 1000000000000 ? idNum : null);
+      if (createdAt) {
+        const habitAgeDays = Math.floor((Date.now() - createdAt) / 86400000);
+        if (habitAgeDays < 2) return false;
+      }
+
       const doneDates = (S && S.forge && S.forge.done) || {};
       let daysWithout = 0;
       for (let i = 1; i <= 7; i++) {
-        const ds = dstr(new Date(Date.now() - i * 86400000));
+        const dateToCheck = new Date(Date.now() - i * 86400000);
+        // Se a data for anterior à criação do hábito, interrompe a contagem
+        if (createdAt && dateToCheck.getTime() < (createdAt - 86400000)) {
+          break;
+        }
+        const ds = dstr(dateToCheck);
         const list = doneDates[ds] || [];
         const found = list.some((x) => String(x) === String(h.id));
         if (!found) {
@@ -1285,6 +1302,7 @@ export default function ForgeView() {
                   b: benefit.trim(),
                   p: protection.trim(),
                   custom: true,
+                  createdAt: newId,
                 };
                 update((s) => {
                   s.customHabits = s.customHabits || [];
