@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Skull, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -18,13 +18,12 @@ import ForgeView from './views/ForgeView';
 import OpsView from './views/OpsView';
 import JournalView from './views/JournalView';
 import StatsView from './views/StatsView';
-import EnemyView from './views/EnemyView';
 import SettingsView from './views/SettingsView';
 import AdminView from './views/AdminView';
 import ErrorBoundary from './ErrorBoundary';
 
-const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, enemy: Skull, settings: Settings, admin: Crown };
-const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, enemy: EnemyView, settings: SettingsView, admin: AdminView };
+const ICONS = { qg: Castle, forge: Hammer, ops: Target, journal: BookOpen, stats: ChartNoAxesColumn, settings: Settings, admin: Crown };
+const VIEWS = { qg: QgView, forge: ForgeView, ops: OpsView, journal: JournalView, stats: StatsView, settings: SettingsView, admin: AdminView };
 
 const ADMIN_EMAILS = ['micheldiemeson@gmail.com', 'diemesonmd@gmail.com'];
 
@@ -43,8 +42,9 @@ export default function Shell() {
   const lifeLbl = (() => { const m = lifeMode(S); const LS = cx(lang, 'life', m) || LIFE_STATUS[m] || LIFE_STATUS.single; return LS.label; })();
   const go = (id) => { AF.click(); setTab(id); window.scrollTo({ top: 0 }); }
   const openSOS = () => { update((d) => { d.sos = (d.sos || 0) + 1; }); openModal(<SosModal />, 'full'); };
-  const View = (tab === 'admin' && !isAdmin) ? QgView : (VIEWS[tab] || QgView);
-  const TabIcon = ICONS[tab] || Castle;
+  const activeTab = (tab === 'enemy' ? 'qg' : tab);
+  const View = (activeTab === 'admin' && !isAdmin) ? QgView : (VIEWS[activeTab] || QgView);
+  const TabIcon = ICONS[activeTab] || Castle;
 
   const [hasUnread, setHasUnread] = React.useState(false);
   const [commandReplies, setCommandReplies] = React.useState([]);
@@ -401,7 +401,7 @@ export default function Shell() {
           paddingBottom: 'max(0.35rem, env(safe-area-inset-bottom, 0px))',
         }}
       >
-        <div className="grid grid-cols-7 w-full px-1 py-1.5 gap-0.5 max-w-lg mx-auto">
+        <div className="grid grid-cols-6 w-full px-1 py-1.5 gap-0.5 max-w-lg mx-auto">
           {TABS.map(([id]) => {
             const Ic = ICONS[id];
             if (!Ic) return null;
