@@ -572,7 +572,7 @@ export default function ForgeView() {
   const [showRulesTable, setShowRulesTable] = useState(false);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [activeCategory, setActiveCategory] = useState('active');
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'pending', 'done'
+  const [activeFilter, setActiveFilter] = useState('pending'); // 'pending' (padrão limpo), 'done', 'all'
   const [showBioBanner, setShowBioBanner] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
@@ -1674,9 +1674,9 @@ export default function ForgeView() {
               {activeHabits.length > 1 && (
                 <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
                   {[
-                    { id: 'all', label: `${LBL.activeFilterAll[curLang]} (${activeHabits.length})` },
                     { id: 'pending', label: `${LBL.activeFilterPending[curLang]} (${activeHabits.length - completedHabitsCount})` },
                     { id: 'done', label: `${LBL.activeFilterDone[curLang]} (${completedHabitsCount})` },
+                    { id: 'all', label: `${LBL.activeFilterAll[curLang]} (${activeHabits.length})` },
                   ].map((btn) => (
                     <button
                       key={btn.id}
@@ -1697,7 +1697,8 @@ export default function ForgeView() {
 
             {activeHabits.length > 0 ? (
               displayedActiveHabits.length > 0 ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 w-full max-w-full min-w-0">
+                <>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 w-full max-w-full min-w-0">
                   {displayedActiveHabits.map((h) => {
                     const isDone = fd.some((x) => String(x) === String(h.id));
                     const isFail = ff.some((x) => String(x) === String(h.id));
@@ -1866,7 +1867,7 @@ export default function ForgeView() {
                   })}
 
                   {/* CARD DE SLOT DISPONÍVEL */}
-                  {activeFilter === 'all' && activeCount < maxSlots && (
+                  {(activeFilter === 'pending' || activeFilter === 'all') && activeCount < maxSlots && (
                     <div
                       onClick={() => setActiveCategory('reserve')}
                       className="cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 bg-gold/5 hover:bg-gold/10 rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all min-h-[145px] group w-full min-w-0"
@@ -1910,13 +1911,71 @@ export default function ForgeView() {
                     </div>
                   )}
                 </div>
+
+                {/* Rodapé quando em 'Pendentes' indicando os hábitos concluídos que foram movidos */}
+                {activeFilter === 'pending' && completedHabitsCount > 0 && (
+                  <div className="mt-2.5 pt-2 border-t border-line/40 flex items-center justify-between text-xs text-muted flex-wrap gap-2">
+                    <span className="text-[11px] font-mono text-muted flex items-center gap-1.5">
+                      <span className="text-gold font-bold">✓</span>
+                      <span>
+                        {curLang === 'en'
+                          ? `${completedHabitsCount} habit(s) completed today (moved to Completed)`
+                          : curLang === 'es'
+                          ? `${completedHabitsCount} hábito(s) cumplidos hoy (movidos a Concluidos)`
+                          : `${completedHabitsCount} hábito(s) concluído(s) hoje (movidos para Concluídos)`}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFilter('done')}
+                      className="text-[11px] font-mono font-bold text-gold hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <span>{curLang === 'en' ? `View Completed (${completedHabitsCount}) →` : curLang === 'es' ? `Ver Concluidos (${completedHabitsCount}) →` : `Ver Concluídos (${completedHabitsCount}) →`}</span>
+                    </button>
+                  </div>
+                )}
+              </>
               ) : (
-                <Card className="text-center py-6 w-full min-w-0">
-                  <p className="text-xs text-muted">
+                <Card className="text-center py-7 px-4 w-full min-w-0 border-gold/40 bg-gold/5 rounded-xl animate-fade-in">
+                  <div className="w-12 h-12 rounded-full bg-gold/20 border border-gold text-gold flex items-center justify-center mx-auto mb-2.5 text-xl shadow-[0_0_15px_rgba(255,200,70,0.25)]">
+                    ⚔️
+                  </div>
+                  <h4 className="font-display font-black text-sm text-gold uppercase tracking-wider mb-1">
                     {activeFilter === 'pending'
-                      ? (curLang === 'en' ? 'All active habits completed for today! ⚔️' : curLang === 'es' ? '¡Todos los hábitos activos completados para hoy! ⚔️' : 'Todos os hábitos ativos concluídos por hoje! ⚔️')
-                      : (curLang === 'en' ? 'No habits completed yet.' : curLang === 'es' ? 'Ningún hábito completado aún.' : 'Nenhum hábito concluído ainda.')}
+                      ? (curLang === 'en' ? 'ALL CLEAN! PROTOCOL FULFILLED TODAY' : curLang === 'es' ? '¡TODO LIMPIO! PROTOCOLO CUMPLIDO HOY' : 'TUDO LIMPO! PROTOCOLO CUMPRIDO HOJE')
+                      : (curLang === 'en' ? 'NO COMPLETED HABITS YET' : curLang === 'es' ? 'NINGÚN HÁBITO CUMPLIDO AÚN' : 'NENHUM HÁBITO CONCLUÍDO AINDA')}
+                  </h4>
+                  <p className="text-xs text-muted max-w-md mx-auto mb-3.5">
+                    {activeFilter === 'pending'
+                      ? (curLang === 'en'
+                        ? 'All your active habits are completed for today. They have been moved to the Completed section to keep your view clear.'
+                        : curLang === 'es'
+                        ? 'Todos tus hábitos activos están cumplidos hoy. Se movieron a la sección Concluidos para mantener la vista limpia.'
+                        : 'Todos os seus hábitos ativos foram concluídos hoje. Eles foram movidos para a seção Concluídos para deixar sua tela limpa.')
+                      : (curLang === 'en'
+                        ? 'Complete habits in the Pending tab and they will appear here.'
+                        : curLang === 'es'
+                        ? 'Cumple hábitos en la pestaña Pendientes y aparecerán aquí.'
+                        : 'Conclua hábitos na aba Pendentes e eles aparecerão aqui.')}
                   </p>
+                  {activeFilter === 'pending' && completedHabitsCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveFilter('done')}
+                      className="btn-gold py-1.5 px-4 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <CheckCircle2 size={13} strokeWidth={2.5} />
+                      <span>{curLang === 'en' ? `View Completed Habits (${completedHabitsCount}) →` : curLang === 'es' ? `Ver Hábitos Concluidos (${completedHabitsCount}) →` : `Ver Hábitos Concluídos (${completedHabitsCount}) →`}</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setActiveFilter('pending')}
+                      className="btn-gold py-1.5 px-4 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <span>{curLang === 'en' ? 'View Pending Habits →' : curLang === 'es' ? 'Ver Hábitos Pendientes →' : 'Ver Hábitos Pendentes →'}</span>
+                    </button>
+                  )}
                 </Card>
               )
             ) : (
