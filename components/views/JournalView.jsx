@@ -53,6 +53,8 @@ const I18N = {
   delTitle: { pt: 'Excluir Registro', en: 'Delete Entry', es: 'Eliminar Registro' },
   delConfirmBtn: { pt: 'Sim, Excluir', en: 'Yes, Delete', es: 'Sí, Eliminar' },
   delCancelBtn: { pt: 'Cancelar', en: 'Cancel', es: 'Cancelar' },
+  auditPillDone: { pt: '✓ Auditoria noturna registrada hoje', en: '✓ Nightly audit recorded today', es: '✓ Auditoría nocturna registrada hoy' },
+  auditPillPending: { pt: '⚠️ Auditoria noturna de hoje pendente', en: '⚠️ Nightly audit pending today', es: '⚠️ Auditoría nocturna de hoy pendiente' },
 };
 
 export default function JournalView() {
@@ -253,38 +255,40 @@ export default function JournalView() {
       {/* 1. CATEGORIA: NOVO RELATÓRIO */}
       {activeCategory === 'write' && (
         <div className="flex flex-col gap-3.5 w-full max-w-2xl mx-auto min-w-0">
-          {/* BANNER TÁTICO DA AUDITORIA */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Status da Auditoria Noturna */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <BookOpen size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <BookOpen size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx.headlineWrite[curLang]}
-                  </span>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                    hasTodayEntry ? 'bg-gold/15 text-gold border-gold/30' : 'bg-danger/15 text-danger border-danger/30'
-                  }`}>
-                    {hasTodayEntry ? tx.badgeAuditDone[curLang] : tx.badgeAuditPending[curLang]}
                   </span>
                 </div>
                 <p className="text-[11px] text-muted truncate">
-                  {tx.subtitleWrite[curLang]}
+                  {hasTodayEntry ? tx.auditPillDone[curLang] : tx.auditPillPending[curLang]}
                 </p>
               </div>
             </div>
 
-            {hasTodayEntry && (
-              <button
-                type="button"
-                onClick={() => setActiveCategory('history')}
-                className="text-xs font-mono font-bold text-gold hover:underline flex items-center gap-1 self-end sm:self-auto cursor-pointer"
-              >
-                <Check size={13} /> {tx.viewHist[curLang]}
-              </button>
-            )}
+            <div className="flex items-center gap-2 flex-none">
+              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+                hasTodayEntry ? 'bg-gold/15 text-gold border-gold/30' : 'bg-danger/15 text-danger border-danger/30'
+              }`}>
+                {hasTodayEntry ? tx.badgeAuditDone[curLang] : tx.badgeAuditPending[curLang]}
+              </span>
+              {hasTodayEntry && (
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory('history')}
+                  className="text-xs font-mono font-bold text-gold hover:underline hidden sm:flex items-center gap-1 cursor-pointer"
+                >
+                  <Check size={13} /> {tx.viewHist[curLang]}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="p-4 sm:p-5 rounded-xl border border-gold/25 bg-gradient-to-b from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
@@ -359,23 +363,20 @@ export default function JournalView() {
       {/* 2. CATEGORIA: HISTÓRICO DE AUDITORIAS */}
       {activeCategory === 'history' && (
         <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* BANNER TÁTICO DO HISTÓRICO */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Histórico de Registros */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <History size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <History size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx.headlineHistory[curLang]}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                    {entries.length} {tx.totalReports[curLang]}
                   </span>
                 </div>
                 <p className="text-[11px] text-muted truncate">
-                  {tx.subtitleHistory[curLang]}
+                  {entries.length} {tx.totalReports[curLang]}
                 </p>
               </div>
             </div>
@@ -383,7 +384,7 @@ export default function JournalView() {
             <button
               type="button"
               onClick={() => setActiveCategory('write')}
-              className="py-1.5 px-3 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all self-end sm:self-auto"
+              className="py-1.5 px-3 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all flex-none"
             >
               <PenTool size={12} />
               <span>{tx.plusNew[curLang]}</span>
@@ -456,19 +457,16 @@ export default function JournalView() {
       {/* 3. CATEGORIA: MÉTRICAS & VIGOR */}
       {activeCategory === 'metrics' && (
         <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* BANNER TÁTICO DAS MÉTRICAS */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Métricas de Vigor */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <BarChart3 size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <BarChart3 size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx.headlineMetrics[curLang]}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                    {topMoodLabel}
                   </span>
                 </div>
                 <p className="text-[11px] text-muted truncate">
@@ -476,6 +474,10 @@ export default function JournalView() {
                 </p>
               </div>
             </div>
+
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30 flex-none">
+              {topMoodLabel}
+            </span>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
