@@ -467,6 +467,36 @@ const LABELS_I18N = {
     en: (date) => `Log cleared for ${date}`,
     es: (date) => `Registro borrado para ${date}`,
   },
+  negligenceAlertBadge: {
+    pt: (count) => `Alerta de Negligência: ${count} ${count === 1 ? 'hábito esfriando na forja' : 'hábitos esfriando na forja'}`,
+    en: (count) => `Negligence Alert: ${count} ${count === 1 ? 'habit cooling down' : 'habits cooling down'}`,
+    es: (count) => `Alerta de Negligencia: ${count} ${count === 1 ? 'hábito enfriándose' : 'hábitos enfriándose'}`,
+  },
+  negligenceInspect: {
+    pt: 'Inspecionar',
+    en: 'Inspect',
+    es: 'Inspeccionar',
+  },
+  negligenceCollapse: {
+    pt: 'Recolher',
+    en: 'Collapse',
+    es: 'Recoger',
+  },
+  quickRemainingCount: {
+    pt: (rem) => `${rem} ${rem === 1 ? 'restante' : 'restantes'}`,
+    en: (rem) => `${rem} remaining`,
+    es: (rem) => `${rem} ${rem === 1 ? 'restante' : 'restantes'}`,
+  },
+  quickDoneCount: {
+    pt: (done) => `${done} ${done === 1 ? 'forjado' : 'forjados'}`,
+    en: (done) => `${done} forged`,
+    es: (done) => `${done} ${done === 1 ? 'forjado' : 'forjados'}`,
+  },
+  habitTimeLabel: {
+    pt: 'Horário / Lembrete:',
+    en: 'Schedule / Reminder:',
+    es: 'Horario / Recordatorio:',
+  },
 };
 
 /* Ícones Táticos & Guerreiros para Seleção Rápida */
@@ -574,6 +604,7 @@ export default function ForgeView() {
   const [activeCategory, setActiveCategory] = useState('active');
   const [activeFilter, setActiveFilter] = useState('pending'); // 'pending' (padrão limpo), 'done', 'all'
   const [showBioBanner, setShowBioBanner] = useState(false);
+  const [showNegligenceDetails, setShowNegligenceDetails] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
 
@@ -1509,70 +1540,68 @@ export default function ForgeView() {
       {/* 1. PROTOCOLO ATIVO */}
       {activeCategory === 'active' && (
         <div id="tour-forge-habits" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO COMPACTO: Status de Slots e Ação de Criar Hábito */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
-                <Flame size={18} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase">
-                    {curLang === 'en' ? 'ACTIVE FORGE SLOTS' : curLang === 'es' ? 'SLOTS ACTIVOS DE LA FORJA' : 'SLOTS ATIVOS DA FORJA'}
-                  </span>
-                  <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded bg-gold/15 border border-gold/40 text-gold">
-                    {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {curLang === 'en' ? 'ACTIVE' : curLang === 'es' ? 'ACTIVOS' : 'ATIVOS'}
+          {/* TOPO UNIFICADO: Status Rápido + Termômetro de Carga + Ações Táteis */}
+          <div className="w-full flex flex-col gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            {/* Linha Superior: Status Resumido + Botões de Ação */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+                  <Flame size={18} />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase">
+                      {curLang === 'en' ? 'ACTIVE FORGE' : curLang === 'es' ? 'FORJA ACTIVA' : 'FORJA ATIVA'}
+                    </span>
+                    {/* Contador Rápido: Restantes / Forjados */}
+                    {activeHabits.length > 0 && (
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/35 text-amber-300">
+                        ⚡ {LBL.quickRemainingCount[curLang](activeHabits.length - completedHabitsCount)} • {LBL.quickDoneCount[curLang](completedHabitsCount)}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 border border-gold/40 text-gold">
+                      {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {curLang === 'en' ? 'SLOTS' : curLang === 'es' ? 'SLOTS' : 'SLOTS'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] sm:text-[10.5px] text-muted font-mono truncate mt-0.5">
+                    {curTier ? `${curTier.name} · ${maxSlots >= 99 ? (curLang === 'en' ? 'Unlimited slots unlocked' : curLang === 'es' ? 'Slots ilimitados desbloqueados' : 'Slots ilimitados liberados') : `${maxSlots} ${curLang === 'en' ? 'slots unlocked' : curLang === 'es' ? 'slots desbloqueados' : 'slots liberados'}`}` : ''}
                   </span>
                 </div>
-                <span className="text-[10.5px] text-muted font-mono truncate mt-0.5">
-                  {curTier ? `${curTier.name} · ${maxSlots >= 99 ? (curLang === 'en' ? 'Unlimited slots unlocked' : curLang === 'es' ? 'Slots ilimitados desbloqueados' : 'Slots ilimitados liberados') : `${maxSlots} ${curLang === 'en' ? 'slots unlocked' : curLang === 'es' ? 'slots desbloqueados' : 'slots liberados'}`}` : ''}
-                </span>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto flex-none">
+                {activeHabits.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllDone}
+                    title={isAllActiveDone ? LBL.undoAllHabitsBtn[curLang] : LBL.sealAllHabitsBtn[curLang]}
+                    className={`py-1.5 px-3 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg transition-all active:scale-95 cursor-pointer flex-none ${
+                      isAllActiveDone
+                        ? 'bg-gold/20 border border-gold text-gold hover:bg-gold/30'
+                        : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,70,0.25)]'
+                    }`}
+                  >
+                    <CheckCircle2 size={13} strokeWidth={2.5} />
+                    <span>{isAllActiveDone ? LBL.allHabitsForgedBadge[curLang] : LBL.sealAllHabitsBtn[curLang]}</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={openCreateModal}
+                  className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer flex-none"
+                >
+                  <Plus size={14} strokeWidth={3} className="text-[#141414]" />
+                  <span>{LBL.createHabit[curLang]}</span>
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto flex-none">
-              {activeHabits.length > 0 && (
-                <button
-                  type="button"
-                  onClick={markAllDone}
-                  title={isAllActiveDone ? LBL.undoAllHabitsBtn[curLang] : LBL.sealAllHabitsBtn[curLang]}
-                  className={`py-1.5 px-3 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg transition-all active:scale-95 cursor-pointer flex-none ${
-                    isAllActiveDone
-                      ? 'bg-gold/20 border border-gold text-gold hover:bg-gold/30'
-                      : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,70,0.25)]'
-                  }`}
-                >
-                  <CheckCircle2 size={13} strokeWidth={2.5} />
-                  <span>{isAllActiveDone ? LBL.allHabitsForgedBadge[curLang] : LBL.sealAllHabitsBtn[curLang]}</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={openCreateModal}
-                className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer flex-none"
-              >
-                <Plus size={14} strokeWidth={3} className="text-[#141414]" />
-                <span>{LBL.createHabit[curLang]}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* TERMÔMETRO & CARGA TÉRMICA DA FORJA */}
-          {activeHabits.length > 0 && (
-            <div className={`p-2.5 sm:p-3 rounded-xl border transition-all ${
-              isAllActiveDone
-                ? 'border-gold/50 bg-gradient-to-r from-gold/15 via-[#181622] to-amber-950/20 shadow-[0_0_15px_rgba(255,200,70,0.15)]'
-                : forgeHeatPct >= 50
-                ? 'border-orange-500/40 bg-gradient-to-r from-orange-950/30 via-[#181622] to-surface2'
-                : forgeHeatPct > 0
-                ? 'border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-[#16151D] to-surface2'
-                : 'border-line/70 bg-[#16151D]'
-            }`}>
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Flame size={14} className={isAllActiveDone ? 'text-gold animate-pulse' : forgeHeatPct >= 50 ? 'text-orange-400' : forgeHeatPct > 0 ? 'text-amber-400' : 'text-muted'} />
-                  <span className={`text-[11px] font-bold uppercase tracking-wider truncate font-mono ${
+            {/* Linha Inferior: Termômetro Integrado e Carga Térmica */}
+            {activeHabits.length > 0 && (
+              <div className="pt-2 border-t border-line/40 flex flex-col gap-1.5 w-full">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider truncate font-mono ${
                     isAllActiveDone ? 'text-gold' : forgeHeatPct >= 50 ? 'text-orange-300' : forgeHeatPct > 0 ? 'text-amber-300' : 'text-muted'
                   }`}>
                     {isAllActiveDone
@@ -1583,27 +1612,25 @@ export default function ForgeView() {
                       ? LBL.forgeHeatHeating[curLang](completedHabitsCount, activeHabits.length, forgeHeatPct)
                       : LBL.forgeHeatCold[curLang]}
                   </span>
+                  <span className="text-[10.5px] font-mono font-black text-gold flex-none">
+                    {forgeHeatPct}%
+                  </span>
                 </div>
-                <span className="text-[11px] font-mono font-black text-gold flex-none">
-                  {completedHabitsCount}/{activeHabits.length} ({forgeHeatPct}%)
-                </span>
+                <div className="w-full h-1.5 rounded-full bg-surface border border-line/60 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      isAllActiveDone
+                        ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-gold shadow-[0_0_10px_rgba(255,200,70,0.5)]'
+                        : forgeHeatPct >= 50
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'
+                        : 'bg-gradient-to-r from-amber-600 to-amber-400'
+                    }`}
+                    style={{ width: `${forgeHeatPct}%` }}
+                  />
+                </div>
               </div>
-
-              {/* Barra de Temperatura */}
-              <div className="w-full h-2 rounded-full bg-surface border border-line/60 overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 rounded-full ${
-                    isAllActiveDone
-                      ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-gold shadow-[0_0_10px_rgba(255,200,70,0.5)]'
-                      : forgeHeatPct >= 50
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'
-                      : 'bg-gradient-to-r from-amber-600 to-amber-400'
-                  }`}
-                  style={{ width: `${forgeHeatPct}%` }}
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* BANNER DE VITÓRIA: 100% FORJADO NO AÇO */}
           {isAllActiveDone && (
@@ -1655,33 +1682,50 @@ export default function ForgeView() {
             </div>
           )}
 
-          {/* 2. ALERTA DE NEGLIGÊNCIA COMPACTO */}
+          {/* 2. ALERTA DE NEGLIGÊNCIA RETRÁTIL */}
           {neglected.length > 0 && (
-            <Card className="border-danger/40 bg-danger/5 p-3 sm:p-3.5 w-full max-w-full min-w-0 overflow-hidden">
-              <div className="flex items-center gap-1.5 mb-2 text-danger font-bold text-xs uppercase tracking-wider min-w-0">
-                <AlertTriangle size={14} className="flex-none" />
-                <span className="truncate">{LBL.negligenceAlert[curLang]}</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full min-w-0">
-                {neglected.map((h) => (
-                  <div
-                    key={h.id}
-                    className="flex items-center justify-between gap-2 p-2 rounded-lg border border-danger/30 bg-surface2 text-xs w-full min-w-0 overflow-hidden"
-                  >
-                    <span className="flex items-center gap-1.5 truncate font-semibold min-w-0 flex-1">
-                      <span className="flex-none">{h.icon}</span>
-                      <span className="truncate">{h.n}</span>
-                    </span>
-                    <span className="flex-none font-mono text-[10px] sm:text-[10.5px] font-bold text-danger whitespace-nowrap pl-1">
-                      {LBL.daysWithoutDoing[curLang]}
-                    </span>
+            <div className="w-full rounded-xl border border-danger/40 bg-danger/10 overflow-hidden transition-all shadow-xs">
+              <button
+                type="button"
+                onClick={() => setShowNegligenceDetails((prev) => !prev)}
+                className="w-full p-2.5 sm:p-3 flex items-center justify-between text-left gap-2 cursor-pointer select-none hover:bg-danger/15 transition-colors"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <AlertTriangle size={15} className="text-danger flex-none animate-pulse" />
+                  <span className="text-xs font-bold text-danger uppercase tracking-wider truncate">
+                    {LBL.negligenceAlertBadge[curLang](neglected.length)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10.5px] font-mono text-danger font-bold flex-none">
+                  <span>{showNegligenceDetails ? LBL.negligenceCollapse[curLang] : LBL.negligenceInspect[curLang]}</span>
+                  {showNegligenceDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                </div>
+              </button>
+
+              {showNegligenceDetails && (
+                <div className="p-3 pt-0 border-t border-danger/25 flex flex-col gap-2 mt-1 animate-fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full min-w-0 mt-2">
+                    {neglected.map((h) => (
+                      <div
+                        key={h.id}
+                        className="flex items-center justify-between gap-2 p-2 rounded-lg border border-danger/30 bg-surface2 text-xs w-full min-w-0 overflow-hidden"
+                      >
+                        <span className="flex items-center gap-1.5 truncate font-semibold min-w-0 flex-1">
+                          <span className="flex-none">{h.icon}</span>
+                          <span className="truncate">{h.n}</span>
+                        </span>
+                        <span className="flex-none font-mono text-[10px] sm:text-[10.5px] font-bold text-danger whitespace-nowrap pl-1">
+                          {LBL.daysWithoutDoing[curLang]}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <p className="mt-2 text-[10.5px] text-muted leading-tight">
-                {LBL.negligenceQuote[curLang]}
-              </p>
-            </Card>
+                  <p className="mt-1 text-[10.5px] text-muted leading-tight">
+                    {LBL.negligenceQuote[curLang]}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {/* 3. ATIVOS NO PROTOCOLO */}
@@ -1737,7 +1781,7 @@ export default function ForgeView() {
                             : 'border-line/80 bg-[#16151D] hover:border-gold/40'
                         }`}
                       >
-                        {/* Linha Principal: Ícone + Título/Horário + Ações Táteis */}
+                        {/* Linha Principal: Ícone + Título + Badges Essenciais + Ações Rápidas */}
                         <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className={`grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-lg border text-lg flex-none transition-all ${
@@ -1757,43 +1801,19 @@ export default function ForgeView() {
                                 }`}>
                                   {h.n || h.name || h.title || ''}
                                 </span>
-                                {isCustom && (
-                                  <div className="flex items-center gap-1 flex-none">
-                                    <button
-                                      type="button"
-                                      title={LBL.editHabitBtn[curLang]}
-                                      onClick={() => openEditModal(h)}
-                                      className="px-1.5 py-0.5 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                                    >
-                                      <Edit3 size={10} />
-                                      <span>{LBL.editHabitBtn[curLang]}</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      title={LBL.deleteHabitBtn[curLang]}
-                                      onClick={() => deleteCustomHabit(h.id)}
-                                      className="p-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] transition-colors cursor-pointer"
-                                    >
-                                      <Trash2 size={10} />
-                                    </button>
-                                  </div>
-                                )}
                               </div>
 
                               <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted truncate flex-wrap">
-                                <div className="flex items-center gap-1 bg-surface px-1.5 py-0.2 rounded border border-line/60 flex-none">
-                                  <Clock size={10} className="text-gold flex-none" />
-                                  <input
-                                    type="time"
-                                    value={tm}
-                                    onChange={(e) => setTime(h.id, e.target.value)}
-                                    className="bg-transparent text-ink focus:outline-none w-[42px] sm:w-[48px] text-center"
-                                  />
-                                </div>
                                 {habitStreakCount > 0 && (
                                   <span className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500/10 border border-amber-500/25 text-[9.5px] font-mono font-bold text-amber-300 flex-none">
                                     <Flame size={10} className="text-amber-400" />
                                     <span>{LBL.habitStreak[curLang](habitStreakCount)}</span>
+                                  </span>
+                                )}
+                                {tm && (
+                                  <span className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-surface border border-line/60 text-[9.5px] font-mono text-gold flex-none">
+                                    <Clock size={9} className="text-gold flex-none" />
+                                    <span>{tm}</span>
                                   </span>
                                 )}
                                 {isCustom && (
@@ -1805,17 +1825,8 @@ export default function ForgeView() {
                             </div>
                           </div>
 
-                          {/* Ações Rápidas: Mover Reserva, Falhar e Botão Concluir */}
+                          {/* Ações Rápidas: Falhar (se pendente) e Botão Principal Concluir */}
                           <div className="flex items-center gap-1 sm:gap-1.5 flex-none">
-                            <button
-                              type="button"
-                              title={LBL.moveToReserve[curLang]}
-                              onClick={() => toggleActive(h.id)}
-                              className="text-muted/60 hover:text-gold p-1.5 rounded hover:bg-surface2 transition-colors flex-none"
-                            >
-                              <Archive size={14} />
-                            </button>
-
                             {!isDone && (
                               <button
                                 type="button"
@@ -1846,7 +1857,7 @@ export default function ForgeView() {
                           </div>
                         </div>
 
-                        {/* Linha Expansível Discreta: Detalhes & Histórico 7D */}
+                        {/* Gaveta Recolhível: Detalhes, Configurar Horário, Histórico 7D e Reserva */}
                         <div className="mt-2 pt-1.5 border-t border-line/40 w-full min-w-0">
                           <button
                             type="button"
@@ -1861,12 +1872,59 @@ export default function ForgeView() {
                           </button>
 
                           {isDetailsOpen && (
-                            <div className="mt-2 flex flex-col gap-2 pt-1 border-t border-line/30">
+                            <div className="mt-2 flex flex-col gap-2 pt-1 border-t border-line/30 animate-fade-in">
+                              {/* Histórico Interativo dos Últimos 7 Dias (Retroativo) */}
                               <div>
                                 <span className="text-[9px] font-mono text-muted uppercase font-bold block mb-1">
                                   {LBL.viewHistory[curLang]}
                                 </span>
                                 {renderLast7Days(h.id)}
+                              </div>
+
+                              {/* Linha de Horário / Lembrete e Ações Secundárias */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 rounded-lg bg-surface/80 border border-line/50 text-[10.5px]">
+                                <div className="flex items-center gap-2">
+                                  <Clock size={12} className="text-gold flex-none" />
+                                  <span className="font-mono text-muted">{LBL.habitTimeLabel[curLang]}</span>
+                                  <input
+                                    type="time"
+                                    value={tm}
+                                    onChange={(e) => setTime(h.id, e.target.value)}
+                                    className="bg-surface2 border border-line/70 rounded px-1.5 py-0.5 text-ink font-mono text-xs focus:border-gold focus:outline-none"
+                                  />
+                                </div>
+
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleActive(h.id)}
+                                    className="px-2 py-1 rounded border border-line hover:border-gold/50 bg-surface2 text-muted hover:text-gold text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <Archive size={11} />
+                                    <span>{LBL.moveToReserve[curLang]}</span>
+                                  </button>
+
+                                  {isCustom && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => openEditModal(h)}
+                                        className="px-2 py-1 rounded border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
+                                      >
+                                        <Edit3 size={11} />
+                                        <span>{LBL.editHabitBtn[curLang]}</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => deleteCustomHabit(h.id)}
+                                        className="px-2 py-1 rounded border border-danger/40 bg-danger/10 hover:bg-danger/25 text-danger text-[10px] font-mono flex items-center gap-1 transition-colors cursor-pointer"
+                                      >
+                                        <Trash2 size={11} />
+                                        <span>{LBL.deleteHabitBtn[curLang]}</span>
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
                               </div>
 
                               {benefitText && (
