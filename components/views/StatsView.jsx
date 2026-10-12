@@ -992,32 +992,27 @@ export default function StatsView() {
       {/* CATEGORIA 1: GERAL & CONSISTÊNCIA */}
       {activeCategory === 'general' && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO GERAL */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Inteligência & Consistência Geral */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <BarChart2 size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <BarChart2 size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx('headlineGeneral', 'INTELIGÊNCIA & CONSISTÊNCIA GERAL')}
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {d} {T('cv_days', ' DIAS')}
-                  </span>
                 </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleGeneral', 'Métricas vitais, mapa de combate e adesão aos hábitos da Forja.')}
+                <p className="text-[11px] text-muted truncate">
+                  {d} {T('cv_days', ' dias')} · {tx('badgePurityScore', 'Pureza')}: {S.purity != null ? S.purity : 100}% · SOS: {L.sosWins(S)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-muted">
-                ✦ {tx('badgePurityScore', 'PUREZA')}: <b className="text-gold font-bold">{S.purity != null ? S.purity : 100}%</b>
-              </span>
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-muted">
-                🛡️ SOS: <b className="text-ok font-bold">{L.sosWins(S)}</b>
+
+            <div className="flex items-center gap-1.5 flex-none text-xs font-mono">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
+                {d} {T('cv_days', ' DIAS')}
               </span>
             </div>
           </div>
@@ -1242,34 +1237,27 @@ export default function StatsView() {
       {/* CATEGORIA 2: LINHA DO TEMPO (HISTÓRICO INTERATIVO DE DIAS, VITÓRIAS & SOS) */}
       {activeCategory === 'timeline' && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO LINHA DO TEMPO */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Linha do Tempo & Dias de Combate */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <CalendarDays size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <CalendarDays size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx('headlineTimeline', 'LINHA DO TEMPO & DIAS DE COMBATE')}
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {timelineData.rate}% {tx('badgeHonorScore', 'TAXA')}
-                  </span>
                 </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleTimeline', 'Histórico cronológico e curva de vitalidade sincronizada à Tríade.')}
+                <p className="text-[11px] text-muted truncate">
+                  🏆 {timelineData.wins} {T('tl_badge_wins', 'vitórias')} · 💥 {timelineData.falls} {T('tl_badge_falls', 'quedas')} · {timelineData.rate}% {tx('badgeHonorScore', 'taxa')}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-ok font-bold">
-                🏆 {timelineData.wins} {T('tl_badge_wins', 'Vitórias')}
-              </span>
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-danger font-bold">
-                💥 {timelineData.falls} {T('tl_badge_falls', 'Quedas')}
-              </span>
-            </div>
+
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30 flex-none">
+              {timelineData.rate}% {tx('badgeHonorScore', 'TAXA')}
+            </span>
           </div>
 
           <div className="rounded-xl border border-line/80 bg-[#121217] p-4 sm:p-5 shadow-sm flex flex-col justify-between select-none">
@@ -1418,31 +1406,27 @@ export default function StatsView() {
       {/* CATEGORIA 3: RISCO & S.O.S */}
       {activeCategory === 'risk' && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO RISCO & S.O.S */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-danger/40 bg-gradient-to-r from-[#1b1216] via-[#121218] to-[#1b1216] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Mapeamento de Risco & Blindagem S.O.S */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-danger/40 bg-gradient-to-r from-[#1b1216] via-[#121218] to-[#1b1216] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-danger/15 border border-danger/40 flex items-center justify-center text-danger flex-none">
-                <ShieldAlert size={18} />
+              <div className="w-8 h-8 rounded-lg bg-danger/15 border border-danger/40 flex items-center justify-center text-danger flex-none">
+                <ShieldAlert size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx('headlineRisk', 'MAPEAMENTO DE RISCO & BLINDAGEM S.O.S')}
                   </span>
-                  {us.total > 0 && (
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-danger/15 text-danger border-danger/30">
-                      {us.window[0]}h – {us.window[1]}h {tx('badgeCriticalWindow', 'CRÍTICO')}
-                    </span>
-                  )}
                 </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleRisk', 'Identificação de horários vulneráveis, intervenções e ranking de gatilhos.')}
+                <p className="text-[11px] text-muted truncate">
+                  🛡️ {L.sosWins(S)} {T('sos_won_badge', 'vencidas')} {us.total > 0 ? `· 🎯 ${us.window[0]}h–${us.window[1]}h (${tx('badgeCriticalWindow', 'janela crítica')})` : ''}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-ok font-bold">
-                🛡️ {L.sosWins(S)} {T('sos_won_badge', 'Vencidas')}
+
+            <div className="flex items-center gap-1.5 flex-none text-xs font-mono">
+              <span className="px-2 py-0.5 rounded-lg bg-surface2/90 border border-line/80 text-ok font-bold text-[10px]">
+                🛡️ {L.sosWins(S)}
               </span>
             </div>
           </div>
@@ -1586,34 +1570,27 @@ export default function StatsView() {
       {/* CATEGORIA 4: SALÃO DA FAMA & HONRA */}
       {activeCategory === 'hall' && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO SALÃO DA FAMA */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Salão da Fama & Honra */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <Trophy size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Trophy size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
                     {tx('headlineHall', 'SALÃO DA FAMA & HONRA DOS GUERREIROS')}
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {S.hallOptIn ? (S.hallName || tx('badgeActiveStatus', 'ATIVO')) : tx('badgePrivateStatus', 'PRIVADO')}
-                  </span>
                 </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleHall', 'Irmandade anônima, patamares conquistados e cartão de vitória semanal.')}
+                <p className="text-[11px] text-muted truncate">
+                  🔥 {S.streak || 0}d {T('hall_stat_streak', 'streak')} · ✦ {S.purity || 100}% {tx('badgePurityScore', 'pureza')}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
-                🔥 {S.streak || 0}d {T('hall_stat_streak', 'Streak')}
-              </span>
-              <span className="px-2 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
-                ✦ {S.purity || 100}% {tx('badgePurityScore', 'Pureza')}
-              </span>
-            </div>
+
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30 flex-none">
+              {S.hallOptIn ? (S.hallName || tx('badgeActiveStatus', 'ATIVO')) : tx('badgePrivateStatus', 'PRIVADO')}
+            </span>
           </div>
 
           {/* Resumo de Honra & Conquistas */}
