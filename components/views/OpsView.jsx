@@ -412,6 +412,31 @@ const I18N = {
     en: '⚡ Task promoted with honor to Official Forge Habit!',
     es: '⚡ ¡Tarea promovida con honor a Hábito Oficial de la Forja!',
   },
+  opsProgressPill: {
+    pt: (pending, done, pct) => `⚡ ${pending} pendente${pending !== 1 ? 's' : ''} • ${done} concluída${done !== 1 ? 's' : ''} (${pct}%)`,
+    en: (pending, done, pct) => `⚡ ${pending} pending • ${done} completed (${pct}%)`,
+    es: (pending, done, pct) => `⚡ ${pending} pendiente${pending !== 1 ? 's' : ''} • ${done} completada${done !== 1 ? 's' : ''} (${pct}%)`,
+  },
+  projectsProgressPill: {
+    pt: (active, done) => `🏛️ ${active} frente${active !== 1 ? 's' : ''} ativa${active !== 1 ? 's' : ''} • ${done} concluída${done !== 1 ? 's' : ''}`,
+    en: (active, done) => `🏛️ ${active} active front${active !== 1 ? 's' : ''} • ${done} completed`,
+    es: (active, done) => `🏛️ ${active} frente${active !== 1 ? 's' : ''} activa${active !== 1 ? 's' : ''} • ${done} completada${done !== 1 ? 's' : ''}`,
+  },
+  archiveProgressPill: {
+    pt: (total) => `📦 ${total} item${total !== 1 ? 's' : ''} no arsenal`,
+    en: (total) => `📦 ${total} item${total !== 1 ? 's' : ''} in combat arsenal`,
+    es: (total) => `📦 ${total} elemento${total !== 1 ? 's' : ''} en el arsenal`,
+  },
+  btnMoreActions: {
+    pt: 'Mais Ações',
+    en: 'More Actions',
+    es: 'Más Acciones',
+  },
+  btnCollapseActions: {
+    pt: 'Fechar Ações',
+    en: 'Close Actions',
+    es: 'Cerrar Acciones',
+  },
 };
 
 export default function OpsView() {
@@ -426,6 +451,8 @@ export default function OpsView() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [expandedProjIds, setExpandedProjIds] = useState({});
   const [highlightedProjId, setHighlightedProjId] = useState(null);
+  const [openTaskMenuId, setOpenTaskMenuId] = useState(null);
+  const [openLinkedTaskMenuId, setOpenLinkedTaskMenuId] = useState(null);
 
   // Deep-link para projetos ou abas vindo do QG / Agenda Operacional
   useEffect(() => {
@@ -2853,36 +2880,34 @@ export default function OpsView() {
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
         <div id="tour-ops-tasks" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO COMPACTO: Status Operacional Tático */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <Target size={18} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
+          {/* TOPO UNIFICADO: Status Operacional Tático */}
+          <div className="w-full flex flex-col gap-2 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                  <Target size={16} />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
                     {tx.opsHeadlineTasks[curLang]}
                   </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                    {completedToday}/{todayTasks.length} {tx.progress[curLang]}
-                  </span>
+                  <p className="text-[11px] text-muted truncate">
+                    {tx.opsSubtitleTasks[curLang]}
+                  </p>
                 </div>
-                <p className="text-[11px] text-muted truncate">
-                  {tx.opsSubtitleTasks[curLang]}
-                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <span className="text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                  {tx.opsProgressPill[curLang](todayTasks.filter((x) => !L.isDone(x, today())).length, completedToday, pct)}
+                </span>
               </div>
             </div>
-
-            {/* Taxa de Execução Tática */}
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-mono text-muted uppercase font-bold">Progresso Hoje</span>
-                <span className="text-xs font-mono font-black text-gold">{pct}%</span>
-              </div>
-              <div className="w-8 h-8 rounded-full border-2 border-gold/40 flex items-center justify-center bg-gold/10 font-mono text-[10px] font-bold text-gold">
-                {pct}%
-              </div>
+            {/* Barra de Progresso Tática */}
+            <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden border border-line/40">
+              <div
+                className="h-full bg-gradient-to-r from-amber-600 via-gold to-amber-300 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.25)]"
+                style={{ width: `${pct}%` }}
+              />
             </div>
           </div>
 
@@ -2932,13 +2957,14 @@ export default function OpsView() {
                   baixa: 'border-line bg-surface text-muted',
                 }[tItem.pri] || 'border-line text-muted';
                 const parentProj = projects.find((p) => String(p.id) === String(tItem.projectId || tItem.proj));
+                const isMenuOpen = openTaskMenuId === tItem.id;
 
                 return (
                   <div
                     key={tItem.id}
-                    className={`flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border transition-all w-full select-none ${
+                    className={`flex flex-col gap-2 p-3 sm:p-3.5 rounded-xl border transition-all w-full select-none ${
                       isDone
-                        ? 'border-line/40 bg-surface/40 opacity-60'
+                        ? 'border-line/30 bg-surface/30 opacity-60'
                         : isPostponed
                         ? 'border-amber-500/40 bg-gradient-to-r from-[#17151F] via-[#181416] to-[#17151F] hover:border-amber-500/70 shadow-sm'
                         : isOverdue
@@ -2946,163 +2972,178 @@ export default function OpsView() {
                         : 'border-gold/25 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] hover:border-gold/50 shadow-sm'
                     }`}
                   >
-                    <div
-                      className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
-                      onClick={() => toggleTask(tItem.id)}
-                    >
-                      <button
-                        type="button"
-                        className={`w-6 h-6 rounded-lg flex-none flex items-center justify-center border transition-all cursor-pointer ${
-                          isDone
-                            ? 'border-gold bg-gold text-[#141414] shadow-sm font-black'
-                            : 'border-[#3c3c46] bg-surface hover:border-gold hover:bg-gold/10'
-                        }`}
+                    <div className="flex items-center justify-between gap-2.5 min-w-0 w-full">
+                      <div
+                        className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
+                        onClick={() => toggleTask(tItem.id)}
                       >
-                        {isDone && <Check size={14} strokeWidth={3} />}
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <span className={`text-xs sm:text-[13px] font-bold block truncate ${isDone ? 'line-through text-muted' : 'text-ink font-semibold'}`}>
-                          {tItem.txt}
-                        </span>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted flex-wrap">
-                          <span className={`px-1.5 py-0.2 rounded border font-bold uppercase ${priColor}`}>
-                            {tItem.pri}
+                        <button
+                          type="button"
+                          aria-label="Toggle task"
+                          className={`w-6 h-6 rounded-lg flex-none flex items-center justify-center border transition-all cursor-pointer ${
+                            isDone
+                              ? 'border-gold bg-gold text-[#141414] shadow-sm font-black'
+                              : 'border-[#3c3c46] bg-surface hover:border-gold hover:bg-gold/10 text-transparent'
+                          }`}
+                        >
+                          {isDone && <Check size={14} strokeWidth={3} />}
+                        </button>
+                        <div className="min-w-0 flex-1">
+                          <span className={`text-xs sm:text-[13px] font-bold block truncate ${isDone ? 'line-through text-muted' : 'text-ink font-semibold'}`}>
+                            {tItem.txt}
                           </span>
-                          {isPostponed && (
-                            <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold flex items-center gap-1">
-                              <CalendarClock size={10} />
-                              <span>{tx.badgePostponed[curLang]} ({fmtD(tItem.postponedTo)})</span>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[9.5px] font-mono text-muted flex-wrap">
+                            <span className={`px-1.5 py-0.2 rounded border font-bold uppercase ${priColor}`}>
+                              {tItem.pri}
                             </span>
-                          )}
-                          {isOverdue && !isPostponed && (
-                            <span className="px-1.5 py-0.2 rounded bg-danger/15 text-danger border border-danger/30 font-bold flex items-center gap-1">
-                              <AlertTriangle size={10} />
-                              <span>{tx.badgeOverdue[curLang]}</span>
-                            </span>
-                          )}
-                          {tItem.time && (
-                            <span className="flex items-center gap-0.5 text-gold2">
-                              <Clock size={10} />
-                              {tItem.time}
-                            </span>
-                          )}
-                          {formatRepLabel(tItem) && (
-                            <span className="text-muted font-bold">
-                              {formatRepLabel(tItem)}
-                            </span>
-                          )}
-                          {parentProj && (
-                            <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold">
-                              📁 {parentProj.title}
-                            </span>
-                          )}
-                          {streak > 0 && (
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openTaskAnalysisModal(tItem);
-                              }}
-                              className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold flex items-center gap-0.5 hover:bg-gold/20 transition-colors cursor-pointer"
-                              title={tx.btnAnalyzeTask[curLang]}
-                            >
-                              <span>🔥</span>
-                              <span>{streak} {tx.subConsecutiveDays[curLang]}</span>
-                            </span>
-                          )}
-                          {tItem.rep === 'diaria' && streak >= 14 && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openPromoteToHabitModal(tItem);
-                              }}
-                              className="px-2 py-0.2 rounded bg-gradient-to-r from-amber-500/25 via-gold/30 to-amber-500/25 text-gold border border-gold/70 font-extrabold flex items-center gap-1 hover:border-gold hover:scale-[1.03] shadow-[0_0_10px_rgba(212,175,55,0.35)] transition-all cursor-pointer animate-pulse"
-                              title={tx.btnPromoteToHabitTooltip[curLang]}
-                            >
-                              <Zap size={10} className="text-gold fill-gold" />
-                              <span>{tx.btnPromoteToHabitBadge[curLang]}</span>
-                            </button>
-                          )}
-                          {totalDone > 0 && streak === 0 && (
-                            <span
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openTaskAnalysisModal(tItem);
-                              }}
-                              className="px-1.5 py-0.2 rounded bg-surface border border-line text-muted font-bold flex items-center gap-0.5 hover:text-gold hover:border-gold/30 transition-colors cursor-pointer"
-                              title={tx.btnAnalyzeTask[curLang]}
-                            >
-                              <span>⚡</span>
-                              <span>{totalDone} {tx.lblExecutionsOrDays[curLang]}</span>
-                            </span>
-                          )}
+                            {isPostponed && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold flex items-center gap-1">
+                                <CalendarClock size={10} />
+                                <span>{tx.badgePostponed[curLang]} ({fmtD(tItem.postponedTo)})</span>
+                              </span>
+                            )}
+                            {isOverdue && !isPostponed && (
+                              <span className="px-1.5 py-0.2 rounded bg-danger/15 text-danger border border-danger/30 font-bold flex items-center gap-1">
+                                <AlertTriangle size={10} />
+                                <span>{tx.badgeOverdue[curLang]}</span>
+                              </span>
+                            )}
+                            {tItem.time && (
+                              <span className="flex items-center gap-0.5 text-gold2">
+                                <Clock size={10} />
+                                {tItem.time}
+                              </span>
+                            )}
+                            {formatRepLabel(tItem) && (
+                              <span className="text-muted font-bold">
+                                {formatRepLabel(tItem)}
+                              </span>
+                            )}
+                            {parentProj && (
+                              <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold truncate max-w-[120px]">
+                                📁 {parentProj.title}
+                              </span>
+                            )}
+                            {streak > 0 && (
+                              <span className="px-1.5 py-0.2 rounded bg-gold/10 text-gold border border-gold/30 font-bold flex items-center gap-0.5">
+                                <span>🔥</span>
+                                <span>{streak}d</span>
+                              </span>
+                            )}
+                            {totalDone > 0 && streak === 0 && (
+                              <span className="px-1.5 py-0.2 rounded bg-surface border border-line text-muted font-bold flex items-center gap-0.5">
+                                <span>⚡</span>
+                                <span>{totalDone}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 flex-none">
+                        {!isDone && (
+                          <button
+                            type="button"
+                            title={tx.btnPostponeAction[curLang]}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openPostponeModal(tItem);
+                            }}
+                            className={`p-1.5 rounded-lg border transition-all flex items-center gap-1 text-xs font-mono cursor-pointer active:scale-95 ${
+                              isPostponed
+                                ? 'text-amber-400 bg-amber-500/15 border-amber-500/40 px-2'
+                                : 'text-muted hover:text-gold border-transparent hover:border-gold/30 hover:bg-gold/10'
+                            }`}
+                          >
+                            <CalendarClock size={13} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          title={isMenuOpen ? tx.btnCollapseActions[curLang] : tx.btnMoreActions[curLang]}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(isMenuOpen ? null : tItem.id);
+                            AF.click();
+                          }}
+                          className={`p-1.5 rounded-lg border transition-all cursor-pointer active:scale-95 ${
+                            isMenuOpen
+                              ? 'border-gold bg-gold/20 text-gold'
+                              : 'border-transparent text-muted hover:text-gold hover:border-gold/30 hover:bg-gold/10'
+                          }`}
+                        >
+                          <MoreVertical size={13} />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 flex-none">
-                      <button
-                        type="button"
-                        title={tx.btnAnalyzeTask[curLang]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openTaskAnalysisModal(tItem);
-                        }}
-                        className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all flex items-center gap-1 text-xs font-mono cursor-pointer active:scale-95"
-                      >
-                        <BarChart2 size={13} className="text-gold" />
-                        <span className="text-[10px] hidden md:inline">{tx.btnAnalyzeShort[curLang]}</span>
-                      </button>
-                      <button
-                        type="button"
-                        title={tx.btnPostponeAction[curLang]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openPostponeModal(tItem);
-                        }}
-                        className={`p-1.5 rounded-lg border transition-all flex items-center gap-1 text-xs font-mono cursor-pointer active:scale-95 ${
-                          isPostponed
-                            ? 'text-amber-400 hover:text-amber-300 bg-amber-500/15 border-amber-500/40 px-2'
-                            : 'text-muted hover:text-gold border-transparent hover:border-gold/30 hover:bg-gold/10'
-                        }`}
-                      >
-                        <CalendarClock size={13} />
-                        <span className="text-[10px] hidden md:inline">{tx.btnPostponeAction[curLang]}</span>
-                      </button>
-                      <button
-                        type="button"
-                        title={tx.editTaskTitle[curLang]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openTaskModal(tItem);
-                        }}
-                        className="text-muted hover:text-gold p-1.5 rounded-lg border border-transparent hover:border-gold/30 hover:bg-gold/10 transition-all cursor-pointer active:scale-95"
-                      >
-                        <Edit3 size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        title={tx.btnArchiveTask[curLang]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          requestArchiveTask(tItem);
-                        }}
-                        className="text-muted hover:text-amber-300 p-1.5 rounded-lg border border-transparent hover:border-amber-400/30 hover:bg-amber-400/10 transition-all cursor-pointer active:scale-95"
-                      >
-                        <Archive size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        title={tx.delTaskTitle[curLang]}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          requestDeleteTask(tItem);
-                        }}
-                        className="text-muted hover:text-danger p-1.5 rounded-lg border border-transparent hover:border-danger/30 hover:bg-danger/10 transition-all cursor-pointer active:scale-95"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                    {/* GAVETA DE AÇÕES SECUNDÁRIAS TÁTEIS */}
+                    {isMenuOpen && (
+                      <div className="pt-2 mt-0.5 border-t border-line/40 flex flex-wrap items-center gap-1.5 text-xs font-mono">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(null);
+                            openTaskAnalysisModal(tItem);
+                          }}
+                          className="py-1 px-2.5 rounded-lg border border-gold/30 bg-gold/10 hover:bg-gold/20 text-gold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <BarChart2 size={12} className="text-gold" />
+                          <span>{tx.btnAnalyzeShort[curLang]}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(null);
+                            openTaskModal(tItem);
+                          }}
+                          className="py-1 px-2.5 rounded-lg border border-line bg-surface hover:border-gold/30 hover:text-gold text-muted flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Edit3 size={12} />
+                          <span>{tx.editTaskTitle[curLang]}</span>
+                        </button>
+                        {tItem.rep === 'diaria' && streak >= 14 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenTaskMenuId(null);
+                              openPromoteToHabitModal(tItem);
+                            }}
+                            className="py-1 px-2.5 rounded-lg bg-gradient-to-r from-amber-500/25 via-gold/30 to-amber-500/25 text-gold border border-gold/70 font-extrabold flex items-center gap-1.5 cursor-pointer animate-pulse"
+                          >
+                            <Zap size={12} className="text-gold fill-gold" />
+                            <span>{tx.btnPromoteToHabitBadge[curLang]}</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(null);
+                            requestArchiveTask(tItem);
+                          }}
+                          className="py-1 px-2.5 rounded-lg border border-line bg-surface hover:border-amber-400/40 hover:text-amber-300 text-muted flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Archive size={12} />
+                          <span>{tx.btnArchiveTask[curLang]}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(null);
+                            requestDeleteTask(tItem);
+                          }}
+                          className="py-1 px-2.5 rounded-lg border border-line bg-surface hover:border-danger/40 hover:text-danger text-muted flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+                        >
+                          <Trash2 size={12} />
+                          <span>{tx.delTaskTitle[curLang]}</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -3131,44 +3172,46 @@ export default function OpsView() {
       {/* 2. ABA DE PROJETOS ESTRATÉGICOS */}
       {activeMainTab === 'projects' && (
         <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO COMPACTO: Frentes Estratégicas */}
+          {/* TOPO UNIFICADO: Frentes Estratégicas */}
           <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <Layers size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Layers size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx.opsHeadlineProjects[curLang]}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                    {projects.filter((p) => !p.archived).length} {tx.filterActive[curLang]}
-                  </span>
-                </div>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx.opsHeadlineProjects[curLang]}
+                </span>
                 <p className="text-[11px] text-muted truncate">
                   {tx.opsSubtitleProjects[curLang]}
                 </p>
               </div>
             </div>
 
-            {/* Acesso aos Modelos da Forja */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowTemplates((prev) => !prev);
-                AF.click();
-              }}
-              className={`py-1.5 px-3 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all self-end sm:self-auto ${
-                showTemplates
-                  ? 'border-gold bg-gold/25 text-gold'
-                  : 'border-amber-500/40 bg-amber-950/30 hover:bg-amber-950/50 text-amber-300'
-              }`}
-            >
-              <Sparkles size={13} className="text-amber-400" />
-              <span>{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplates[curLang]}</span>
-              {showTemplates ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </button>
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <span className="text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
+                {tx.projectsProgressPill[curLang](
+                  projects.filter((p) => !p.archived && p.status !== 'concluido').length,
+                  projects.filter((p) => !p.archived && p.status === 'concluido').length
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTemplates((prev) => !prev);
+                  AF.click();
+                }}
+                className={`py-1.5 px-3 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 transition-all ${
+                  showTemplates
+                    ? 'border-gold bg-gold/25 text-gold'
+                    : 'border-amber-500/40 bg-amber-950/30 hover:bg-amber-950/50 text-amber-300'
+                }`}
+              >
+                <Sparkles size={13} className="text-amber-400" />
+                <span>{showTemplates ? tx.btnHideTemplatesShort[curLang] : tx.btnExploreTemplates[curLang]}</span>
+                {showTemplates ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+            </div>
           </div>
 
           {/* Sub-filtros de Projetos em Pílulas de Aço Forjado */}
@@ -3731,10 +3774,11 @@ export default function OpsView() {
                                   const done = L.isDone(pt, today());
                                   const isPtPostponed = L.isTaskPostponed(pt);
                                   const isPtOverdue = L.isTaskOverdue(pt);
+                                  const isPtMenuOpen = openLinkedTaskMenuId === pt.id;
                                   return (
                                     <div
                                       key={pt.id}
-                                      className={`flex items-center justify-between gap-1.5 p-1.5 px-2 rounded text-xs border transition-all ${
+                                      className={`flex flex-col gap-1 p-2 rounded-lg text-xs border transition-all ${
                                         done
                                           ? 'bg-surface2/40 border-line/20 opacity-60'
                                           : isPtPostponed
@@ -3744,101 +3788,135 @@ export default function OpsView() {
                                           : 'bg-surface2/60 border-line/30'
                                       }`}
                                     >
-                                      <div
-                                        className="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
-                                        onClick={() => toggleTask(pt.id)}
-                                      >
-                                        <div className={`w-3.5 h-3.5 rounded flex-none flex items-center justify-center border ${done ? 'bg-gold border-gold text-[#141414]' : 'border-line'}`}>
-                                          {done && <Check size={10} strokeWidth={3} />}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                          <span className={`truncate text-[11px] block ${done ? 'line-through text-muted' : 'text-ink'}`}>
-                                            {pt.txt}
-                                          </span>
-                                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                                            {isPtPostponed && (
-                                              <span className="text-[9px] font-mono font-bold text-amber-400 bg-amber-500/15 px-1 rounded border border-amber-500/30 flex items-center gap-0.5">
-                                                <CalendarClock size={9} />
-                                                <span>{tx.badgePostponed[curLang]} ({fmtD(pt.postponedTo)})</span>
-                                              </span>
-                                            )}
-                                            {isPtOverdue && !isPtPostponed && (
-                                              <span className="text-[9px] font-mono font-bold text-danger bg-danger/15 px-1 rounded border border-danger/30 flex items-center gap-0.5">
-                                                <AlertTriangle size={9} />
-                                                <span>{tx.badgeOverdue[curLang]}</span>
-                                              </span>
-                                            )}
+                                      <div className="flex items-center justify-between gap-1.5 w-full">
+                                        <div
+                                          className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+                                          onClick={() => toggleTask(pt.id)}
+                                        >
+                                          <button
+                                            type="button"
+                                            aria-label="Toggle task"
+                                            className={`w-4 h-4 rounded flex-none flex items-center justify-center border transition-all cursor-pointer ${
+                                              done ? 'bg-gold border-gold text-[#141414]' : 'border-line hover:border-gold'
+                                            }`}
+                                          >
+                                            {done && <Check size={11} strokeWidth={3} />}
+                                          </button>
+                                          <div className="min-w-0 flex-1">
+                                            <span className={`truncate text-xs block font-semibold ${done ? 'line-through text-muted' : 'text-ink'}`}>
+                                              {pt.txt}
+                                            </span>
+                                            <div className="flex items-center gap-1 mt-0.5 flex-wrap text-[9px] font-mono text-muted">
+                                              {isPtPostponed && (
+                                                <span className="text-amber-400 bg-amber-500/15 px-1 rounded border border-amber-500/30 font-bold flex items-center gap-0.5">
+                                                  <CalendarClock size={9} />
+                                                  <span>{tx.badgePostponed[curLang]} ({fmtD(pt.postponedTo)})</span>
+                                                </span>
+                                              )}
+                                              {isPtOverdue && !isPtPostponed && (
+                                                <span className="text-danger bg-danger/15 px-1 rounded border border-danger/30 font-bold flex items-center gap-0.5">
+                                                  <AlertTriangle size={9} />
+                                                  <span>{tx.badgeOverdue[curLang]}</span>
+                                                </span>
+                                              )}
+                                            </div>
                                           </div>
                                         </div>
+
+                                        <div className="flex items-center gap-1 flex-none">
+                                          <button
+                                            type="button"
+                                            title={tx.unlinkFromProj[curLang]}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              unlinkTask(pt.id);
+                                            }}
+                                            className="text-muted hover:text-amber-400 p-1 rounded hover:bg-surface transition-colors cursor-pointer"
+                                          >
+                                            <Unlink size={12} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            title={isPtMenuOpen ? tx.btnCollapseActions[curLang] : tx.btnMoreActions[curLang]}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(isPtMenuOpen ? null : pt.id);
+                                              AF.click();
+                                            }}
+                                            className={`p-1 rounded transition-colors cursor-pointer ${
+                                              isPtMenuOpen ? 'text-gold bg-gold/15' : 'text-muted hover:text-gold hover:bg-surface'
+                                            }`}
+                                          >
+                                            <MoreVertical size={12} />
+                                          </button>
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-1 flex-none">
-                                        <button
-                                          type="button"
-                                          title={tx.btnAnalyzeTask[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            openTaskAnalysisModal(pt);
-                                          }}
-                                          className="text-muted hover:text-gold p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <BarChart2 size={12} className="text-gold" />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title={tx.btnPostponeAction[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            openPostponeModal(pt);
-                                          }}
-                                          className="text-muted hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <CalendarClock size={12} />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title={tx.editTaskTitle[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            openTaskModal(pt);
-                                          }}
-                                          className="text-muted/60 hover:text-gold p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <Edit3 size={11} />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title={tx.unlinkFromProj[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            unlinkTask(pt.id);
-                                          }}
-                                          className="text-muted/60 hover:text-amber-400 p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <Unlink size={11} />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title={tx.btnArchiveTask[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            requestArchiveTask(pt);
-                                          }}
-                                          className="text-muted/60 hover:text-amber-300 p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <Archive size={11} />
-                                        </button>
-                                        <button
-                                          type="button"
-                                          title={tx.delTaskTitle[curLang]}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            requestDeleteTask(pt);
-                                          }}
-                                          className="text-muted/60 hover:text-danger p-0.5 transition-colors cursor-pointer"
-                                        >
-                                          <Trash2 size={11} />
-                                        </button>
-                                      </div>
+
+                                      {/* Gaveta de ações da tarefa vinculada */}
+                                      {isPtMenuOpen && (
+                                        <div className="pt-1.5 mt-0.5 border-t border-line/30 flex flex-wrap items-center gap-1 text-[10px] font-mono">
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(null);
+                                              openTaskAnalysisModal(pt);
+                                            }}
+                                            className="py-0.5 px-2 rounded border border-gold/30 bg-gold/10 text-gold flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <BarChart2 size={10} />
+                                            <span>{tx.btnAnalyzeShort[curLang]}</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(null);
+                                              openPostponeModal(pt);
+                                            }}
+                                            className="py-0.5 px-2 rounded border border-line bg-surface text-amber-300 flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <CalendarClock size={10} />
+                                            <span>{tx.btnPostponeAction[curLang]}</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(null);
+                                              openTaskModal(pt);
+                                            }}
+                                            className="py-0.5 px-2 rounded border border-line bg-surface text-muted hover:text-gold flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <Edit3 size={10} />
+                                            <span>{tx.editTaskTitle[curLang]}</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(null);
+                                              requestArchiveTask(pt);
+                                            }}
+                                            className="py-0.5 px-2 rounded border border-line bg-surface text-muted hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <Archive size={10} />
+                                            <span>{tx.btnArchiveTask[curLang]}</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setOpenLinkedTaskMenuId(null);
+                                              requestDeleteTask(pt);
+                                            }}
+                                            className="py-0.5 px-2 rounded border border-line bg-surface text-muted hover:text-danger flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <Trash2 size={10} />
+                                            <span>{tx.delTaskTitle[curLang]}</span>
+                                          </button>
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -4000,26 +4078,26 @@ export default function OpsView() {
       {/* 3. ABA DE ARQUIVO GERAL */}
       {activeMainTab === 'archive' && (
         <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO COMPACTO: Arquivo de Combate & Arsenal */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+          {/* TOPO UNIFICADO: Arquivo de Combate & Arsenal */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                <Archive size={18} />
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Archive size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx.opsHeadlineArchive[curLang]}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-surface border border-line text-muted">
-                    {projects.filter((p) => p.archived).length + tasks.filter((t) => t.archived).length} {tx.filterArchived[curLang]}
-                  </span>
-                </div>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx.opsHeadlineArchive[curLang]}
+                </span>
                 <p className="text-[11px] text-muted truncate">
                   {tx.opsSubtitleArchive[curLang]}
                 </p>
               </div>
             </div>
+            <span className="text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded bg-surface border border-line text-muted shrink-0">
+              {tx.archiveProgressPill[curLang](
+                projects.filter((p) => p.archived).length + tasks.filter((t) => t.archived).length
+              )}
+            </span>
           </div>
 
           {/* Projetos Arquivados */}
