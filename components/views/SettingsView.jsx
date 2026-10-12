@@ -384,29 +384,22 @@ export default function SettingsView() {
           ========================================================================= */}
       {showGeneral && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO GERAL */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
-                <Palette size={18} />
+          {/* TOPO UNIFICADO: Geral & Identidade Visual */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Palette size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx('headlineGeneral', 'IDENTIDADE VISUAL & STATUS DE GUERRA')}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {tx('badgeSystem', 'SISTEMA FORJA')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleGeneral', 'Customização de temas, idioma, áudio tático e alinhamento dos pilares de combate.')}
-                </p>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx('headlineGeneral', 'IDENTIDADE VISUAL & STATUS DE GUERRA')}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="px-2.5 py-1 rounded-lg bg-surface2/90 border border-line/80 text-gold font-bold">
-                🎨 {THEMES.find(t => t.id === currentTheme)?.icon} {THEMES.find(t => t.id === currentTheme)?.fallbackName}
+            <div className="flex items-center gap-1.5 flex-none text-xs font-mono">
+              <span className="text-[10px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/10 text-gold flex items-center gap-1.5">
+                <span>{THEMES.find(t => t.id === currentTheme)?.icon}</span>
+                <span className="hidden sm:inline">{THEMES.find(t => t.id === currentTheme)?.fallbackName}</span>
               </span>
             </div>
           </div>
@@ -627,36 +620,33 @@ export default function SettingsView() {
           ========================================================================= */}
       {showFeedback && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO FEEDBACK */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
-                <MessageSquarePlus size={18} />
+          {/* TOPO UNIFICADO: Sugestões & Canal do Comando */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <MessageSquarePlus size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx('headlineFeedback', 'CONSELHO DE GUERRA & CANAL DIRETO')}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {tx('badgeCommand', 'CANAL DO COMANDO')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleFeedback', 'Sugira novos recursos, relate bugs e acompanhe as respostas diretas do Comando.')}
-                </p>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx('headlineFeedback', 'CONSELHO DE GUERRA & CANAL DIRETO')}
+                </span>
               </div>
             </div>
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={fetchAdminFeedbacks}
-                className="py-1.5 px-3 rounded-lg border border-gold/40 bg-gold/15 hover:bg-gold/25 text-gold text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
-              >
-                <span>{T('fb_badge_admin', 'COMANDO · CANAL DIRETO')}</span>
-                <span className="text-xs">👁️</span>
-              </button>
-            )}
+            <div className="flex items-center gap-1.5 flex-none">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={fetchAdminFeedbacks}
+                  className="py-1 px-2.5 rounded-lg border border-gold/40 bg-gold/15 hover:bg-gold/25 text-gold text-[10px] sm:text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                  <span>{T('fb_badge_admin', 'PAINEL COMANDO')}</span>
+                  <span className="text-xs">👁️</span>
+                </button>
+              )}
+              <span className="text-[10px] sm:text-xs font-mono font-bold px-2 py-1 rounded-lg border border-gold/30 bg-gold/10 text-gold">
+                {feedbackHistory.length} {T('fb_records_unit', 'envios')}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
@@ -921,28 +911,20 @@ export default function SettingsView() {
           ========================================================================= */}
       {showSecurity && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO SEGURANÇA */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
-                <Shield size={18} />
+          {/* TOPO UNIFICADO: Blindagem & Acesso */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Shield size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx('headlineSecurity', 'BLINDAGEM, NOTIFICAÇÕES & GUARDIÃO')}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {tx('badgeShield', 'BLINDAGEM ATIVA')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleSecurity', 'Bloqueio por PIN de 4 dígitos, motor duplo de alertas e parceiro de responsabilidade.')}
-                </p>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx('headlineSecurity', 'BLINDAGEM, NOTIFICAÇÕES & GUARDIÃO')}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+            <div className="flex items-center gap-1.5 flex-none text-xs font-mono">
+              <span className={`text-[10px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-lg border ${
                 st.pin ? 'bg-ok/15 border-ok/40 text-ok' : 'bg-surface2/90 border-line/80 text-muted'
               }`}>
                 {st.pin ? '🔒 PIN Blindado' : '🔓 Sem PIN'}
@@ -1177,31 +1159,23 @@ export default function SettingsView() {
           ========================================================================= */}
       {showData && (
         <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
-          {/* BANNER TÁTICO DADOS */}
-          <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121217] to-[#17151F] shadow-sm select-none">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
-                <Database size={18} />
+          {/* TOPO UNIFICADO: Conta & Soberania de Dados */}
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-gold/40 flex items-center justify-center text-gold flex-none">
+                <Database size={16} />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase">
-                    {tx('headlineData', 'SOBERANIA DE DADOS, NUVEM & CÓDIGO')}
-                  </span>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-gold/15 text-gold border-gold/30">
-                    {tx('badgeSovereignty', 'SOBERANIA TOTAL')}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted truncate mt-0.5">
-                  {tx('subtitleData', 'Sincronização na nuvem, backups em JSON, frases customizadas e controle de conta.')}
-                </p>
+                <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
+                  {tx('headlineData', 'SOBERANIA DE DADOS, NUVEM & CÓDIGO')}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+            <div className="flex items-center gap-1.5 flex-none text-xs font-mono">
+              <span className={`text-[10px] sm:text-xs font-mono font-bold px-2.5 py-1 rounded-lg border ${
                 cloud.CLOUD ? 'bg-ok/15 border-ok/40 text-ok' : 'bg-gold/15 border-gold/40 text-gold'
               }`}>
-                {cloud.CLOUD ? '☁️ Nuvem Conectada' : '💾 Modo Local'}
+                {cloud.CLOUD ? '☁️ Nuvem' : '💾 Local'}
               </span>
             </div>
           </div>
