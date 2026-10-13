@@ -122,6 +122,7 @@ export default function QgView() {
   const nt = tiers.find((x) => x.min > d) || null;
 
 
+  const ALLH = cxHabits(lang, L.allH(S));
   /* Hábitos Ativos e Helpers para Matriz na Aba Inicial */
   const activeIds = (S && S.forge && Array.isArray(S.forge.active)) ? S.forge.active : [];
   const activeHabits = useMemo(() => {
@@ -222,7 +223,6 @@ export default function QgView() {
       localStorage.setItem('fg_last_celebrated_tier', String(currentTierMin));
     } catch (e) {}
   }, [currentTierMin, tier]);
-  const ALLH = cxHabits(lang, L.allH(S));
   const TR = (x, i) => cx(lang, 'ob', 'trig' + i) || x;
   const fallLbl = (x) => { const k = t('fall_' + x); return k === 'fall_' + x ? (FAIL_LBL[x] || x) : k; };
 
