@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight, TableProperties, LayoutGrid } from 'lucide-react';
+import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight, TableProperties, LayoutGrid, Flame, Sparkles, Swords, Calendar, Hammer, Target } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Chk } from '@/components/ui';
 import { FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS } from '@/lib/data';
@@ -12,6 +12,7 @@ import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 import Warrior3DCard from '@/components/Warrior3DCard';
 import WeeklyPillarsMatrix from './WeeklyPillarsMatrix';
+import HabitSpreadsheetMatrix from './HabitSpreadsheetMatrix';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { getTodayCombatTimeline } from '@/lib/notify';
 
@@ -102,13 +103,111 @@ export default function QgView() {
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [showCompletedInSchedule, setShowCompletedInSchedule] = useState(false);
-  const [pillarsViewMode, setPillarsViewMode] = useState('daily');
+  const [masterViewMode, setMasterViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('fg_qg_view_mode') || 'spreadsheet';
+      } catch {
+        return 'spreadsheet';
+      }
+    }
+    return 'spreadsheet';
+  });
+  const [pillarsViewMode, setPillarsViewMode] = useState('matrix');
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
   const d = L.progressDays(S);
   const tier = tiers.find((x) => x.min === L.tierNow(S).min) || L.tierNow(S);
   const nt = tiers.find((x) => x.min > d) || null;
+
+
+  /* Hábitos Ativos e Helpers para Matriz na Aba Inicial */
+  const activeIds = (S && S.forge && Array.isArray(S.forge.active)) ? S.forge.active : [];
+  const activeHabits = useMemo(() => {
+    return activeIds.map((id) => {
+      const found = ALLH.find((h) => String(h.id) === String(id));
+      if (found) return found;
+      return {
+        id,
+        n: curLang === 'en' ? `Habit #${id}` : curLang === 'es' ? `Hábito #${id}` : `Hábito #${id}`,
+        name: curLang === 'en' ? `Habit #${id}` : curLang === 'es' ? `Hábito #${id}` : `Hábito #${id}`,
+        icon: '⚡',
+        custom: true,
+      };
+    });
+  }, [activeIds, ALLH, curLang]);
+
+  const toggleRetroHabit = (habitId, dateStr) => {
+    const doneMap = (S && S.forge && S.forge.done) || {};
+    const failMap = (S && S.forge && S.forge.failed) || {};
+    const listDone = doneMap[dateStr] || [];
+    const listFail = failMap[dateStr] || [];
+    const isD = listDone.some((x) => String(x) === String(habitId));
+    const isF = listFail.some((x) => String(x) === String(habitId));
+
+    update((s) => {
+      s.forge.done = s.forge.done || {};
+      s.forge.failed = s.forge.failed || {};
+      const dList = s.forge.done[dateStr] = s.forge.done[dateStr] || [];
+      const fList = s.forge.failed[dateStr] = s.forge.failed[dateStr] || [];
+
+      if (!isD && !isF) {
+        dList.push(habitId);
+      } else if (isD) {
+        const dIdx = dList.findIndex((x) => String(x) === String(habitId));
+        if (dIdx >= 0) dList.splice(dIdx, 1);
+        fList.push(habitId);
+      } else {
+        const fIdx = fList.findIndex((x) => String(x) === String(habitId));
+        if (fIdx >= 0) fList.splice(fIdx, 1);
+      }
+    });
+
+    if (!isD && !isF) {
+      AF.click();
+    } else if (isD) {
+      AF.tone(110, 0.35, 'sine', 0.18, 0, 55);
+    } else {
+      AF.click();
+    }
+  };
+
+  const getHabitStreak = (habitId) => {
+    try {
+      const doneMap = (S && S.forge && S.forge.done) || {};
+      const todayStr = today();
+      const isDoneToday = (doneMap[todayStr] || []).some((x) => String(x) === String(habitId));
+      let streak = isDoneToday ? 1 : 0;
+      let offset = 1;
+      while (offset < 365) {
+        const past = new Date(Date.now() - offset * 86400000);
+        const ds = dstr(past);
+        const list = doneMap[ds] || [];
+        if (list.some((x) => String(x) === String(habitId))) {
+          streak++;
+          offset++;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    } catch {
+      return 0;
+    }
+  };
+
+  const getHabitCategory = (h) => {
+    if (h && h.category && ['body', 'mind', 'mission', 'spirit'].includes(h.category)) {
+      return h.category;
+    }
+    const idStr = String(h ? h.id : '');
+    const nameLower = String((h && (h.n || h.name || h.title)) || '').toLowerCase();
+    if (['1', '2', '6', '11'].includes(idStr) || nameLower.includes('treino') || nameLower.includes('água') || nameLower.includes('sono') || nameLower.includes('sol')) return 'body';
+    if (['3', '5', '8', '12', '14'].includes(idStr) || nameLower.includes('livro') || nameLower.includes('leitura') || nameLower.includes('medita') || nameLower.includes('estudo')) return 'mind';
+    if (['4', '9', '15', '16'].includes(idStr) || nameLower.includes('trabalho') || nameLower.includes('foco') || nameLower.includes('meta') || nameLower.includes('missão')) return 'mission';
+    return 'spirit';
+  };
 
   /* Detecção automática de subida de nível */
   const currentTierMin = tier && typeof tier.min === 'number' ? tier.min : 0;
@@ -1076,26 +1175,131 @@ export default function QgView() {
     );
   };
 
+
+  const MASTER_I18N = {
+    viewSpreadsheet: { pt: 'Planilha Geral', en: 'Master Sheet', es: 'Planilla General' },
+    viewClassic: { pt: 'Visual Clássico', en: 'Classic View', es: 'Vista Clásica' },
+    sheetPillarsTitle: { pt: '1. OS 3 PILARES DE COMBATE (SEMANA)', en: '1. THE 3 COMBAT PILLARS (WEEKLY)', es: '1. LOS 3 PILARES DE COMBATE (SEMANAL)' },
+    sheetHabitsTitle: { pt: '2. HÁBITOS DA FORJA (SEMANA)', en: '2. FORGE HABITS (WEEKLY)', es: '2. HÁBITOS DE LA FORJA (SEMANAL)' },
+    sheetScheduleTitle: { pt: '3. AGENDA & OPERAÇÕES DO DIA', en: '3. TODAY\'S SCHEDULE & OPS', es: '3. CRONOGRAMA Y OPERACIONES DEL DÍA' },
+    goToWarriorTab: { pt: 'Ver Guerreiro 3D & Armaduras', en: 'View 3D Warrior & Armors', es: 'Ver Guerrero 3D y Armaduras' },
+  };
+
   return (
-    <div className="grid gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-12 lg:pb-6">
-      {/* NO MOBILE: OPÇÃO A (Super Otimizada, Brasão / Torres 3D, Agenda Operacional) */}
-      <div className="lg:hidden w-full min-w-0 max-w-full">
-        {renderMobileOneScreen()}
-      </div>
-
-      {/* NO DESKTOP: GRID EM DUAS COLUNAS PERFEITAMENTE BALANCEADO */}
-      <div className="hidden lg:grid lg:grid-cols-12 gap-3.5 items-start">
-        {/* Coluna Esquerda Desktop: As 3 Torres 3D dos Pilares com Frase do Dia e Relógio 24h Integrados */}
-        <div className="lg:col-span-7 flex flex-col gap-3.5">
-          {renderPillars3DTowers(true)}
+    <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-16 lg:pb-8">
+      {/* BARRA SUPERIOR DE MODO: PLANILHA GERAL vs MODO CLÁSSICO */}
+      <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl border border-gold/30 bg-[#14131C] select-none">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="h-8 w-8 rounded-lg bg-gold/15 border border-gold/35 flex items-center justify-center text-gold flex-none">
+            <TableProperties size={16} />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
+              {curLang === 'en' ? 'HQ MASTER DASHBOARD' : curLang === 'es' ? 'PANEL MAESTRO QG' : 'PAINEL CENTRAL QG'}
+            </span>
+            <span className="text-[9.5px] text-muted font-mono truncate">
+              {masterViewMode === 'spreadsheet'
+                ? (curLang === 'en' ? 'Spreadsheet Mode: 3 Pillars, Habits & Operations unified' : curLang === 'es' ? 'Modo Planilla: 3 Pilares, Hábitos y Operaciones unificados' : 'Modo Planilha: 3 Pilares, Hábitos e Operações unificados')
+                : (curLang === 'en' ? 'Classic Mode with Monolith towers' : curLang === 'es' ? 'Modo clásico con torres del monolito' : 'Modo clássico com as torres da forja')}
+            </span>
+          </div>
         </div>
 
-        {/* Coluna Direita Desktop: Registro Diário de Combate e Agenda Operacional de Hoje */}
-        <div className="lg:col-span-5 flex flex-col gap-3.5">
-          {renderDailyCheckin()}
-          {renderCombatScheduleMiniCard()}
+        <div className="flex items-center gap-1.5 flex-none flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof setTab === 'function') setTab('stats');
+            }}
+            title={MASTER_I18N.goToWarriorTab[curLang]}
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-[10px] font-mono font-bold transition-all cursor-pointer"
+          >
+            <Swords size={12} />
+            <span>{curLang === 'en' ? '3D WARRIOR' : curLang === 'es' ? 'GUERRERO 3D' : 'GUERREIRO 3D'}</span>
+          </button>
+
+          {/* Toggle Planilha / Clássico */}
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
+            <button
+              type="button"
+              onClick={() => {
+                AF.click();
+                setMasterViewMode('spreadsheet');
+                try { localStorage.setItem('fg_qg_view_mode', 'spreadsheet'); } catch {}
+              }}
+              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                masterViewMode === 'spreadsheet'
+                  ? 'bg-gold text-black shadow-xs font-black'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              <TableProperties size={12} />
+              <span>{MASTER_I18N.viewSpreadsheet[curLang]}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                AF.click();
+                setMasterViewMode('classic');
+                try { localStorage.setItem('fg_qg_view_mode', 'classic'); } catch {}
+              }}
+              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                masterViewMode === 'classic'
+                  ? 'bg-gold text-black shadow-xs font-black'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              <LayoutGrid size={12} />
+              <span>{MASTER_I18N.viewClassic[curLang]}</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* MODO PLANILHA GERAL (ESTILO HABITFLOW / NOTION MILITAR) */}
+      {masterViewMode === 'spreadsheet' ? (
+        <div className="flex flex-col gap-3.5 w-full min-w-0 animate-fade-in">
+          {/* SEÇÃO 1: OS 3 PILARES DE COMBATE EM MATRIZ SEMANAL */}
+          <div className="w-full">
+            <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} />
+          </div>
+
+          {/* SEÇÃO 2: HÁBITOS DA FORJA EM MATRIZ SEMANAL */}
+          <div className="w-full">
+            <HabitSpreadsheetMatrix
+              habits={activeHabits}
+              S={S}
+              curLang={curLang}
+              onToggleDay={toggleRetroHabit}
+              onCreateHabit={() => setTab('forge')}
+              onOpenReserve={() => setTab('forge')}
+              getHabitStreak={getHabitStreak}
+              getHabitCategory={getHabitCategory}
+            />
+          </div>
+
+          {/* SEÇÃO 3: AGENDA OPERACIONAL & TAREFAS DO DIA */}
+          <div className="w-full">
+            {renderCombatScheduleMiniCard()}
+          </div>
+        </div>
+      ) : (
+        /* MODO CLÁSSICO COM GUERREIRO 3D E ESCUDOS */
+        <>
+          <div className="lg:hidden w-full min-w-0 max-w-full">
+            {renderMobileOneScreen()}
+          </div>
+          <div className="hidden lg:grid lg:grid-cols-12 gap-3.5 items-start">
+            <div className="lg:col-span-7 flex flex-col gap-3.5">
+              {renderPillars3DTowers(true)}
+            </div>
+            <div className="lg:col-span-5 flex flex-col gap-3.5">
+              {renderDailyCheckin()}
+              {renderCombatScheduleMiniCard()}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Modal de Celebração de Subida de Nível */}
       {levelUpModalTier && (
@@ -1123,4 +1327,5 @@ export default function QgView() {
       )}
     </div>
   );
+
 }

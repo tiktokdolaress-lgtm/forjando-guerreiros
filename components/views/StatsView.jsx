@@ -25,6 +25,10 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import Leaderboard from '@/components/Leaderboard';
+import Warrior3DCard from '@/components/Warrior3DCard';
+import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
+import { TIERS } from '@/lib/data';
+import { cxTiers } from '@/lib/content-i18n';
 import { Card, K, Empty, Chk } from '@/components/ui';
 import * as L from '@/lib/logic';
 import { cx, cxHabits } from '@/lib/content-i18n';
@@ -82,6 +86,7 @@ const STATS_I18N = {
 };
 
 const STATS_CATEGORIES = [
+  { id: 'warrior', key: 'cat_warrior', label: 'Guerreiro 3D & Armaduras', icon: Swords },
   { id: 'general', key: 'cat_general', label: 'Geral & Consistência', icon: BarChart2 },
   { id: 'timeline', key: 'cat_timeline', label: 'Linha do Tempo', icon: CalendarDays },
   { id: 'risk', key: 'cat_risk', label: 'Risco & S.O.S', icon: ShieldAlert },
@@ -350,6 +355,7 @@ export default function StatsView() {
   const [hmOff, setHmOff] = useState(0);
   const [hall, setHall] = useState(null);
   const [timelineRange, setTimelineRange] = useState(30);
+  const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [customStart, setCustomStart] = useState(() => dstr(new Date(Date.now() - 29 * 86400000)));
   const [customEnd, setCustomEnd] = useState(() => today());
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -851,6 +857,13 @@ export default function StatsView() {
   };
 
   const localeCode = { pt: 'pt-BR', en: 'en-US', es: 'es-ES' };
+  const tiers = cxTiers(lang, TIERS);
+  const tier = tiers.find((x) => x.min === L.tierNow(S).min) || L.tierNow(S);
+  const nt = tiers.find((x) => x.min > d) || null;
+  const streak = L.currentStreak(S);
+  const lvlPct = nt ? Math.min(100, ((d - tier.min) / (nt.min - tier.min)) * 100) : 100;
+  const lvlTxt = nt ? (lang === 'en' ? (nt.min - d) + ' days to ' + nt.name : lang === 'es' ? (nt.min - d) + ' días para ' + nt.name : (nt.min - d) + ' dias para ' + nt.name) : (lang === 'en' ? 'MAX TIER REACHED' : lang === 'es' ? 'NIVEL MÁXIMO' : 'NÍVEL MÁXIMO');
+
   const currentCategory = STATS_CATEGORIES.find((c) => c.id === activeCategory) || STATS_CATEGORIES[0];
   const CurrentIcon = currentCategory.icon;
 
@@ -988,6 +1001,58 @@ export default function StatsView() {
           )}
         </div>
       </div>
+
+      
+      {/* CATEGORIA 0: GUERREIRO 3D & ARMADURAS MEDIEVAIS */}
+      {activeCategory === 'warrior' && (
+        <div className="flex flex-col gap-4 animate-in fade-in duration-150 w-full max-w-full min-w-0">
+          <div className="w-full flex items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
+                <Swords size={16} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate">
+                    {lang === 'en' ? '3D WARRIOR & 11 MEDIEVAL ARMORS' : lang === 'es' ? 'GUERRERO 3D Y 11 ARMADURAS MEDIEVALES' : 'O GUERREIRO 3D & AS 11 ARMADURAS'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted truncate">
+                  {lang === 'en' ? 'Rotate, inspect 3D WebGL armor or switch to lightweight Medieval Crest.' : lang === 'es' ? 'Gira e inspecciona la armadura 3D o cambia al Blasón Medieval.' : 'Gire, inspecione a armadura 3D interativa ou alterne para o Brasão Medieval.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { AF.click(); setShowEvolutionGallery(true); }}
+              className="px-2.5 py-1 rounded-lg border border-gold/50 bg-gold/15 text-gold text-[10.5px] font-mono font-bold hover:bg-gold/25 transition-all cursor-pointer flex items-center gap-1 flex-none shadow-sm"
+            >
+              <Sparkles size={12} />
+              <span>{lang === 'en' ? 'ARMORS' : lang === 'es' ? 'ARMADURAS' : 'ARMADURAS'}</span>
+            </button>
+          </div>
+
+          <div className="w-full">
+            <Warrior3DCard
+              tier={tier}
+              d={d}
+              nt={nt}
+              curLang={lang}
+              purity={S.purity}
+              streak={streak}
+              sosWins={L.sosWins(S)}
+              pillarsData={{
+                ret: { days: d, timer: d + 'd' },
+                porn: { days: d, timer: d + 'd' },
+                mast: { days: d, timer: d + 'd' },
+              }}
+              lvlPct={lvlPct}
+              lvlTxt={lvlTxt}
+              onGoToArmors={() => setShowEvolutionGallery(true)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* CATEGORIA 1: GERAL & CONSISTÊNCIA */}
       {activeCategory === 'general' && (
@@ -1614,6 +1679,15 @@ export default function StatsView() {
           {/* Leaderboard Oficial de Guerra & Retenção */}
           <Leaderboard onNavigateToSettings={() => { if (typeof setTab === 'function') setTab('settings'); }} />
         </div>
+      )}
+      {showEvolutionGallery && (
+        <WarriorEvolutionGalleryModal
+          tiers={tiers}
+          currentTier={tier}
+          currentDays={d}
+          lang={lang}
+          onClose={() => setShowEvolutionGallery(false)}
+        />
       )}
     </div>
   );
