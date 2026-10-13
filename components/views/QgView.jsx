@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight } from 'lucide-react';
+import { Trophy, ShieldCheck, Check, X, Zap, Clock, ArrowRight, TableProperties, LayoutGrid } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Chk } from '@/components/ui';
 import { FAIL_PEN, TRIGGERS, FAIL_LBL, TIERS } from '@/lib/data';
@@ -11,6 +11,7 @@ import { today, fdmy, pad, yesterday } from '@/lib/utils';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
 import Warrior3DCard from '@/components/Warrior3DCard';
+import WeeklyPillarsMatrix from './WeeklyPillarsMatrix';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { getTodayCombatTimeline } from '@/lib/notify';
 
@@ -101,6 +102,7 @@ export default function QgView() {
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
   const [showEvolutionGallery, setShowEvolutionGallery] = useState(false);
   const [showCompletedInSchedule, setShowCompletedInSchedule] = useState(false);
+  const [pillarsViewMode, setPillarsViewMode] = useState('daily');
 
   /* i18n */
   const tiers = cxTiers(lang, TIERS);
@@ -509,123 +511,163 @@ export default function QgView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-none">
-            <button
-              type="button"
-              className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
-              onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); }}
-              title={t('prev_d')}
-            >
-              ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
-            </button>
-            {ciDate !== today() && (
+          <div className="flex items-center gap-1.5 flex-none flex-wrap">
+            {/* Seletor Modo Diário / Planilha Semanal */}
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
               <button
                 type="button"
-                className="text-[10px] text-gold px-2 py-1 rounded-lg border border-gold/40 bg-gold/15 font-mono font-bold transition-all cursor-pointer"
-                onClick={() => { AF.click(); setCiDate(today()); }}
-              >
-                {curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'} ▶
-              </button>
-            )}
-            <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-lg border ${
-              isAllShielded ? 'border-gold/50 bg-gold/25 text-gold shadow-sm' : 'border-line bg-surface text-muted'
-            }`}>
-              {donePil}/{totPil} {curLang === 'en' ? 'SHIELDS' : curLang === 'es' ? 'ESCUDOS' : 'ESCUDOS'}
-            </span>
-          </div>
-        </div>
-
-        {/* Carga Tática Integrada: Mini Barra de Foco e Energia */}
-        <div className="mb-2.5 px-2 py-1.5 rounded-lg bg-black/40 border border-line/40 flex flex-col gap-1">
-          <div className="flex items-center justify-between text-[9.5px] font-mono text-muted">
-            <span className="flex items-center gap-1 text-gold/90 font-bold truncate">
-              <Zap size={11} className="text-gold shrink-0" />
-              <span>{tTx.title[curLang]}:</span>
-              <span className="text-stone-300 font-normal truncate">
-                {energyPct >= 100 ? tTx.subFull[curLang] : energyPct > 0 ? tTx.subAdvanced[curLang] : tTx.subZero[curLang]}
-              </span>
-            </span>
-            <span className="font-black text-gold ml-1 shrink-0">{energyPct}%</span>
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-[#101015] border border-line/60 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                energyPct >= 100
-                  ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]'
-                  : 'bg-gradient-to-r from-amber-600 via-gold to-yellow-300'
-              }`}
-              style={{ width: `${Math.max(energyPct, 2)}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Os 3 Escudos Interativos de 1 Toque Direto (3 Colunas Lado a Lado) */}
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-          {reqPil.map((k) => {
-            const isChecked = !!cView[k];
-            const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
-            const failTypes = String(cView.fail || '').split('+').filter(Boolean);
-            const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
-            const conf = SHIELD_I18N[k] || {
-              icon: '⚔️',
-              shortName: { pt: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), en: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), es: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3') },
-              sub: { pt: '', en: '', es: '' },
-            };
-
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => setCI(k, !isChecked, ciDate)}
-                className={`group flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-xl border text-center transition-all active:scale-[0.96] cursor-pointer min-h-[94px] select-none ${
-                  isChecked
-                    ? 'border-gold/70 bg-gradient-to-b from-gold/25 via-amber-500/10 to-[#14121a] shadow-[0_2px_12px_rgba(255,200,70,0.18)]'
-                    : isFailed
-                    ? 'border-danger/70 bg-danger/15 shadow-[0_2px_10px_rgba(239,68,68,0.15)]'
-                    : 'border-line/80 bg-surface hover:border-gold/50 hover:bg-surface2'
+                onClick={() => { AF.click(); setPillarsViewMode('daily'); }}
+                title={curLang === 'en' ? 'Daily Shields' : curLang === 'es' ? 'Escudos Diarios' : 'Escudos Diários'}
+                className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                  pillarsViewMode === 'daily'
+                    ? 'bg-gold text-black shadow-xs font-black'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
-                {/* Ícone */}
-                <div className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-sm sm:text-base transition-all ${
-                  isChecked
-                    ? 'border-gold bg-gold text-[#121214] font-black shadow-md scale-105'
-                    : isFailed
-                    ? 'border-danger bg-danger/25 text-danger font-black'
-                    : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50 group-hover:text-gold'
-                }`}>
-                  {isChecked ? '✓' : conf.icon}
-                </div>
-
-                {/* Nome do Pilar */}
-                <div className="flex flex-col items-center mt-1 w-full min-w-0">
-                  <span className={`text-[11px] sm:text-xs font-bold leading-tight truncate w-full ${
-                    isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
-                  }`}>
-                    {conf.shortName[curLang] || conf.shortName.pt}
-                  </span>
-                  <span className="text-[9px] text-muted/80 truncate w-full mt-0.5">
-                    {conf.sub[curLang] || conf.sub.pt}
-                  </span>
-                </div>
-
-                {/* Tag de Status */}
-                <span className={`mt-1 px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider w-full truncate border ${
-                  isChecked
-                    ? 'border-gold/50 bg-gold/20 text-gold shadow-sm'
-                    : isFailed
-                    ? 'border-danger/50 bg-danger/25 text-danger'
-                    : 'border-line bg-surface2 text-muted group-hover:text-gold group-hover:border-gold/30'
-                }`}>
-                  {isChecked
-                    ? (curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO')
-                    : isFailed
-                    ? (curLang === 'en' ? 'FALL' : curLang === 'es' ? 'CAÍDO' : 'FALHOU')
-                    : (curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR')}
-                </span>
+                <LayoutGrid size={11} />
+                <span>{curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'}</span>
               </button>
-            );
-          })}
+              <button
+                type="button"
+                onClick={() => { AF.click(); setPillarsViewMode('matrix'); }}
+                title={curLang === 'en' ? 'Weekly Matrix' : curLang === 'es' ? 'Matriz Semanal' : 'Matriz Semanal'}
+                className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                  pillarsViewMode === 'matrix'
+                    ? 'bg-gold text-black shadow-xs font-black'
+                    : 'text-muted hover:text-ink'
+                }`}
+              >
+                <TableProperties size={11} />
+                <span>{curLang === 'en' ? 'Sheet' : curLang === 'es' ? 'Planilla' : 'Planilha'}</span>
+              </button>
+            </div>
+
+            {pillarsViewMode === 'daily' && (
+              <>
+                <button
+                  type="button"
+                  className="text-[10px] text-muted hover:text-gold px-2 py-1 rounded-lg border border-line bg-surface font-mono font-bold transition-all cursor-pointer"
+                  onClick={() => { AF.click(); setCiDate(yesterday(ciDate)); }}
+                  title={t('prev_d')}
+                >
+                  ◀ {curLang === 'en' ? 'Yesterday' : curLang === 'es' ? 'Ayer' : 'Ontem'}
+                </button>
+                {ciDate !== today() && (
+                  <button
+                    type="button"
+                    className="text-[10px] text-gold px-2 py-1 rounded-lg border border-gold/40 bg-gold/15 font-mono font-bold transition-all cursor-pointer"
+                    onClick={() => { AF.click(); setCiDate(today()); }}
+                  >
+                    {curLang === 'en' ? 'Today' : curLang === 'es' ? 'Hoy' : 'Hoje'} ▶
+                  </button>
+                )}
+                <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-lg border ${
+                  isAllShielded ? 'border-gold/50 bg-gold/25 text-gold shadow-sm' : 'border-line bg-surface text-muted'
+                }`}>
+                  {donePil}/{totPil} {curLang === 'en' ? 'SHIELDS' : curLang === 'es' ? 'ESCUDOS' : 'ESCUDOS'}
+                </span>
+              </>
+            )}
+          </div>
         </div>
+
+        {pillarsViewMode === 'matrix' ? (
+          <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} />
+        ) : (
+          <>
+            {/* Carga Tática Integrada: Mini Barra de Foco e Energia */}
+            <div className="mb-2.5 px-2 py-1.5 rounded-lg bg-black/40 border border-line/40 flex flex-col gap-1">
+              <div className="flex items-center justify-between text-[9.5px] font-mono text-muted">
+                <span className="flex items-center gap-1 text-gold/90 font-bold truncate">
+                  <Zap size={11} className="text-gold shrink-0" />
+                  <span>{tTx.title[curLang]}:</span>
+                  <span className="text-stone-300 font-normal truncate">
+                    {energyPct >= 100 ? tTx.subFull[curLang] : energyPct > 0 ? tTx.subAdvanced[curLang] : tTx.subZero[curLang]}
+                  </span>
+                </span>
+                <span className="font-black text-gold ml-1 shrink-0">{energyPct}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-[#101015] border border-line/60 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    energyPct >= 100
+                      ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]'
+                      : 'bg-gradient-to-r from-amber-600 via-gold to-yellow-300'
+                  }`}
+                  style={{ width: `${Math.max(energyPct, 2)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Os 3 Escudos Interativos de 1 Toque Direto (3 Colunas Lado a Lado) */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {reqPil.map((k) => {
+                const isChecked = !!cView[k];
+                const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
+                const failTypes = String(cView.fail || '').split('+').filter(Boolean);
+                const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+                const conf = SHIELD_I18N[k] || {
+                  icon: '⚔️',
+                  shortName: { pt: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), en: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3'), es: t(k === 'p' ? 'c1' : k === 'm' ? 'c2' : 'c3') },
+                  sub: { pt: '', en: '', es: '' },
+                };
+
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setCI(k, !isChecked, ciDate)}
+                    className={`group flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-xl border text-center transition-all active:scale-[0.96] cursor-pointer min-h-[94px] select-none ${
+                      isChecked
+                        ? 'border-gold/70 bg-gradient-to-b from-gold/25 via-amber-500/10 to-[#14121a] shadow-[0_2px_12px_rgba(255,200,70,0.18)]'
+                        : isFailed
+                        ? 'border-danger/70 bg-danger/15 shadow-[0_2px_10px_rgba(239,68,68,0.15)]'
+                        : 'border-line/80 bg-surface hover:border-gold/50 hover:bg-surface2'
+                    }`}
+                  >
+                    {/* Ícone */}
+                    <div className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-lg border text-sm sm:text-base transition-all ${
+                      isChecked
+                        ? 'border-gold bg-gold text-[#121214] font-black shadow-md scale-105'
+                        : isFailed
+                        ? 'border-danger bg-danger/25 text-danger font-black'
+                        : 'border-[#383844] bg-[#1C1C24] text-muted group-hover:border-gold/50 group-hover:text-gold'
+                    }`}>
+                      {isChecked ? '✓' : conf.icon}
+                    </div>
+
+                    {/* Nome do Pilar */}
+                    <div className="flex flex-col items-center mt-1 w-full min-w-0">
+                      <span className={`text-[11px] sm:text-xs font-bold leading-tight truncate w-full ${
+                        isChecked ? 'text-gold' : isFailed ? 'text-danger' : 'text-[#EDE5D5]'
+                      }`}>
+                        {conf.shortName[curLang] || conf.shortName.pt}
+                      </span>
+                      <span className="text-[9px] text-muted/80 truncate w-full mt-0.5">
+                        {conf.sub[curLang] || conf.sub.pt}
+                      </span>
+                    </div>
+
+                    {/* Tag de Status */}
+                    <span className={`mt-1 px-1.5 py-0.5 rounded text-[8.5px] sm:text-[9px] font-mono font-black uppercase tracking-wider w-full truncate border ${
+                      isChecked
+                        ? 'border-gold/50 bg-gold/20 text-gold shadow-sm'
+                        : isFailed
+                        ? 'border-danger/50 bg-danger/25 text-danger'
+                        : 'border-line bg-surface2 text-muted group-hover:text-gold group-hover:border-gold/30'
+                    }`}>
+                      {isChecked
+                        ? (curLang === 'en' ? 'SHIELDED' : curLang === 'es' ? 'BLINDADO' : 'BLINDADO')
+                        : isFailed
+                        ? (curLang === 'en' ? 'FALL' : curLang === 'es' ? 'CAÍDO' : 'FALHOU')
+                        : (curLang === 'en' ? 'MARK' : curLang === 'es' ? 'MARCAR' : 'MARCAR')}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Selo de Vitória Se Hoje For 100% Blindado */}
         {isAllShielded && (

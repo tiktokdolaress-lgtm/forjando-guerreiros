@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target } from 'lucide-react';
+import { Plus, Flame, Clock, Check, X, ChevronDown, ChevronUp, AlertTriangle, ShieldCheck, Sparkles, CalendarDays, Edit3, Trash2, Archive, ArchiveRestore, MoreVertical, Shield, Play, Lock, Eye, CheckCircle2, Zap, Compass, ShieldAlert, Target, TableProperties, LayoutGrid } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { Card, K, Empty } from '@/components/ui';
 import { FORGE_RULES, DEFAULT_HABITS, TIERS } from '@/lib/data';
@@ -10,6 +10,7 @@ import { AF } from '@/lib/audio';
 import { today, fdmy, dstr, fmtD, setLocaleLang } from '@/lib/utils';
 import WarriorLevelUpModal from '@/components/WarriorLevelUpModal';
 import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryModal';
+import HabitSpreadsheetMatrix from './HabitSpreadsheetMatrix';
 
 /* Dicionário Internacional dos Efeitos Biológicos e Mentais (PT / EN / ES) */
 const BIO_EFFECTS_I18N = {
@@ -607,6 +608,16 @@ export default function ForgeView() {
   const [showNegligenceDetails, setShowNegligenceDetails] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [levelUpModalTier, setLevelUpModalTier] = useState(null);
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('fg_forge_view_mode') || 'spreadsheet';
+      } catch {
+        return 'spreadsheet';
+      }
+    }
+    return 'spreadsheet';
+  });
 
   /* Tiers e Regras Traduzidas */
   const CURRENT_TIERS = cxTiers(curLang, TIERS);
@@ -1733,33 +1744,88 @@ export default function ForgeView() {
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <K className="mb-0">{LBL.activeInProtocolTitle[curLang]} ({activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.slotsWord[curLang]})</K>
 
-              {activeHabits.length > 1 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Seletor Modo Planilha / Modo Cards */}
                 <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
-                  {[
-                    { id: 'pending', label: `${LBL.activeFilterPending[curLang]} (${activeHabits.length - completedHabitsCount})` },
-                    { id: 'done', label: `${LBL.activeFilterDone[curLang]} (${completedHabitsCount})` },
-                    { id: 'all', label: `${LBL.activeFilterAll[curLang]} (${activeHabits.length})` },
-                  ].map((btn) => (
-                    <button
-                      key={btn.id}
-                      type="button"
-                      onClick={() => setActiveFilter(btn.id)}
-                      className={`text-[9.5px] font-mono px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
-                        activeFilter === btn.id
-                          ? 'bg-gold text-black shadow-xs'
-                          : 'text-muted hover:text-ink'
-                      }`}
-                    >
-                      {btn.label}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      AF.click();
+                      setViewMode('spreadsheet');
+                      try { localStorage.setItem('fg_forge_view_mode', 'spreadsheet'); } catch {}
+                    }}
+                    title={curLang === 'en' ? 'Spreadsheet Matrix View' : curLang === 'es' ? 'Vista de Planilla' : 'Modo Planilha / Matriz'}
+                    className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                      viewMode === 'spreadsheet'
+                        ? 'bg-gold text-black shadow-xs font-black'
+                        : 'text-muted hover:text-ink'
+                    }`}
+                  >
+                    <TableProperties size={12} />
+                    <span>{curLang === 'en' ? 'Sheet' : curLang === 'es' ? 'Planilla' : 'Planilha'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      AF.click();
+                      setViewMode('cards');
+                      try { localStorage.setItem('fg_forge_view_mode', 'cards'); } catch {}
+                    }}
+                    title={curLang === 'en' ? 'Cards View' : curLang === 'es' ? 'Vista de Tarjetas' : 'Modo Cards'}
+                    className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                      viewMode === 'cards'
+                        ? 'bg-gold text-black shadow-xs font-black'
+                        : 'text-muted hover:text-ink'
+                    }`}
+                  >
+                    <LayoutGrid size={12} />
+                    <span>{curLang === 'en' ? 'Cards' : curLang === 'es' ? 'Tarjetas' : 'Cards'}</span>
+                  </button>
                 </div>
-              )}
+
+                {viewMode === 'cards' && activeHabits.length > 1 && (
+                  <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
+                    {[
+                      { id: 'pending', label: `${LBL.activeFilterPending[curLang]} (${activeHabits.length - completedHabitsCount})` },
+                      { id: 'done', label: `${LBL.activeFilterDone[curLang]} (${completedHabitsCount})` },
+                      { id: 'all', label: `${LBL.activeFilterAll[curLang]} (${activeHabits.length})` },
+                    ].map((btn) => (
+                      <button
+                        key={btn.id}
+                        type="button"
+                        onClick={() => setActiveFilter(btn.id)}
+                        className={`text-[9.5px] font-mono px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                          activeFilter === btn.id
+                            ? 'bg-gold text-black shadow-xs'
+                            : 'text-muted hover:text-ink'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {activeHabits.length > 0 ? (
-              displayedActiveHabits.length > 0 ? (
-                <>
+            {viewMode === 'spreadsheet' ? (
+              <HabitSpreadsheetMatrix
+                habits={activeHabits}
+                S={S}
+                curLang={curLang}
+                onToggleDay={toggleRetroHabit}
+                onEditHabit={openEditModal}
+                onMoveToReserve={toggleActive}
+                onCreateHabit={openCreateModal}
+                onOpenReserve={() => setActiveCategory('reserve')}
+                getHabitStreak={getHabitStreak}
+                getHabitCategory={getHabitCategory}
+                isCustomHabit={isCustomHabit}
+              />
+            ) : (
+              activeHabits.length > 0 ? (
+                displayedActiveHabits.length > 0 ? (
+                  <>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 w-full max-w-full min-w-0">
                   {displayedActiveHabits.map((h) => {
                     const isDone = fd.some((x) => String(x) === String(h.id));
@@ -2067,7 +2133,7 @@ export default function ForgeView() {
                   </button>
                 </div>
               </Card>
-            )}
+            ))}
           </div>
         </div>
       )}
