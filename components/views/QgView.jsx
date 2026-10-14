@@ -1339,8 +1339,10 @@ export default function QgView() {
             onNotify={toast}
             tier={tier}
             progressDays={d}
+            nt={nt}
             onFailFlow={failFlow}
             pillarsData={pillarsData}
+            renderSchedule={renderCombatScheduleMiniCard}
           />
         </div>
       ) : masterViewMode === 'spreadsheet' ? (

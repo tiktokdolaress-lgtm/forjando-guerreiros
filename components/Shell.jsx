@@ -320,6 +320,16 @@ export default function Shell() {
             </nav>
 
             <div className="flex items-center gap-1.5 sm:gap-2 flex-none">
+              {/* Botão de Emergência S.O.S em destaque no PC (Desktop) */}
+              <button
+                type="button"
+                onClick={openSOS}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/60 bg-gradient-to-r from-red-950/70 via-red-900/60 to-red-950/70 hover:brightness-125 text-red-200 text-xs font-mono font-black shadow-[0_0_14px_rgba(239,68,68,0.35)] transition-all cursor-pointer active:scale-95 select-none"
+                title={lang === 'en' ? 'Emergency S.O.S Protocol' : lang === 'es' ? 'Protocolo S.O.S de Emergencia' : 'Protocolo de Emergência S.O.S'}
+              >
+                <Siren size={15} className="text-red-400 animate-pulse flex-none" />
+                <span>S.O.S</span>
+              </button>
               {isAdmin && (
                 <button
                   type="button"

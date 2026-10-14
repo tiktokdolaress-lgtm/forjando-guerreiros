@@ -97,6 +97,16 @@ const HABITFLOW_I18N = {
     en: (p) => `${p}% of day`,
     es: (p) => `${p}% del día`,
   },
+  daysRemainingNextTier: {
+    pt: (days, name) => `⏳ Faltam ${days}d para ${name}`,
+    en: (days, name) => `⏳ ${days}d left until ${name}`,
+    es: (days, name) => `⏳ Faltan ${days}d para ${name}`,
+  },
+  maxRankReached: {
+    pt: '👑 Patente Máxima Alcançada',
+    en: '👑 Maximum Rank Achieved',
+    es: '👑 Rango Máximo Alcanzado',
+  },
   pillarsAllConquered: {
     pt: '⚔️ Os 3 Pilares foram blindados hoje com honra total!',
     en: '⚔️ All 3 Pillars were shielded today with total honor!',
@@ -209,9 +219,11 @@ export default function HabitDailyCardsView({
   getHabitCategory,
   onNotify,
   tier,
+  nt = null,
   progressDays = 0,
   onFailFlow,
   pillarsData,
+  renderSchedule = null,
 }) {
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const todayStr = today();
@@ -445,6 +457,7 @@ export default function HabitDailyCardsView({
 
             {/* Badges de Nível, Estágio e Conquistas */}
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Patente Atual */}
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 text-[11px] font-mono font-bold">
                 <Swords size={12} className="text-amber-400" />
                 <span>
@@ -454,6 +467,19 @@ export default function HabitDailyCardsView({
                 <span className="text-gold/80 ml-1">({progressDays} {HABITFLOW_I18N.daysWord[lang]})</span>
               </span>
 
+              {/* Dias para a Próxima Patente */}
+              {nt ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-gradient-to-r from-amber-950/40 to-[#181622] text-amber-200 text-[11px] font-mono font-bold shadow-xs">
+                  <span>{HABITFLOW_I18N.daysRemainingNextTier[lang](Math.max(1, nt.min - progressDays), nt.name)}</span>
+                  <span className="ml-0.5">{nt.icon}</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-amber-500/15 text-gold text-[11px] font-mono font-bold">
+                  <span>{HABITFLOW_I18N.maxRankReached[lang]}</span>
+                </span>
+              )}
+
+              {/* Pilares Blindados no Dia */}
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-line/60 bg-surface text-muted text-[11px] font-mono">
                 <Trophy size={12} className="text-gold" />
                 <span>{pillarsDoneCount}/3 {lang === 'en' ? 'Pillars' : lang === 'es' ? 'Pilares' : 'Pilares'}</span>
@@ -931,6 +957,13 @@ export default function HabitDailyCardsView({
           );
         })()}
       </div>
+
+      {/* 6. AGENDA OPERACIONAL & TAREFAS DO DIA (INTEGRADA DE FORMA LEVE E RETRÁTIL) */}
+      {renderSchedule && (
+        <div className="w-full mt-1">
+          {renderSchedule()}
+        </div>
+      )}
     </div>
   );
 }
