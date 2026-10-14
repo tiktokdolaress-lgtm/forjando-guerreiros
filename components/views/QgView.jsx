@@ -13,6 +13,7 @@ import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryMo
 import Warrior3DCard from '@/components/Warrior3DCard';
 import WeeklyPillarsMatrix from './WeeklyPillarsMatrix';
 import HabitSpreadsheetMatrix from './HabitSpreadsheetMatrix';
+import MasterHabitSheet from './MasterHabitSheet';
 import HabitDailyCardsView from './HabitDailyCardsView';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { getTodayCombatTimeline } from '@/lib/notify';
@@ -1329,32 +1330,16 @@ export default function QgView() {
           />
         </div>
       ) : masterViewMode === 'spreadsheet' ? (
-        /* MODO 2: PLANILHA GERAL (HISTÓRICO COMPLETO EM MATRIZ DOS 3 PILARES E HÁBITOS) */
-        <div className="flex flex-col gap-3.5 w-full min-w-0 animate-fade-in">
-          {/* SEÇÃO 1: OS 3 PILARES DE COMBATE EM MATRIZ SEMANAL */}
-          <div className="w-full">
-            <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} onNotify={toast} />
-          </div>
-
-          {/* SEÇÃO 2: HÁBITOS DA FORJA EM MATRIZ SEMANAL */}
-          <div className="w-full">
-            <HabitSpreadsheetMatrix
-              habits={activeHabits}
-              S={S}
-              curLang={curLang}
-              onToggleDay={toggleRetroHabit}
-              onNotify={toast}
-              onCreateHabit={() => setTab('forge')}
-              onOpenReserve={() => setTab('forge')}
-              getHabitStreak={getHabitStreak}
-              getHabitCategory={getHabitCategory}
-            />
-          </div>
-
-          {/* SEÇÃO 3: AGENDA OPERACIONAL & TAREFAS DO DIA */}
-          <div className="w-full">
-            {renderCombatScheduleMiniCard()}
-          </div>
+        /* MODO 2: PLANILHA INTERATIVA (ESTILO HABITFLOW / GOOGLE SHEETS COM DATAS NAS LINHAS E HÁBITOS NAS COLUNAS) */
+        <div className="w-full min-w-0 animate-fade-in">
+          <MasterHabitSheet
+            S={S}
+            habits={activeHabits}
+            curLang={curLang}
+            setCI={setCI}
+            onToggleHabit={toggleRetroHabit}
+            onNotify={toast}
+          />
         </div>
       ) : null}
 
