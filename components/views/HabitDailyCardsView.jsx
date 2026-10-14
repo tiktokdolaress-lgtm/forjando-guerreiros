@@ -223,7 +223,6 @@ export default function HabitDailyCardsView({
   progressDays = 0,
   onFailFlow,
   pillarsData,
-  renderSchedule = null,
 }) {
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const todayStr = today();
@@ -958,12 +957,7 @@ export default function HabitDailyCardsView({
         })()}
       </div>
 
-      {/* 6. AGENDA OPERACIONAL & TAREFAS DO DIA (INTEGRADA DE FORMA LEVE E RETRÁTIL) */}
-      {renderSchedule && (
-        <div className="w-full mt-1">
-          {renderSchedule()}
-        </div>
-      )}
+
     </div>
   );
 }

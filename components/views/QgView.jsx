@@ -107,7 +107,7 @@ export default function QgView() {
   const [masterViewMode, setMasterViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        return localStorage.getItem('fg_qg_view_mode') || 'today';
+        const saved = localStorage.getItem('fg_qg_view_mode'); return (saved === 'spreadsheet') ? 'spreadsheet' : 'today';
       } catch {
         return 'today';
       }
@@ -1251,23 +1251,7 @@ export default function QgView() {
             <span>{MASTER_I18N.viewSpreadsheet[curLang]}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              AF.click();
-              setMasterViewMode('classic');
-              try { localStorage.setItem('fg_qg_view_mode', 'classic'); } catch {}
-            }}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
-              masterViewMode === 'classic'
-                ? 'bg-gold text-black shadow-md font-black scale-100'
-                : 'text-muted hover:text-ink hover:bg-surface/50'
-            }`}
-          >
-            <LayoutGrid size={13} />
-            <span className="hidden sm:inline">{MASTER_I18N.viewClassic[curLang]}</span>
-            <span className="sm:hidden">Clássico</span>
-          </button>
+
         </div>
 
         {/* LADO DIREITO: BOTÃO PISCANTE DE MISSÕES/PROJETOS SE HOUVER TAREFAS */}
@@ -1342,7 +1326,6 @@ export default function QgView() {
             nt={nt}
             onFailFlow={failFlow}
             pillarsData={pillarsData}
-            renderSchedule={renderCombatScheduleMiniCard}
           />
         </div>
       ) : masterViewMode === 'spreadsheet' ? (
@@ -1373,23 +1356,7 @@ export default function QgView() {
             {renderCombatScheduleMiniCard()}
           </div>
         </div>
-      ) : (
-        /* MODO 3: VISUAL CLÁSSICO COM AS TORRES MONOLÍTICAS E GUERREIRO */
-        <>
-          <div className="lg:hidden w-full min-w-0 max-w-full">
-            {renderMobileOneScreen()}
-          </div>
-          <div className="hidden lg:grid lg:grid-cols-12 gap-3.5 items-start">
-            <div className="lg:col-span-7 flex flex-col gap-3.5">
-              {renderPillars3DTowers(true)}
-            </div>
-            <div className="lg:col-span-5 flex flex-col gap-3.5">
-              {renderDailyCheckin()}
-              {renderCombatScheduleMiniCard()}
-            </div>
-          </div>
-        </>
-      )}
+      ) : null}
 
       {/* Modal de Celebração de Subida de Nível */}
       {levelUpModalTier && (
