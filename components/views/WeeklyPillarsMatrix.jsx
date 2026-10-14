@@ -1,18 +1,19 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
   Check,
   X,
+  Lock,
   Sparkles,
   Flame,
   Shield,
   Eye,
   Zap,
 } from 'lucide-react';
-import { today, getPast7Days, fmtD, parseD } from '@/lib/utils';
+import { today, yesterday, getPast7Days, fmtD, parseD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 import * as L from '@/lib/logic';
 
@@ -21,6 +22,16 @@ const PILLARS_MATRIX_I18N = {
     pt: 'MATRIZ SEMANAL DOS 3 PILARES',
     en: 'WEEKLY 3 PILLARS MATRIX',
     es: 'MATRIZ SEMANAL DE LOS 3 PILARES',
+  },
+  lockedPastWarning: {
+    pt: '🛡️ Registro Inviolável: Para manter a honra da jornada e evitar autoengano, apenas o dia de hoje e o de ontem podem ser marcados.',
+    en: '🛡️ Inviolable Record: To preserve journey honor and prevent self-deception, only today and yesterday can be marked.',
+    es: '🛡️ Registro Inviolable: Para preservar el honor del camino y evitar el autoengaño, solo hoy y ayer pueden marcarse.',
+  },
+  lockedPastTitle: {
+    pt: 'Dia inviolável (apenas hoje e ontem podem ser alterados)',
+    en: 'Locked day (only today and yesterday can be altered)',
+    es: 'Día inviolable (solo hoy y ayer pueden ser alterados)',
   },
   futureWarning: {
     pt: 'O futuro ainda não existe. Apenas o dia de hoje pode ser combatido.',
@@ -91,11 +102,25 @@ export default function WeeklyPillarsMatrix({
   S,
   curLang = 'pt',
   setCI,
+  onNotify,
 }) {
   const [weekOffset, setWeekOffset] = useState(0);
 
   const todayStr = today();
+  const yesterdayStr = yesterday(todayStr);
   const weekDays = useMemo(() => getPast7Days(todayStr, weekOffset), [todayStr, weekOffset]);
+  const scrollContainerRef = useRef(null);
+
+  // Auto-scroll no mobile para revelar o dia de HOJE logo de cara
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const timer = setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+      }
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [weekOffset]);
 
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const T = (key) => (PILLARS_MATRIX_I18N[key] && PILLARS_MATRIX_I18N[key][lang]) || '';
@@ -200,7 +225,7 @@ export default function WeeklyPillarsMatrix({
 
       {/* Tabela Planilha dos 3 Pilares */}
       <div className="w-full rounded-xl border border-line/80 bg-[#121219] overflow-hidden shadow-md">
-        <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-stone-700">
+        <div ref={scrollContainerRef} className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-stone-700">
           <table className="w-full text-left border-collapse min-w-[550px]">
             <thead>
               <tr className="border-b border-line/80 bg-[#181723] text-[9.5px] font-mono text-muted">

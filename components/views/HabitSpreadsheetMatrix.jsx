@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,9 +16,10 @@ import {
   Calendar,
   Layers,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from 'lucide-react';
-import { today, getPast7Days, fmtD, parseD, dstr } from '@/lib/utils';
+import { today, yesterday, getPast7Days, fmtD, parseD, dstr } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 
 const MATRIX_I18N = {
@@ -26,6 +27,16 @@ const MATRIX_I18N = {
     pt: 'MATRIZ SEMANAL DE HÁBITOS',
     en: 'WEEKLY HABIT MATRIX',
     es: 'MATRIZ SEMANAL DE HÁBITOS',
+  },
+  lockedPastWarning: {
+    pt: '🛡️ Registro Inviolável: Para manter a honra da jornada e evitar autoengano, apenas o dia de hoje e o de ontem podem ser marcados.',
+    en: '🛡️ Inviolable Record: To preserve journey honor and prevent self-deception, only today and yesterday can be marked.',
+    es: '🛡️ Registro Inviolable: Para preservar el honor del camino y evitar el autoengaño, solo hoy y ayer pueden marcarse.',
+  },
+  lockedPastTitle: {
+    pt: 'Dia inviolável (apenas hoje e ontem podem ser alterados)',
+    en: 'Locked day (only today and yesterday can be altered)',
+    es: 'Día inviolable (solo hoy y ayer pueden ser alterados)',
   },
   futureWarning: {
     pt: 'O futuro ainda não existe. Apenas o dia de hoje pode ser combatido.',
@@ -190,6 +201,7 @@ export default function HabitSpreadsheetMatrix({
   S,
   curLang = 'pt',
   onToggleDay,
+  onNotify,
   onEditHabit,
   onMoveToReserve,
   onCreateHabit,
@@ -202,7 +214,20 @@ export default function HabitSpreadsheetMatrix({
   const [pillarFilter, setPillarFilter] = useState('all');
 
   const todayStr = today();
+  const yesterdayStr = yesterday(todayStr);
   const weekDays = useMemo(() => getPast7Days(todayStr, weekOffset), [todayStr, weekOffset]);
+  const scrollContainerRef = useRef(null);
+
+  // Auto-scroll no mobile para revelar o dia de HOJE logo de cara
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const timer = setTimeout(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+      }
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [weekOffset]);
 
   const doneMap = useMemo(() => (S && S.forge && S.forge.done) || {}, [S]);
   const failMap = useMemo(() => (S && S.forge && S.forge.failed) || {}, [S]);
@@ -458,7 +483,7 @@ export default function HabitSpreadsheetMatrix({
       {/* 3. A PLANILHA / TABELA TÁTICA DE HÁBITOS */}
       {filteredHabits.length > 0 ? (
         <div className="w-full rounded-xl border border-line/80 bg-[#121219] overflow-hidden shadow-lg">
-          <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-stone-700">
+          <div ref={scrollContainerRef} className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-stone-700">
             <table className="w-full text-left border-collapse min-w-[700px]">
               {/* CABEÇALHO DA TABELA */}
               <thead>

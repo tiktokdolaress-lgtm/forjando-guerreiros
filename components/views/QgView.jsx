@@ -671,7 +671,7 @@ export default function QgView() {
         </div>
 
         {pillarsViewMode === 'matrix' ? (
-          <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} />
+          <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} onNotify={toast} />
         ) : (
           <>
             {/* Carga Tática Integrada: Mini Barra de Foco e Energia */}
@@ -1261,7 +1261,7 @@ export default function QgView() {
         <div className="flex flex-col gap-3.5 w-full min-w-0 animate-fade-in">
           {/* SEÇÃO 1: OS 3 PILARES DE COMBATE EM MATRIZ SEMANAL */}
           <div className="w-full">
-            <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} />
+            <WeeklyPillarsMatrix S={S} curLang={curLang} setCI={setCI} onNotify={toast} />
           </div>
 
           {/* SEÇÃO 2: HÁBITOS DA FORJA EM MATRIZ SEMANAL */}
@@ -1271,6 +1271,7 @@ export default function QgView() {
               S={S}
               curLang={curLang}
               onToggleDay={toggleRetroHabit}
+              onNotify={toast}
               onCreateHabit={() => setTab('forge')}
               onOpenReserve={() => setTab('forge')}
               getHabitStreak={getHabitStreak}
