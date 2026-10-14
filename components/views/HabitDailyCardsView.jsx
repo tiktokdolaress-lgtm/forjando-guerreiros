@@ -12,6 +12,7 @@ import {
   X,
   Lock,
   Shield,
+  ShieldCheck,
   Eye,
   Zap,
   Target,
@@ -95,6 +96,36 @@ const HABITFLOW_I18N = {
     pt: (p) => `${p}% do dia`,
     en: (p) => `${p}% of day`,
     es: (p) => `${p}% del día`,
+  },
+  pillarsAllConquered: {
+    pt: '⚔️ Os 3 Pilares foram blindados hoje com honra total!',
+    en: '⚔️ All 3 Pillars were shielded today with total honor!',
+    es: '⚔️ ¡Los 3 Pilares fueron blindados hoy con honor total!',
+  },
+  showCompletedPillars: {
+    pt: 'Exibir Pilares',
+    en: 'Show Pillars',
+    es: 'Mostrar Pilares',
+  },
+  hideCompletedPillars: {
+    pt: 'Ocultar Pilares',
+    en: 'Hide Pillars',
+    es: 'Ocultar Pilares',
+  },
+  allHabitsConquered: {
+    pt: '⚡ Todos os hábitos de hoje foram forjados com sucesso!',
+    en: '⚡ All habits for today have been forged successfully!',
+    es: '⚡ ¡Todos los hábitos de hoy han sido forjados con éxito!',
+  },
+  showCompletedHabits: {
+    pt: 'Exibir Hábitos Concluídos',
+    en: 'Show Completed Habits',
+    es: 'Mostrar Hábitos Concluidos',
+  },
+  hideCompletedHabits: {
+    pt: 'Ocultar Concluídos',
+    en: 'Hide Completed',
+    es: 'Ocultar Concluidos',
   },
   btnRegisterFall: {
     pt: 'Registrar Queda em Combate',
@@ -190,6 +221,10 @@ export default function HabitDailyCardsView({
   const [selectedDate, setSelectedDate] = useState(todayStr);
   // Pilar expandido para exibir detalhes e cronômetro de precisão segundo a segundo
   const [expandedPillar, setExpandedPillar] = useState(null);
+  // Controle para exibir/ocultar pilares e hábitos já concluídos
+  const [showFinishedPillars, setShowFinishedPillars] = useState(false);
+  const [showFinishedHabits, setShowFinishedHabits] = useState(false);
+
 
   const isToday = selectedDate === todayStr;
   const isYesterday = selectedDate === yesterdayStr;
@@ -390,17 +425,7 @@ export default function HabitDailyCardsView({
         </div>
 
         {/* Botão Novo Hábito */}
-        {onCreateHabit && (
-          <button
-            type="button"
-            onClick={onCreateHabit}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_12px_rgba(245,158,11,0.35)] active:scale-95 transition-all cursor-pointer shrink-0"
-          >
-            <Plus size={15} strokeWidth={3} />
-            <span className="hidden sm:inline">{HABITFLOW_I18N.btnNewHabit[lang]}</span>
-            <span className="sm:hidden">{lang === 'en' ? 'New' : lang === 'es' ? 'Nuevo' : 'Novo'}</span>
-          </button>
-        )}
+        
       </div>
 
       {/* 2. CARD DE CONSISTÊNCIA DIÁRIA COM O ANEL DE PROGRESSO & FRASE DO DIA INTEGRADA */}
@@ -513,12 +538,47 @@ export default function HabitDailyCardsView({
           <span className="text-[10px] font-mono font-black text-gold/80 uppercase tracking-widest">
             {HABITFLOW_I18N.threePillarsSection[lang]}
           </span>
-          <span className="text-[10px] font-mono text-muted">
-            {pillarsDoneCount}/3 {HABITFLOW_I18N.doneLabel[lang]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-muted">
+              {pillarsDoneCount}/3 {HABITFLOW_I18N.doneLabel[lang]}
+            </span>
+            {pillarsDoneCount === 3 && (
+              <button
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setShowFinishedPillars((v) => !v);
+                }}
+                className="text-[9.5px] font-mono font-bold text-gold/80 hover:text-gold transition-colors underline cursor-pointer"
+              >
+                {showFinishedPillars ? HABITFLOW_I18N.hideCompletedPillars[lang] : HABITFLOW_I18N.showCompletedPillars[lang]}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {/* Se todos os 3 pilares foram blindados e o guerreiro não pediu para exibir, os cards ficam ocultos */}
+        {pillarsDoneCount === 3 && !showFinishedPillars ? (
+          <div className="p-3.5 rounded-2xl border border-gold/40 bg-gradient-to-r from-amber-950/30 via-[#13121C] to-amber-950/30 flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <ShieldCheck size={18} className="text-gold flex-none" />
+              <span className="text-xs font-mono font-bold text-gold truncate">
+                {HABITFLOW_I18N.pillarsAllConquered[lang]}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                AF.click();
+                setShowFinishedPillars(true);
+              }}
+              className="px-2 py-1 rounded-lg border border-gold/40 bg-gold/10 text-gold text-[10px] font-mono font-bold hover:bg-gold/20 transition-all cursor-pointer shrink-0"
+            >
+              {HABITFLOW_I18N.showCompletedPillars[lang]}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
           {reqPillars.map((k) => {
             const conf = HABITFLOW_I18N.pillars[k] || {
               name: { pt: `Pilar ${k}`, en: `Pillar ${k}`, es: `Pilar ${k}` },
@@ -677,6 +737,7 @@ export default function HabitDailyCardsView({
             );
           })}
         </div>
+        )}
 
         {/* BOTÃO NOBRE DE REGISTRO DE QUEDA & STATUS DE COMBATE (ESTILO DO SEU 2º PRINT) */}
         <div className="flex flex-col gap-1.5 mt-1">
@@ -701,20 +762,74 @@ export default function HabitDailyCardsView({
 
       </div>
 
-      {/* 5. SEÇÃO: HÁBITOS DA FORJA (CARDS GRANDES ESTILO HABITFLOW) */}
+      {/* 5. SEÇÃO: HÁBITOS DA FORJA (APENAS OS HÁBITOS RESTANTES FICAM VISÍVEIS) */}
       <div className="flex flex-col gap-2 mt-1">
         <div className="flex items-center justify-between px-1">
           <span className="text-[10px] font-mono font-black text-gold/80 uppercase tracking-widest">
             {HABITFLOW_I18N.forgeHabitsSection[lang]}
           </span>
-          <span className="text-[10px] font-mono text-muted">
-            {habitsDoneCount}/{activeHabits.length} {HABITFLOW_I18N.doneLabel[lang]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-muted">
+              {habitsDoneCount}/{activeHabits.length} {HABITFLOW_I18N.doneLabel[lang]}
+            </span>
+            {habitsDoneCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setShowFinishedHabits((v) => !v);
+                }}
+                className="text-[9.5px] font-mono font-bold text-gold/80 hover:text-gold transition-colors underline cursor-pointer"
+              >
+                {showFinishedHabits ? HABITFLOW_I18N.hideCompletedHabits[lang] : HABITFLOW_I18N.showCompletedHabits[lang]}
+              </button>
+            )}
+          </div>
         </div>
 
-        {activeHabits.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-            {activeHabits.map((h) => {
+        {/* Filtrar hábitos visíveis: Se showFinishedHabits for falso, exibe apenas os hábitos que AINDA NÃO FORAM FEITOS */}
+        {(() => {
+          const visibleHabits = showFinishedHabits
+            ? activeHabits
+            : activeHabits.filter((h) => !selectedDoneHabits.some((id) => String(id) === String(h.id)));
+
+          if (activeHabits.length > 0 && visibleHabits.length === 0) {
+            return (
+              <div className="p-4 rounded-2xl border border-gold/40 bg-gradient-to-r from-amber-950/30 via-[#13121C] to-amber-950/30 flex items-center justify-between gap-2 shadow-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Check size={18} strokeWidth={3} className="text-gold flex-none" />
+                  <span className="text-xs font-mono font-bold text-gold truncate">
+                    {HABITFLOW_I18N.allHabitsConquered[lang]}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    AF.click();
+                    setShowFinishedHabits(true);
+                  }}
+                  className="px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/10 text-gold text-[10.5px] font-mono font-bold hover:bg-gold/20 transition-all cursor-pointer shrink-0"
+                >
+                  {HABITFLOW_I18N.showCompletedHabits[lang]}
+                </button>
+              </div>
+            );
+          }
+
+          if (activeHabits.length === 0) {
+            return (
+              <div className="p-6 rounded-2xl border border-dashed border-line/80 bg-[#12121A] text-center flex flex-col items-center justify-center gap-2">
+                <span className="text-2xl">🔨</span>
+                <p className="text-xs font-mono text-muted max-w-sm">
+                  {HABITFLOW_I18N.noActiveHabits[lang]}
+                </p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+              {visibleHabits.map((h) => {
               const isDone = selectedDoneHabits.some((id) => String(id) === String(h.id));
               const fList = failMap[selectedDate] || [];
               const isFail = fList.some((id) => String(id) === String(h.id));
@@ -812,15 +927,9 @@ export default function HabitDailyCardsView({
                 </div>
               );
             })}
-          </div>
-        ) : (
-          <div className="p-6 rounded-2xl border border-dashed border-line/80 bg-[#12121A] text-center flex flex-col items-center justify-center gap-2">
-            <span className="text-2xl">🔨</span>
-            <p className="text-xs font-mono text-muted max-w-sm">
-              {HABITFLOW_I18N.noActiveHabits[lang]}
-            </p>
-          </div>
-        )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

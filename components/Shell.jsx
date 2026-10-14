@@ -282,7 +282,7 @@ export default function Shell() {
 
             {/* MENU SUPERIOR HORIZONTAL CENTRALIZADO (ESTILO HABITFLOW) - EXCLUSIVO DESKTOP */}
             <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl bg-[#14141E] border border-line/80 shadow-md">
-              {TABS.map(([id]) => {
+              {TABS.filter(([id]) => id !== 'settings').map(([id]) => {
                 const Ic = ICONS[id];
                 if (!Ic) return null;
                 const active = tab === id;
