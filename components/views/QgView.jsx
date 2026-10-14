@@ -13,6 +13,7 @@ import WarriorEvolutionGalleryModal from '@/components/WarriorEvolutionGalleryMo
 import Warrior3DCard from '@/components/Warrior3DCard';
 import WeeklyPillarsMatrix from './WeeklyPillarsMatrix';
 import HabitSpreadsheetMatrix from './HabitSpreadsheetMatrix';
+import HabitDailyCardsView from './HabitDailyCardsView';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { getTodayCombatTimeline } from '@/lib/notify';
 
@@ -106,9 +107,9 @@ export default function QgView() {
   const [masterViewMode, setMasterViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        return localStorage.getItem('fg_qg_view_mode') || 'spreadsheet';
+        return localStorage.getItem('fg_qg_view_mode') || 'today';
       } catch {
-        return 'spreadsheet';
+        return 'today';
       }
     }
     return 'spreadsheet';
@@ -197,6 +198,20 @@ export default function QgView() {
       return 0;
     }
   };
+
+
+  // Contador de Tarefas & Missões Pendentes para o Botão Pulsante no Topo
+  const pendingTasksCount = useMemo(() => {
+    const tod = today();
+    const tasks = (S && S.tasks && Array.isArray(S.tasks)) ? S.tasks.filter((t) => !t.archived) : [];
+    return tasks.filter((t) => {
+      const isPostponed = t.postponed && t.postponedTo && t.postponedTo > tod;
+      if (isPostponed) return false;
+      if ((t.rep || 'unica') === 'unica') return !t.done;
+      const dDates = t.doneDates || [];
+      return !dDates.includes(tod);
+    }).length;
+  }, [S]);
 
   const getHabitCategory = (h) => {
     if (h && h.category && ['body', 'mind', 'mission', 'spirit'].includes(h.category)) {
@@ -1177,8 +1192,19 @@ export default function QgView() {
 
 
   const MASTER_I18N = {
-    viewSpreadsheet: { pt: 'Planilha Geral', en: 'Master Sheet', es: 'Planilla General' },
+    viewToday: { pt: 'Hoje', en: 'Today', es: 'Hoy' },
+    viewSpreadsheet: { pt: 'Planilha', en: 'Spreadsheet', es: 'Planilla' },
     viewClassic: { pt: 'Visual Clássico', en: 'Classic View', es: 'Vista Clásica' },
+    missionsPulsingBtn: {
+      pt: (n) => `${n} Missões Pendentes`,
+      en: (n) => `${n} Pending Missions`,
+      es: (n) => `${n} Misiones Pendientes`,
+    },
+    missionsAllDoneBtn: {
+      pt: 'Missões do Dia Concluídas',
+      en: "Today's Missions Completed",
+      es: 'Misiones del Día Concluidas',
+    },
     sheetPillarsTitle: { pt: '1. OS 3 PILARES DE COMBATE (SEMANA)', en: '1. THE 3 COMBAT PILLARS (WEEKLY)', es: '1. LOS 3 PILARES DE COMBATE (SEMANAL)' },
     sheetHabitsTitle: { pt: '2. HÁBITOS DA FORJA (SEMANA)', en: '2. FORGE HABITS (WEEKLY)', es: '2. HÁBITOS DE LA FORJA (SEMANAL)' },
     sheetScheduleTitle: { pt: '3. AGENDA & OPERAÇÕES DO DIA', en: '3. TODAY\'S SCHEDULE & OPS', es: '3. CRONOGRAMA Y OPERACIONES DEL DÍA' },
@@ -1187,77 +1213,136 @@ export default function QgView() {
 
   return (
     <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-16 lg:pb-8">
-      {/* BARRA SUPERIOR DE MODO: PLANILHA GERAL vs MODO CLÁSSICO */}
-      <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl border border-gold/30 bg-[#14131C] select-none">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-8 w-8 rounded-lg bg-gold/15 border border-gold/35 flex items-center justify-center text-gold flex-none">
-            <TableProperties size={16} />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
-              {curLang === 'en' ? 'HQ MASTER DASHBOARD' : curLang === 'es' ? 'PANEL MAESTRO QG' : 'PAINEL CENTRAL QG'}
-            </span>
-            <span className="text-[9.5px] text-muted font-mono truncate">
-              {masterViewMode === 'spreadsheet'
-                ? (curLang === 'en' ? 'Spreadsheet Mode: 3 Pillars, Habits & Operations unified' : curLang === 'es' ? 'Modo Planilla: 3 Pilares, Hábitos y Operaciones unificados' : 'Modo Planilha: 3 Pilares, Hábitos e Operações unificados')
-                : (curLang === 'en' ? 'Classic Mode with Monolith towers' : curLang === 'es' ? 'Modo clásico con torres del monolito' : 'Modo clássico com as torres da forja')}
-            </span>
-          </div>
+            {/* BARRA SUPERIOR TIPO HABITFLOW (HOJE | PLANILHA | VISUAL CLÁSSICO) + BOTÃO PISCANTE DE MISSÕES */}
+      <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-2xl border border-gold/30 bg-[#14141E] select-none flex-wrap">
+        {/* Seletor de Modo Estilo HabitFlow com Ícones e Pílulas Modernas */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0D0D14] border border-line/70">
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              setMasterViewMode('today');
+              try { localStorage.setItem('fg_qg_view_mode', 'today'); } catch {}
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              masterViewMode === 'today'
+                ? 'bg-emerald-500 text-black shadow-md font-black scale-100'
+                : 'text-muted hover:text-ink hover:bg-surface/50'
+            }`}
+          >
+            <Calendar size={13} strokeWidth={masterViewMode === 'today' ? 3 : 2} />
+            <span>{MASTER_I18N.viewToday[curLang]}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              setMasterViewMode('spreadsheet');
+              try { localStorage.setItem('fg_qg_view_mode', 'spreadsheet'); } catch {}
+            }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              masterViewMode === 'spreadsheet'
+                ? 'bg-gold text-black shadow-md font-black scale-100'
+                : 'text-muted hover:text-ink hover:bg-surface/50'
+            }`}
+          >
+            <TableProperties size={13} strokeWidth={masterViewMode === 'spreadsheet' ? 3 : 2} />
+            <span>{MASTER_I18N.viewSpreadsheet[curLang]}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              setMasterViewMode('classic');
+              try { localStorage.setItem('fg_qg_view_mode', 'classic'); } catch {}
+            }}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
+              masterViewMode === 'classic'
+                ? 'bg-gold text-black shadow-md font-black scale-100'
+                : 'text-muted hover:text-ink hover:bg-surface/50'
+            }`}
+          >
+            <LayoutGrid size={13} />
+            <span className="hidden sm:inline">{MASTER_I18N.viewClassic[curLang]}</span>
+            <span className="sm:hidden">Clássico</span>
+          </button>
         </div>
 
-        <div className="flex items-center gap-1.5 flex-none flex-wrap">
+        {/* LADO DIREITO: BOTÃO PISCANTE DE MISSÕES/PROJETOS SE HOUVER TAREFAS */}
+        <div className="flex items-center gap-2">
+          {/* Botão de Atalho para Missões & Projetos (Piscando quando tiver tarefas pendentes) */}
+          <button
+            type="button"
+            onClick={() => {
+              AF.click();
+              if (typeof setTab === 'function') setTab('ops');
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer shadow-sm active:scale-95 ${
+              pendingTasksCount > 0
+                ? 'border-amber-400/80 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 shadow-[0_0_14px_rgba(245,158,11,0.4)] animate-pulse'
+                : 'border-line/60 bg-surface/60 text-muted hover:text-ink hover:border-gold/40'
+            }`}
+            title={pendingTasksCount > 0 ? MASTER_I18N.missionsPulsingBtn[curLang](pendingTasksCount) : MASTER_I18N.missionsAllDoneBtn[curLang]}
+          >
+            <Target size={14} className={pendingTasksCount > 0 ? 'text-amber-400' : 'text-muted'} />
+            <span className="font-mono font-bold text-[11px]">
+              {pendingTasksCount > 0 ? (
+                <>
+                  <span className="hidden sm:inline">{MASTER_I18N.missionsPulsingBtn[curLang](pendingTasksCount)}</span>
+                  <span className="sm:hidden">{pendingTasksCount} {curLang === 'en' ? 'Missions' : curLang === 'es' ? 'Misiones' : 'Missões'}</span>
+                </>
+              ) : (
+                <>
+                  <span className="hidden sm:inline">{MASTER_I18N.missionsAllDoneBtn[curLang]}</span>
+                  <span className="sm:hidden">Missões ✓</span>
+                </>
+              )}
+            </span>
+            {pendingTasksCount > 0 && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+              </span>
+            )}
+          </button>
+
+          {/* Atalho do Guerreiro 3D */}
           <button
             type="button"
             onClick={() => {
               if (typeof setTab === 'function') setTab('stats');
             }}
             title={MASTER_I18N.goToWarriorTab[curLang]}
-            className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-[10px] font-mono font-bold transition-all cursor-pointer"
+            className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold text-[10.5px] font-mono font-bold transition-all cursor-pointer"
           >
             <Swords size={12} />
             <span>{curLang === 'en' ? '3D WARRIOR' : curLang === 'es' ? 'GUERRERO 3D' : 'GUERREIRO 3D'}</span>
           </button>
-
-          {/* Toggle Planilha / Clássico */}
-          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface border border-line/60">
-            <button
-              type="button"
-              onClick={() => {
-                AF.click();
-                setMasterViewMode('spreadsheet');
-                try { localStorage.setItem('fg_qg_view_mode', 'spreadsheet'); } catch {}
-              }}
-              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                masterViewMode === 'spreadsheet'
-                  ? 'bg-gold text-black shadow-xs font-black'
-                  : 'text-muted hover:text-ink'
-              }`}
-            >
-              <TableProperties size={12} />
-              <span>{MASTER_I18N.viewSpreadsheet[curLang]}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                AF.click();
-                setMasterViewMode('classic');
-                try { localStorage.setItem('fg_qg_view_mode', 'classic'); } catch {}
-              }}
-              className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                masterViewMode === 'classic'
-                  ? 'bg-gold text-black shadow-xs font-black'
-                  : 'text-muted hover:text-ink'
-              }`}
-            >
-              <LayoutGrid size={12} />
-              <span>{MASTER_I18N.viewClassic[curLang]}</span>
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* MODO PLANILHA GERAL (ESTILO HABITFLOW / NOTION MILITAR) */}
-      {masterViewMode === 'spreadsheet' ? (
+      {/* MODO 1: HOJE (ESTILO HABITFLOW RADICALMENTE LIMPO COM CARDS GRANDES, SEM ROLAGEM, ANEL 50% E 3 PILARES) */}
+      {masterViewMode === 'today' ? (
+        <div className="w-full min-w-0 animate-fade-in">
+          <HabitDailyCardsView
+            S={S}
+            curLang={curLang}
+            activeHabits={activeHabits}
+            setCI={setCI}
+            onToggleHabit={toggleRetroHabit}
+            onCreateHabit={() => setTab('forge')}
+            onOpenReserve={() => setTab('forge')}
+            getHabitStreak={getHabitStreak}
+            getHabitCategory={getHabitCategory}
+            onNotify={toast}
+            tier={tier}
+            progressDays={d}
+          />
+        </div>
+      ) : masterViewMode === 'spreadsheet' ? (
+        /* MODO 2: PLANILHA GERAL (HISTÓRICO COMPLETO EM MATRIZ DOS 3 PILARES E HÁBITOS) */
         <div className="flex flex-col gap-3.5 w-full min-w-0 animate-fade-in">
           {/* SEÇÃO 1: OS 3 PILARES DE COMBATE EM MATRIZ SEMANAL */}
           <div className="w-full">
@@ -1285,7 +1370,7 @@ export default function QgView() {
           </div>
         </div>
       ) : (
-        /* MODO CLÁSSICO COM GUERREIRO 3D E ESCUDOS */
+        /* MODO 3: VISUAL CLÁSSICO COM AS TORRES MONOLÍTICAS E GUERREIRO */
         <>
           <div className="lg:hidden w-full min-w-0 max-w-full">
             {renderMobileOneScreen()}
