@@ -12,7 +12,7 @@ import {
   Eye,
   Zap,
 } from 'lucide-react';
-import { today, getWeekDays, shiftWeek, fmtD } from '@/lib/utils';
+import { today, getPast7Days, fmtD, parseD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 import * as L from '@/lib/logic';
 
@@ -22,10 +22,15 @@ const PILLARS_MATRIX_I18N = {
     en: 'WEEKLY 3 PILLARS MATRIX',
     es: 'MATRIZ SEMANAL DE LOS 3 PILARES',
   },
+  futureWarning: {
+    pt: 'O futuro ainda não existe. Apenas o dia de hoje pode ser combatido.',
+    en: 'The future does not exist yet. Only today can be fought.',
+    es: 'El futuro aún no existe. Solo el día de hoy puede ser combatido.',
+  },
   subtitle: {
-    pt: 'Planilha de combate e blindagem moral da semana',
-    en: 'Weekly combat and moral shielding spreadsheet',
-    es: 'Planilla semanal de combate y blindaje moral',
+    pt: 'Hoje e os últimos 6 dias de combate e blindagem moral',
+    en: 'Today and the last 6 days of combat and moral shielding',
+    es: 'Hoy y los últimos 6 días de combate y blindaje moral',
   },
   thisWeek: {
     pt: 'Esta Semana',
@@ -77,9 +82,9 @@ const PILLARS_MATRIX_I18N = {
 };
 
 const WEEKDAY_NAMES = {
-  pt: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  es: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+  pt: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  es: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
 };
 
 export default function WeeklyPillarsMatrix({
@@ -90,8 +95,7 @@ export default function WeeklyPillarsMatrix({
   const [weekOffset, setWeekOffset] = useState(0);
 
   const todayStr = today();
-  const currentWeekRef = useMemo(() => shiftWeek(todayStr, weekOffset), [todayStr, weekOffset]);
-  const weekDays = useMemo(() => getWeekDays(currentWeekRef), [currentWeekRef]);
+  const weekDays = useMemo(() => getPast7Days(todayStr, weekOffset), [todayStr, weekOffset]);
 
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const T = (key) => (PILLARS_MATRIX_I18N[key] && PILLARS_MATRIX_I18N[key][lang]) || '';
@@ -165,11 +169,17 @@ export default function WeeklyPillarsMatrix({
           </span>
           <button
             type="button"
+            disabled={weekOffset >= 0}
             onClick={() => {
+              if (weekOffset >= 0) return;
               AF.click();
-              setWeekOffset((w) => w + 1);
+              setWeekOffset((w) => Math.min(0, w + 1));
             }}
-            className="p-1 rounded-md border border-line bg-surface hover:border-gold/50 text-muted hover:text-gold transition-colors cursor-pointer"
+            className={`p-1 rounded-md border border-line bg-surface transition-colors ${
+              weekOffset >= 0
+                ? 'opacity-25 cursor-not-allowed text-muted/30'
+                : 'hover:border-gold/50 text-muted hover:text-gold cursor-pointer'
+            }`}
           >
             <ChevronRight size={14} />
           </button>
@@ -197,10 +207,12 @@ export default function WeeklyPillarsMatrix({
                 <th className="py-2 px-2.5 font-black uppercase tracking-wider sticky left-0 bg-[#181723] z-20 shadow-[2px_0_6px_rgba(0,0,0,0.5)] min-w-[150px] sm:min-w-[170px]">
                   {PILLARS_MATRIX_I18N.colPillar[lang]}
                 </th>
-                {weekDays.map((ds, idx) => {
+                {weekDays.map((ds) => {
                   const isToday = ds === todayStr;
+                  const isFuture = ds > todayStr;
                   const dayNum = ds.split('-')[2];
-                  const wName = weekdays[idx] || '';
+                  const dateObj = parseD(ds);
+                  const wName = weekdays[dateObj.getDay()] || '';
                   return (
                     <th
                       key={ds}
@@ -288,12 +300,13 @@ export default function WeeklyPillarsMatrix({
                           <button
                             type="button"
                             onClick={() => {
+                              if (isFuture) return;
                               if (setCI) {
                                 AF.click();
                                 setCI(k, !isChecked, ds);
                               }
                             }}
-                            title={`${conf.name[lang]} · ${fmtD(ds)}: ${
+                            title={isFuture ? `${conf.name[lang]} · ${fmtD(ds)} (${PILLARS_MATRIX_I18N.futureWarning[lang]})` : `${conf.name[lang]} · ${fmtD(ds)}: ${
                               isChecked
                                 ? '✓ Blindado'
                                 : isFailed
@@ -305,8 +318,10 @@ export default function WeeklyPillarsMatrix({
                                 ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_8px_rgba(250,204,21,0.35)]'
                                 : isFailed
                                 ? 'bg-red-500/25 border border-red-500/70 text-red-400'
+                                : isFuture
+                                ? 'bg-black/30 border border-line/20 opacity-25 cursor-not-allowed text-muted/10'
                                 : isToday
-                                ? 'bg-[#181824] border border-gold/40 hover:border-gold hover:bg-[#222132] text-muted/30 hover:text-gold'
+                                ? 'bg-[#181824] border-2 border-gold/60 hover:border-gold hover:bg-[#222132] text-muted/30 hover:text-gold shadow-sm'
                                 : 'bg-[#15151F] border border-line/50 hover:border-gold/40 text-muted/20 hover:text-muted'
                             }`}
                           >

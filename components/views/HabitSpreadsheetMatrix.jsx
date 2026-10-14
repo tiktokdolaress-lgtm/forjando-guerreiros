@@ -18,7 +18,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
-import { today, getWeekDays, shiftWeek, fmtD, parseD, dstr } from '@/lib/utils';
+import { today, getPast7Days, fmtD, parseD, dstr } from '@/lib/utils';
 import { AF } from '@/lib/audio';
 
 const MATRIX_I18N = {
@@ -27,10 +27,15 @@ const MATRIX_I18N = {
     en: 'WEEKLY HABIT MATRIX',
     es: 'MATRIZ SEMANAL DE HÁBITOS',
   },
+  futureWarning: {
+    pt: 'O futuro ainda não existe. Apenas o dia de hoje pode ser combatido.',
+    en: 'The future does not exist yet. Only today can be fought.',
+    es: 'El futuro aún no existe. Solo el día de hoy puede ser combatido.',
+  },
   sheetSubtitle: {
-    pt: 'Planilha tática de consistência diária · 1 toque para marcar ou alternar',
-    en: 'Tactical spreadsheet for daily consistency · 1 tap to check or toggle',
-    es: 'Planilla táctica de consistencia diaria · 1 toque para marcar o alternar',
+    pt: 'Hoje e os últimos 6 dias de consistência · 1 toque para marcar ou alternar',
+    en: 'Today and the last 6 days of consistency · 1 tap to check or toggle',
+    es: 'Hoy y los últimos 6 días de consistencia · 1 toque para marcar o alternar',
   },
   thisWeekBtn: {
     pt: 'Esta Semana',
@@ -175,9 +180,9 @@ const MATRIX_I18N = {
 };
 
 const WEEKDAY_NAMES = {
-  pt: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
-  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  es: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+  pt: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  es: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
 };
 
 export default function HabitSpreadsheetMatrix({
@@ -197,8 +202,7 @@ export default function HabitSpreadsheetMatrix({
   const [pillarFilter, setPillarFilter] = useState('all');
 
   const todayStr = today();
-  const currentWeekRef = useMemo(() => shiftWeek(todayStr, weekOffset), [todayStr, weekOffset]);
-  const weekDays = useMemo(() => getWeekDays(currentWeekRef), [currentWeekRef]);
+  const weekDays = useMemo(() => getPast7Days(todayStr, weekOffset), [todayStr, weekOffset]);
 
   const doneMap = useMemo(() => (S && S.forge && S.forge.done) || {}, [S]);
   const failMap = useMemo(() => (S && S.forge && S.forge.failed) || {}, [S]);
@@ -305,12 +309,18 @@ export default function HabitSpreadsheetMatrix({
 
             <button
               type="button"
+              disabled={weekOffset >= 0}
               onClick={() => {
+                if (weekOffset >= 0) return;
                 AF.click();
-                setWeekOffset((w) => w + 1);
+                setWeekOffset((w) => Math.min(0, w + 1));
               }}
               title={T('nextWeek')}
-              className="p-1.5 rounded-lg border border-line bg-surface hover:border-gold/50 text-muted hover:text-gold transition-colors cursor-pointer"
+              className={`p-1.5 rounded-lg border border-line bg-surface transition-colors ${
+                weekOffset >= 0
+                  ? 'opacity-25 cursor-not-allowed text-muted/30'
+                  : 'hover:border-gold/50 text-muted hover:text-gold cursor-pointer'
+              }`}
             >
               <ChevronRight size={15} />
             </button>
@@ -464,10 +474,12 @@ export default function HabitSpreadsheetMatrix({
                   </th>
 
                   {/* 7 Colunas dos Dias da Semana */}
-                  {weekDays.map((ds, idx) => {
+                  {weekDays.map((ds) => {
                     const isToday = ds === todayStr;
+                    const isFuture = ds > todayStr;
                     const dayNum = ds.split('-')[2];
-                    const wName = weekdays[idx] || '';
+                    const dateObj = parseD(ds);
+                    const wName = weekdays[dateObj.getDay()] || '';
 
                     return (
                       <th
@@ -596,8 +608,8 @@ export default function HabitSpreadsheetMatrix({
                           >
                             <button
                               type="button"
-                              onClick={() => onToggleDay && onToggleDay(h.id, ds)}
-                              title={`${h.n || h.name} · ${fmtD(ds)}: ${
+                              onClick={() => { if (isFuture) return; onToggleDay && onToggleDay(h.id, ds); }}
+                              title={isFuture ? `${h.n || h.name} · ${fmtD(ds)} (${T('futureWarning')})` : `${h.n || h.name} · ${fmtD(ds)}: ${
                                 isDone ? T('legendDone') : isFail ? T('legendFail') : T('legendPending')
                               }`}
                               className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto rounded-lg flex items-center justify-center text-xs font-black transition-all active:scale-90 cursor-pointer select-none ${
@@ -605,8 +617,10 @@ export default function HabitSpreadsheetMatrix({
                                   ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.35)] scale-100'
                                   : isFail
                                   ? 'bg-red-500/20 border border-red-500/70 text-red-400 hover:bg-red-500/30'
+                                  : isFuture
+                                  ? 'bg-black/30 border border-line/20 opacity-25 cursor-not-allowed text-muted/10'
                                   : isToday
-                                  ? 'bg-[#181824] border-2 border-gold/40 hover:border-gold hover:bg-[#222132] text-muted/30 hover:text-gold'
+                                  ? 'bg-[#181824] border-2 border-gold/60 hover:border-gold hover:bg-[#222132] text-muted/30 hover:text-gold shadow-sm'
                                   : 'bg-[#15151F] border border-line/50 hover:border-gold/50 hover:bg-[#1E1E2B] text-muted/20 hover:text-muted'
                               }`}
                             >
