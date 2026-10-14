@@ -1339,6 +1339,8 @@ export default function QgView() {
             onNotify={toast}
             tier={tier}
             progressDays={d}
+            onFailFlow={failFlow}
+            pillarsData={pillarsData}
           />
         </div>
       ) : masterViewMode === 'spreadsheet' ? (

@@ -22,6 +22,10 @@ import {
   Edit3,
   Calendar,
   Layers,
+  Timer,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
 } from 'lucide-react';
 import { today, yesterday, parseD, dstr, fmtD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
@@ -92,6 +96,41 @@ const HABITFLOW_I18N = {
     en: (p) => `${p}% of day`,
     es: (p) => `${p}% del día`,
   },
+  btnRegisterFall: {
+    pt: 'Registrar Queda em Combate',
+    en: 'Register Combat Fall',
+    es: 'Registrar Caída en Combate',
+  },
+  battleWonLabel: {
+    pt: 'BATALHA DE HOJE VENCIDA · HONRA INTACTA',
+    en: "TODAY'S BATTLE WON · HONOR INTACT",
+    es: 'BATALLA DE HOY VENCIDA · HONOR INTACTO',
+  },
+  precisionTimerLabel: {
+    pt: 'CRONÔMETRO DE PRECISÃO',
+    en: 'PRECISION TIMER',
+    es: 'CRONÓMETRO DE PRECISIÓN',
+  },
+  timeInVigilLabel: {
+    pt: 'TEMPO EM VIGÍLIA',
+    en: 'TIME IN VIGIL',
+    es: 'TIEMPO EN VIGILIA',
+  },
+  standardInFocus: {
+    pt: 'ESTANDARTE EM FOCO',
+    en: 'BANNER IN FOCUS',
+    es: 'ESTANDARTE EN ENFOQUE',
+  },
+  pillarPrinciple: {
+    pt: 'Princípio do Pilar',
+    en: 'Pillar Principle',
+    es: 'Principio del Pilar',
+  },
+  tapForDetails: {
+    pt: 'Toque para detalhes & cronômetro',
+    en: 'Tap for details & timer',
+    es: 'Toca para detalles y cronómetro',
+  },
   inviolablePastNotice: {
     pt: '🛡️ Registro Inviolável: Para manter a honra da jornada, apenas o dia de hoje e o de ontem podem ser alterados.',
     en: '🛡️ Inviolable Record: To preserve journey honor, only today and yesterday can be altered.',
@@ -140,6 +179,8 @@ export default function HabitDailyCardsView({
   onNotify,
   tier,
   progressDays = 0,
+  onFailFlow,
+  pillarsData,
 }) {
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const todayStr = today();
@@ -147,6 +188,9 @@ export default function HabitDailyCardsView({
 
   // Data navegável (focada no dia de hoje, permitindo retroceder até ontem)
   const [selectedDate, setSelectedDate] = useState(todayStr);
+  // Pilar expandido para exibir detalhes e cronômetro de precisão segundo a segundo
+  const [expandedPillar, setExpandedPillar] = useState(null);
+
   const isToday = selectedDate === todayStr;
   const isYesterday = selectedDate === yesterdayStr;
   const isFuture = selectedDate > todayStr;
@@ -488,78 +532,173 @@ export default function HabitDailyCardsView({
             const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };
             const failTypes = String(cData.fail || '').split('+').filter(Boolean);
             const isFailed = !isChecked && failTypes.includes(FAILMAP[k]);
+            const isExpanded = expandedPillar === k;
+
+            // Dados de cronômetro e dias individuais deste pilar
+            const pKey = k === 'r' ? 'ret' : k === 'p' ? 'porn' : 'mast';
+            const pillarInfo = (pillarsData && pillarsData[pKey]) || {
+              days: progressDays,
+              timer: `${progressDays}d 00h:00m:00s`,
+            };
 
             return (
               <div
                 key={k}
-                onClick={() => handlePillarClick(k, isChecked)}
-                className={`flex items-center justify-between p-3 sm:p-3.5 rounded-2xl border transition-all select-none ${
-                  isPastLocked
-                    ? 'opacity-85 border-line/40 bg-[#12121A] cursor-not-allowed'
-                    : 'cursor-pointer active:scale-[0.98]'
-                } ${
+                className={`flex flex-col rounded-2xl border transition-all select-none overflow-hidden ${
                   isChecked
                     ? 'border-gold/70 bg-gradient-to-r from-amber-950/40 to-[#14131C] shadow-[0_0_12px_rgba(250,204,21,0.15)]'
                     : isFailed
                     ? 'border-red-500/60 bg-red-950/25'
-                    : 'border-line/70 bg-[#14141E] hover:border-gold/50 hover:bg-[#181826]'
+                    : 'border-line/70 bg-[#14141E] hover:border-gold/50'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  {/* Botão de Checkbox Grande Macio */}
+                {/* Linha Principal do Card */}
+                <div className="flex items-center justify-between p-3 sm:p-3.5">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* Botão de Checkbox Grande Macio (1 TOQUE PARA MARCAR) */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePillarClick(k, isChecked);
+                      }}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none cursor-pointer active:scale-90 ${
+                        isChecked
+                          ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
+                          : isFailed
+                          ? 'bg-red-500/25 border border-red-500/70 text-red-400'
+                          : isPastLocked
+                          ? 'bg-black/40 border border-line/40 text-muted/30 cursor-not-allowed'
+                          : 'bg-black/30 border border-line/70 text-transparent hover:border-gold/60'
+                      }`}
+                      title="Marcar / Desmarcar Pilar"
+                    >
+                      {isChecked ? (
+                        <Check size={18} strokeWidth={3.5} className="text-black" />
+                      ) : isFailed ? (
+                        <X size={16} strokeWidth={3} className="text-red-400" />
+                      ) : isPastLocked ? (
+                        <Lock size={12} className="text-muted/40" />
+                      ) : null}
+                    </button>
+
+                    {/* Informações do Pilar (CLIQUE EXPANDI DETALHES & CRONÔMETRO) */}
+                    <div
+                      onClick={() => {
+                        AF.click();
+                        setExpandedPillar((prev) => (prev === k ? null : k));
+                      }}
+                      className="flex flex-col min-w-0 cursor-pointer flex-1 group"
+                      title={HABITFLOW_I18N.tapForDetails[lang]}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <IconComponent size={14} className={conf.iconColor || 'text-gold'} />
+                        <span className={`font-display font-black text-sm tracking-wide truncate group-hover:text-gold transition-colors ${isChecked ? 'text-amber-300' : 'text-[#EDE5D5]'}`}>
+                          {conf.name[lang]}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="px-1.5 py-0.2 rounded bg-surface border border-line/50 text-[9.5px] font-mono text-muted">
+                          {conf.cat[lang]}
+                        </span>
+                        <span className="text-[10px] text-muted/70 font-mono truncate">
+                          {conf.sub[lang]}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lado Direito: Dias em Vigília + Toggle de Detalhes */}
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none ${
-                      isChecked
-                        ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
-                        : isFailed
-                        ? 'bg-red-500/25 border border-red-500/70 text-red-400'
-                        : isPastLocked
-                        ? 'bg-black/40 border border-line/40 text-muted/30'
-                        : 'bg-black/30 border border-line/70 text-transparent hover:border-gold/60'
-                    }`}
+                    onClick={() => {
+                      AF.click();
+                      setExpandedPillar((prev) => (prev === k ? null : k));
+                    }}
+                    className="flex items-center gap-1.5 flex-none pl-2 cursor-pointer"
                   >
-                    {isChecked ? (
-                      <Check size={18} strokeWidth={3.5} className="text-black" />
-                    ) : isFailed ? (
-                      <X size={16} strokeWidth={3} className="text-red-400" />
-                    ) : isPastLocked ? (
-                      <Lock size={12} className="text-muted/40" />
-                    ) : null}
-                  </div>
-
-                  {/* Informações do Pilar */}
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <IconComponent size={14} className={conf.iconColor || 'text-gold'} />
-                      <span className={`font-display font-black text-sm tracking-wide truncate ${isChecked ? 'text-amber-300' : 'text-[#EDE5D5]'}`}>
-                        {conf.name[lang]}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="px-1.5 py-0.2 rounded bg-surface border border-line/50 text-[9.5px] font-mono text-muted">
-                        {conf.cat[lang]}
-                      </span>
-                      <span className="text-[10px] text-muted/70 font-mono truncate">
-                        {conf.sub[lang]}
-                      </span>
-                    </div>
+                    <span className="font-mono font-black text-xs text-gold">
+                      {pillarInfo.days}d
+                    </span>
+                    <button
+                      type="button"
+                      className="p-1 rounded-md text-muted hover:text-gold transition-colors"
+                      title={HABITFLOW_I18N.tapForDetails[lang]}
+                    >
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
                   </div>
                 </div>
 
-                {/* Ícone de Estado à direita */}
-                <div className="flex items-center gap-1 flex-none pl-2">
-                  {isChecked && (
-                    <span className="text-xs font-mono font-bold text-amber-400">✓</span>
-                  )}
-                  {isPastLocked && (
-                    <Lock size={13} className="text-muted/40" />
-                  )}
-                </div>
+                {/* GAVETA TÁTICA EXPANSÍVEL: DADOS COMPLETOS E CRONÔMETRO DE ALTA PRECISÃO (ESTILO DO SEU 3º PRINT) */}
+                {isExpanded && (
+                  <div className="p-3 border-t border-line/50 bg-[#0F0E17] flex flex-col gap-2.5 animate-fade-in text-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🔥</span>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-display font-black text-xs text-gold uppercase tracking-wider">
+                              {conf.name[lang]}
+                            </span>
+                            <span className="text-[8px] font-mono font-bold px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/40 uppercase">
+                              {HABITFLOW_I18N.standardInFocus[lang]}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-muted font-serif italic mt-0.5">
+                            {conf.sub[lang]}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-display font-black text-lg text-gold leading-none">
+                          {pillarInfo.days} {HABITFLOW_I18N.daysWord[lang].toUpperCase()}
+                        </span>
+                        <small className="block text-[8px] font-mono uppercase tracking-widest text-muted mt-0.5">
+                          {HABITFLOW_I18N.timeInVigilLabel[lang]}
+                        </small>
+                      </div>
+                    </div>
+
+                    {/* Cronômetro de Precisão Segundo a Segundo */}
+                    <div className="p-2 rounded-xl border border-gold/30 bg-black/40 flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-1 text-[9.5px] font-mono font-bold text-muted uppercase tracking-wider">
+                        <Timer size={12} className="text-amber-400" />
+                        <span>{HABITFLOW_I18N.precisionTimerLabel[lang]}</span>
+                      </span>
+                      <span className="font-mono font-black text-xs text-amber-300 tracking-wider">
+                        {pillarInfo.timer}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+
+        {/* BOTÃO NOBRE DE REGISTRO DE QUEDA & STATUS DE COMBATE (ESTILO DO SEU 2º PRINT) */}
+        <div className="flex flex-col gap-1.5 mt-1">
+          {pillarsDoneCount === 3 && (
+            <div className="w-full py-2 px-3 rounded-xl border border-gold/50 bg-gradient-to-r from-amber-950/50 via-[#181622] to-amber-950/50 text-gold text-xs font-mono font-black flex items-center justify-center gap-1.5 shadow-sm select-none">
+              <Trophy size={14} className="text-gold" />
+              <span>{HABITFLOW_I18N.battleWonLabel[lang]}</span>
+            </div>
+          )}
+
+          {canEdit && onFailFlow && (
+            <button
+              type="button"
+              onClick={onFailFlow}
+              className="w-full py-2 px-3 rounded-xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-[#161016] to-red-950/40 hover:bg-red-900/50 text-red-400 hover:text-red-300 text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98] shadow-sm select-none"
+            >
+              <span>🩸</span>
+              <span>{HABITFLOW_I18N.btnRegisterFall[lang]}</span>
+            </button>
+          )}
+        </div>
+
       </div>
 
       {/* 5. SEÇÃO: HÁBITOS DA FORJA (CARDS GRANDES ESTILO HABITFLOW) */}
