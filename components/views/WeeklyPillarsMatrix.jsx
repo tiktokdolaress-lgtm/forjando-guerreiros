@@ -284,6 +284,7 @@ export default function WeeklyPillarsMatrix({
                     {/* 7 Células dos Dias */}
                     {weekDays.map((ds) => {
                       const isToday = ds === todayStr;
+                      const isFuture = ds > todayStr;
                       const c = L.ci(S, ds) || {};
                       const isChecked = !!c[k];
                       const FAILMAP = { p: 'porn', m: 'mast', r: 'ejac' };

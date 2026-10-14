@@ -594,6 +594,7 @@ export default function HabitSpreadsheetMatrix({
                       {/* 7 Células Interativas dos Dias */}
                       {weekDays.map((ds) => {
                         const isToday = ds === todayStr;
+                        const isFuture = ds > todayStr;
                         const dList = doneMap[ds] || [];
                         const fList = failMap[ds] || [];
                         const isDone = dList.some((id) => String(id) === String(h.id));
