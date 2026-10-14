@@ -262,7 +262,7 @@ export default function Shell() {
       <div className="flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
         {/* topbar */}
         <header className="sticky top-0 z-30 w-full border-b border-gold/20 bg-[rgba(13,13,14,.95)] px-3.5 sm:px-4 py-2.5 backdrop-blur-md lg:px-8">
-          <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="w-full flex items-center justify-between gap-3 px-1 sm:px-2">
             {/* LOGO & BRAND (DESKTOP E MOBILE) */}
             <div className="flex items-center gap-2.5 min-w-0 flex-none cursor-pointer" onClick={() => go('qg')}>
               {!S.settings.discreet ? (
@@ -430,7 +430,7 @@ export default function Shell() {
           </div>
         </header>
 
-        <main className="w-full max-w-7xl mx-auto min-w-0 flex-1 px-3 sm:px-4 pb-32 pt-2.5 sm:pt-3 lg:px-8 lg:pb-16 overflow-x-hidden">
+        <main className="w-full min-w-0 flex-1 px-3 sm:px-5 lg:px-8 pb-32 pt-2.5 sm:pt-3 lg:pb-16 overflow-x-hidden">
           <ErrorBoundary key={tab}>
             <View />
           </ErrorBoundary>
