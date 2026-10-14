@@ -310,7 +310,7 @@ export default function HabitDailyCardsView({
                 {dateFormattedTitle}
               </span>
               {isToday ? (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-gold/50 text-gold text-[10px] font-black uppercase tracking-wider">
                   {HABITFLOW_I18N.todayBadge[lang]}
                 </span>
               ) : isYesterday ? (
@@ -350,7 +350,7 @@ export default function HabitDailyCardsView({
           <button
             type="button"
             onClick={onCreateHabit}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_12px_rgba(245,158,11,0.35)] active:scale-95 transition-all cursor-pointer shrink-0"
           >
             <Plus size={15} strokeWidth={3} />
             <span className="hidden sm:inline">{HABITFLOW_I18N.btnNewHabit[lang]}</span>
@@ -364,7 +364,7 @@ export default function HabitDailyCardsView({
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col gap-2 min-w-0">
             {/* Tag Motivacional Dinâmica */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono font-bold w-fit">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[11px] font-mono font-bold w-fit">
               <Sparkles size={12} className="shrink-0" />
               <span className="truncate">{motivationalNotice}</span>
             </div>
@@ -405,7 +405,7 @@ export default function HabitDailyCardsView({
               />
               {/* Círculo preenchido colorido */}
               <path
-                className="text-emerald-400 transition-all duration-700 ease-out"
+                className="text-amber-400 transition-all duration-700 ease-out"
                 strokeDasharray={`${totalProgressPct}, 100`}
                 strokeWidth="3.2"
                 strokeLinecap="round"
@@ -428,7 +428,7 @@ export default function HabitDailyCardsView({
         {/* Barra Fina de Progresso Linear */}
         <div className="w-full h-1.5 rounded-full bg-stone-800/80 overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 rounded-full transition-all duration-500"
             style={{ width: `${totalProgressPct}%` }}
           />
         </div>
@@ -499,7 +499,7 @@ export default function HabitDailyCardsView({
                     : 'cursor-pointer active:scale-[0.98]'
                 } ${
                   isChecked
-                    ? 'border-emerald-500/60 bg-gradient-to-r from-emerald-950/40 to-[#12121A] shadow-sm'
+                    ? 'border-gold/70 bg-gradient-to-r from-amber-950/40 to-[#14131C] shadow-[0_0_12px_rgba(250,204,21,0.15)]'
                     : isFailed
                     ? 'border-red-500/60 bg-red-950/25'
                     : 'border-line/70 bg-[#14141E] hover:border-gold/50 hover:bg-[#181826]'
@@ -510,7 +510,7 @@ export default function HabitDailyCardsView({
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none ${
                       isChecked
-                        ? 'bg-emerald-500 text-black shadow-md'
+                        ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
                         : isFailed
                         ? 'bg-red-500/25 border border-red-500/70 text-red-400'
                         : isPastLocked
@@ -531,7 +531,7 @@ export default function HabitDailyCardsView({
                   <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5">
                       <IconComponent size={14} className={conf.iconColor || 'text-gold'} />
-                      <span className={`font-display font-black text-sm tracking-wide truncate ${isChecked ? 'text-emerald-300' : 'text-[#EDE5D5]'}`}>
+                      <span className={`font-display font-black text-sm tracking-wide truncate ${isChecked ? 'text-amber-300' : 'text-[#EDE5D5]'}`}>
                         {conf.name[lang]}
                       </span>
                     </div>
@@ -550,7 +550,7 @@ export default function HabitDailyCardsView({
                 {/* Ícone de Estado à direita */}
                 <div className="flex items-center gap-1 flex-none pl-2">
                   {isChecked && (
-                    <span className="text-xs font-mono font-bold text-emerald-400">✓</span>
+                    <span className="text-xs font-mono font-bold text-amber-400">✓</span>
                   )}
                   {isPastLocked && (
                     <Lock size={13} className="text-muted/40" />
@@ -589,7 +589,7 @@ export default function HabitDailyCardsView({
                   : cat === 'mind'
                   ? { label: lang === 'en' ? 'Mind' : lang === 'es' ? 'Mente' : 'Mente', color: 'text-blue-400 bg-blue-400/10 border-blue-400/30' }
                   : cat === 'mission'
-                  ? { label: lang === 'en' ? 'Mission' : lang === 'es' ? 'Misión' : 'Missão', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' }
+                  ? { label: lang === 'en' ? 'Mission' : lang === 'es' ? 'Misión' : 'Missão', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' }
                   : { label: lang === 'en' ? 'Spirit' : lang === 'es' ? 'Espíritu' : 'Espírito', color: 'text-purple-400 bg-purple-400/10 border-purple-400/30' };
 
               return (
@@ -602,7 +602,7 @@ export default function HabitDailyCardsView({
                       : 'cursor-pointer active:scale-[0.98]'
                   } ${
                     isDone
-                      ? 'border-emerald-500/60 bg-gradient-to-r from-emerald-950/40 to-[#12121A] shadow-sm'
+                      ? 'border-gold/70 bg-gradient-to-r from-amber-950/40 to-[#14131C] shadow-[0_0_12px_rgba(250,204,21,0.15)]'
                       : isFail
                       ? 'border-red-500/60 bg-red-950/25'
                       : 'border-line/70 bg-[#14141E] hover:border-gold/50 hover:bg-[#181826]'
@@ -613,7 +613,7 @@ export default function HabitDailyCardsView({
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none ${
                         isDone
-                          ? 'bg-emerald-500 text-black shadow-md'
+                          ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
                           : isFail
                           ? 'bg-red-500/25 border border-red-500/70 text-red-400'
                           : isPastLocked
@@ -634,7 +634,7 @@ export default function HabitDailyCardsView({
                     <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-base flex-none">{h.icon || '⚡'}</span>
-                        <span className={`font-display font-black text-sm tracking-wide truncate ${isDone ? 'text-emerald-300' : 'text-[#EDE5D5]'}`}>
+                        <span className={`font-display font-black text-sm tracking-wide truncate ${isDone ? 'text-amber-300' : 'text-[#EDE5D5]'}`}>
                           {h.n || h.name || h.title}
                         </span>
                       </div>

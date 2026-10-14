@@ -174,9 +174,9 @@ export default function Shell() {
   }, [S, toast]);
 
   return (
-    <div className="relative z-[2] min-h-dvh w-full max-w-full overflow-x-hidden lg:grid lg:grid-cols-[242px_minmax(0,1fr)]">
+    <div className="relative z-[2] min-h-dvh w-full max-w-full overflow-x-hidden flex flex-col">
       {/* sidebar desktop */}
-      <aside className="sticky top-0 hidden h-dvh flex-col gap-1.5 overflow-y-auto border-r border-gold/20 bg-deep p-4 lg:flex">
+      <aside className="hidden">
         <div className="mb-5 flex items-center gap-3 px-2">
           {S.settings.discreet ? (
             <ShieldCheck size={38} className="flex-none text-gold" strokeWidth={1.6} />
@@ -262,17 +262,62 @@ export default function Shell() {
       <div className="flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
         {/* topbar */}
         <header className="sticky top-0 z-30 w-full border-b border-gold/20 bg-[rgba(13,13,14,.95)] px-3.5 sm:px-4 py-2.5 backdrop-blur-md lg:px-8">
-          <div className="w-full flex items-center justify-between gap-2">
-            {/* Título da aba ativa (sem seletor suspenso no mobile) */}
-            <div className="flex items-center gap-2 min-w-0">
-              {!S.settings.discreet && (
-                <WarriorLogo size={26} glow={false} className="lg:hidden shrink-0" />
+          <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-3">
+            {/* LOGO & BRAND (DESKTOP E MOBILE) */}
+            <div className="flex items-center gap-2.5 min-w-0 flex-none cursor-pointer" onClick={() => go('qg')}>
+              {!S.settings.discreet ? (
+                <WarriorLogo size={32} glow={true} className="shrink-0" />
+              ) : (
+                <ShieldCheck size={28} className="text-gold shrink-0" strokeWidth={1.6} />
               )}
-              <TabIcon size={19} className="text-gold flex-none hidden lg:block" />
-              <h1 className="truncate font-display text-xl sm:text-2xl tracking-[.06em] text-ink leading-tight">
-                {tab === 'admin' ? 'PAINEL DO COMANDO' : t(tab)}
-              </h1>
+              <div className="flex flex-col min-w-0">
+                <span className="font-display text-[15px] sm:text-[17px] font-black leading-tight tracking-[.08em] text-transparent bg-clip-text bg-gradient-to-r from-[#FFF2B2] via-[#F5C242] to-[#B38018] truncate">
+                  FORJANDO GUERREIROS
+                </span>
+                <span className="text-[8px] font-mono uppercase tracking-[.2em] text-gold/60 hidden sm:block">
+                  {progressDays(S)} {t('dret')}
+                </span>
+              </div>
             </div>
+
+            {/* MENU SUPERIOR HORIZONTAL CENTRALIZADO (ESTILO HABITFLOW) - EXCLUSIVO DESKTOP */}
+            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl bg-[#14141E] border border-line/80 shadow-md">
+              {TABS.map(([id]) => {
+                const Ic = ICONS[id];
+                if (!Ic) return null;
+                const active = tab === id;
+                const lb = t(id).toLowerCase().replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+                return (
+                  <button
+                    key={id}
+                    onClick={() => go(id)}
+                    type="button"
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                      active
+                        ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_12px_rgba(250,204,21,0.35)] font-black'
+                        : 'text-muted hover:text-ink hover:bg-surface/60'
+                    }`}
+                  >
+                    <Ic size={14} strokeWidth={active ? 2.5 : 1.8} className={active ? 'text-black' : 'text-gold/70'} />
+                    <span>{lb}</span>
+                  </button>
+                );
+              })}
+              {isAdmin && (
+                <button
+                  onClick={() => go('admin')}
+                  type="button"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                    tab === 'admin'
+                      ? 'border border-amber-400 bg-amber-500/25 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                      : 'border border-amber-600/30 bg-amber-950/30 text-amber-400 hover:bg-amber-900/50'
+                  }`}
+                >
+                  <Crown size={14} className="text-amber-400" />
+                  <span>DONO</span>
+                </button>
+              )}
+            </nav>
 
             <div className="flex items-center gap-1.5 sm:gap-2 flex-none">
               {isAdmin && (
@@ -385,7 +430,7 @@ export default function Shell() {
           </div>
         </header>
 
-        <main className="w-full min-w-0 flex-1 px-3 sm:px-4 pb-32 pt-2.5 sm:pt-3 lg:px-8 lg:pb-16 overflow-x-hidden">
+        <main className="w-full max-w-7xl mx-auto min-w-0 flex-1 px-3 sm:px-4 pb-32 pt-2.5 sm:pt-3 lg:px-8 lg:pb-16 overflow-x-hidden">
           <ErrorBoundary key={tab}>
             <View />
           </ErrorBoundary>

@@ -1226,7 +1226,7 @@ export default function QgView() {
             }}
             className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               masterViewMode === 'today'
-                ? 'bg-emerald-500 text-black shadow-md font-black scale-100'
+                ? 'bg-gold text-black shadow-md font-black scale-100'
                 : 'text-muted hover:text-ink hover:bg-surface/50'
             }`}
           >
