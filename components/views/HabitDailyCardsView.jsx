@@ -15,6 +15,14 @@ import {
   Sparkles,
   Trophy,
   Crown,
+  Shield,
+  Eye,
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Timer,
+  Swords,
+  ShieldCheck,
 } from 'lucide-react';
 import { today, yesterday, parseD, dstr, fmtD } from '@/lib/utils';
 import { AF } from '@/lib/audio';
@@ -49,9 +57,9 @@ const HABITFLOW_I18N = {
     es: '¡Da el primer paso hacia un día productivo!',
   },
   conquests: {
-    pt: (c, t) => `${c}/${t} Conquistas`,
-    en: (c, t) => `${c}/${t} Achievements`,
-    es: (c, t) => `${c}/${t} Conquistas`,
+    pt: (c, t) => `${c}/${t} Pilares`,
+    en: (c, t) => `${c}/${t} Pillars`,
+    es: (c, t) => `${c}/${t} Pilares`,
   },
   daysWord: { pt: 'dia', en: 'day', es: 'día' },
   daysPluralWord: { pt: 'dias', en: 'days', es: 'días' },
@@ -64,6 +72,66 @@ const HABITFLOW_I18N = {
     pt: 'O futuro ainda não existe. Vença apenas o dia de hoje.',
     en: 'The future does not exist yet. Conquer only today.',
     es: 'El futuro aún no existe. Vence solo el día de hoy.',
+  },
+  pillarsSectionTitle: {
+    pt: 'OS 3 PILARES DE COMBATE (HONRA SAGRADA)',
+    en: 'THE 3 COMBAT PILLARS (SACRED HONOR)',
+    es: 'LOS 3 PILARES DE COMBATE (HONOR SAGRADO)',
+  },
+  forgeHabitsTitle: {
+    pt: 'HÁBITOS DA FORJA (DISCIPLINA DIÁRIA)',
+    en: 'FORGE HABITS (DAILY DISCIPLINE)',
+    es: 'HÁBITOS DE LA FORJA (DISCIPLINA DIARIA)',
+  },
+  pillarsAllDone: {
+    pt: '⚔️ Os 3 Pilares foram blindados hoje. Honra intacta!',
+    en: '⚔️ All 3 Pillars were shielded today. Honor intact!',
+    es: '⚔️ ¡Los 3 Pilares fueron blindados hoy. Honor intacto!',
+  },
+  habitsAllDone: {
+    pt: '⚡ Todos os hábitos de hoje foram forjados com sucesso!',
+    en: '⚡ All habits for today have been forged successfully!',
+    es: '⚡ ¡Todos los hábitos de hoy han sido forjados con éxito!',
+  },
+  showCompleted: {
+    pt: 'Exibir concluídos',
+    en: 'Show completed',
+    es: 'Mostrar completados',
+  },
+  hideCompleted: {
+    pt: 'Ocultar concluídos',
+    en: 'Hide completed',
+    es: 'Ocultar completados',
+  },
+  btnRegisterFall: {
+    pt: '🩸 Registrar Queda em Combate',
+    en: '🩸 Register Combat Fall',
+    es: '🩸 Registrar Caída en Combate',
+  },
+  precisionTimerLabel: {
+    pt: 'CRONÔMETRO DE PRECISÃO',
+    en: 'PRECISION TIMER',
+    es: 'CRONÓMETRO DE PRECISIÓN',
+  },
+  timeInVigilLabel: {
+    pt: 'TEMPO EM VIGÍLIA',
+    en: 'TIME IN VIGIL',
+    es: 'TIEMPO EN VIGILIA',
+  },
+  mottoQuote: {
+    pt: '"Vença o hoje · O amanhã ainda não existe · Foco total no agora"',
+    en: '"Conquer today · Tomorrow does not exist yet · Total focus on now"',
+    es: '"Vence el hoy · El mañana aún no existe · Enfoque total en el ahora"',
+  },
+  hoursRemainingSuffix: {
+    pt: (h, m) => `⏳ ${h}h ${m}m restantes hoje`,
+    en: (h, m) => `⏳ ${h}h ${m}m left today`,
+    es: (h, m) => `⏳ ${h}h ${m}m restantes hoy`,
+  },
+  dayPercentSuffix: {
+    pt: (p) => `${p}% do dia`,
+    en: (p) => `${p}% of day`,
+    es: (p) => `${p}% del día`,
   },
   pillars: {
     r: {
@@ -83,9 +151,9 @@ const HABITFLOW_I18N = {
       time: '08:00',
     },
     m: {
-      pt: 'Autodomínio / Sem Masturbação',
-      en: 'Self-Mastery / No Masturbation',
-      es: 'Autodominio / Sin Masturbación',
+      pt: 'Sem Masturbação',
+      en: 'No Masturbation',
+      es: 'Sin Masturbación',
       icon: '⚔️',
       cat: { pt: 'Espírito', en: 'Spirit', es: 'Espíritu' },
       time: '08:00',
@@ -106,6 +174,9 @@ export default function HabitDailyCardsView({
   onNotify,
   tier,
   progressDays = 0,
+  nt = null,
+  onFailFlow = null,
+  pillarsData = null,
 }) {
   const lang = ['pt', 'en', 'es'].includes(curLang) ? curLang : 'pt';
   const todayStr = today();
@@ -118,7 +189,33 @@ export default function HabitDailyCardsView({
   const isFuture = selectedDate > todayStr;
   const isPastLocked = !isToday && !isYesterday && !isFuture;
 
-  // Formatação de data em destaque idêntica ao print: "Sexta-Feira, 16 De Outubro"
+  // Estado para expandir gaveta do cronômetro de precisão por pilar
+  const [expandedPillar, setExpandedPillar] = useState(null);
+
+  // Estado opcional para auditar concluídos se o guerreiro quiser rever
+  const [showFinishedPillars, setShowFinishedPillars] = useState(false);
+  const [showFinishedHabits, setShowFinishedHabits] = useState(false);
+
+  // Relógio do dia (tempo restante das 24h e % decorrido)
+  const [nowTime, setNowTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNowTime(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const { remHours, remMinutes, dayProgressPct } = useMemo(() => {
+    const h = nowTime.getHours();
+    const m = nowTime.getMinutes();
+    const currentMins = h * 60 + m;
+    const totalMins = 1440;
+    const remMins = Math.max(0, totalMins - currentMins);
+    const rH = Math.floor(remMins / 60);
+    const rM = remMins % 60;
+    const pct = Math.min(100, Math.round((currentMins / totalMins) * 100));
+    return { remHours: rH, remMinutes: rM, dayProgressPct: pct };
+  }, [nowTime]);
+
+  // Formatação da data idêntica ao print
   const selectedDateObj = useMemo(() => parseD(selectedDate), [selectedDate]);
   const dateFormattedTitle = useMemo(() => {
     const dayW = DAY_NAMES[lang][selectedDateObj.getDay()];
@@ -130,42 +227,50 @@ export default function HabitDailyCardsView({
     return `${dayW}, ${dayN} De ${mon}`;
   }, [selectedDateObj, lang]);
 
-  // Lista Unificada: 3 Pilares + Hábitos da Forja
+  // Mapas de dados
   const reqPillars = useMemo(() => L.pillars(S) || ['r', 'p', 'm'], [S]);
   const cData = useMemo(() => L.ci(S, selectedDate) || {}, [S, selectedDate]);
   const doneHabitsMap = useMemo(() => (S && S.forge && S.forge.done) || {}, [S]);
   const selectedDoneHabits = doneHabitsMap[selectedDate] || [];
 
-  // Itens unificados para o grid
-  const allCardItems = useMemo(() => {
-    const items = [];
-
-    // Pilares
-    reqPillars.forEach((k) => {
+  // 1. Lista dos 3 Pilares
+  const pillarCards = useMemo(() => {
+    return reqPillars.map((k) => {
       const conf = HABITFLOW_I18N.pillars[k] || {
         pt: `Pilar ${k}`,
         en: `Pillar ${k}`,
         es: `Pilar ${k}`,
         icon: '🛡️',
-        cat: { pt: 'Forja', en: 'Forge', es: 'Forja' },
+        cat: { pt: 'Combate', en: 'Combat', es: 'Combate' },
         time: '08:00',
       };
       const isDone = !!cData[k];
-      items.push({
-        type: 'pillar',
+      const pKey = k === 'r' ? 'ret' : k === 'p' ? 'porn' : 'mast';
+      const info = (pillarsData && pillarsData[pKey]) || {
+        days: progressDays,
+        timer: `${progressDays}d 00h:00m:00s`,
+      };
+
+      return {
+        key: k,
         id: `pillar_${k}`,
-        rawKey: k,
         name: conf[lang] || conf.pt,
         icon: conf.icon,
         cat: conf.cat[lang] || conf.cat.pt,
         time: conf.time,
-        streak: progressDays,
+        days: info.days,
+        timer: info.timer,
         isDone,
-      });
+      };
     });
+  }, [reqPillars, cData, lang, pillarsData, progressDays]);
 
-    // Hábitos da Forja
-    activeHabits.forEach((h) => {
+  const pillarsDoneCount = pillarCards.filter((x) => x.isDone).length;
+  const allPillarsDone = reqPillars.length > 0 && pillarsDoneCount === reqPillars.length;
+
+  // 2. Lista de Hábitos da Forja
+  const habitCards = useMemo(() => {
+    return activeHabits.map((h) => {
       const isDone = selectedDoneHabits.some((id) => String(id) === String(h.id));
       const streak = getHabitStreak ? getHabitStreak(h.id) : 0;
       const cat = (getHabitCategory && getHabitCategory(h)) || h.category || 'Saúde';
@@ -180,26 +285,25 @@ export default function HabitDailyCardsView({
           ? (lang === 'en' ? 'Routine' : lang === 'es' ? 'Rutina' : 'Rotina')
           : (lang === 'en' ? 'Health' : lang === 'es' ? 'Salud' : 'Saúde');
 
-      items.push({
-        type: 'habit',
-        id: `habit_${h.id}`,
-        rawKey: h.id,
+      return {
+        id: h.id,
         name: h.n || h.name || h.title || 'Hábito',
         icon: h.icon || '⚡',
         cat: catLabel,
         time,
         streak,
         isDone,
-      });
+      };
     });
+  }, [activeHabits, selectedDoneHabits, getHabitStreak, getHabitCategory, S, lang]);
 
-    return items;
-  }, [reqPillars, cData, activeHabits, selectedDoneHabits, lang, progressDays, getHabitStreak, getHabitCategory, S]);
+  const habitsDoneCount = habitCards.filter((x) => x.isDone).length;
+  const allHabitsDone = habitCards.length > 0 && habitsDoneCount === habitCards.length;
 
-  // Contagem de Conclusão
-  const totalCount = allCardItems.length;
-  const doneCount = allCardItems.filter((x) => x.isDone).length;
-  const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  // Total Geral (Pilares + Hábitos) para a métrica de 33%
+  const grandTotal = pillarCards.length + habitCards.length;
+  const grandDone = pillarsDoneCount + habitsDoneCount;
+  const progressPct = grandTotal > 0 ? Math.round((grandDone / grandTotal) * 100) : 0;
 
   // Patente e Nível
   const safeTier = tier || L.tierNow(S);
@@ -208,7 +312,7 @@ export default function HabitDailyCardsView({
     ? safeTier.min >= 730 ? 11 : safeTier.min >= 365 ? 10 : safeTier.min >= 270 ? 9 : safeTier.min >= 180 ? 8 : safeTier.min >= 120 ? 7 : safeTier.min >= 61 ? 6 : safeTier.min >= 31 ? 5 : safeTier.min >= 15 ? 4 : safeTier.min >= 7 ? 3 : safeTier.min >= 3 ? 2 : 1
     : 7;
 
-  // Ações de Navegação de Dias
+  // Ações de Data
   const handlePrevDay = () => {
     AF.click();
     const curr = parseD(selectedDate);
@@ -227,8 +331,8 @@ export default function HabitDailyCardsView({
     setSelectedDate(dstr(next));
   };
 
-  // Clique no Card / Checkbox
-  const handleToggleItem = (item) => {
+  // Clique em Pilar
+  const handlePillarToggle = (p) => {
     if (isFuture) {
       if (onNotify) onNotify(HABITFLOW_I18N.futureNotice[lang]);
       return;
@@ -238,69 +342,82 @@ export default function HabitDailyCardsView({
       if (onNotify) onNotify(HABITFLOW_I18N.lockedPastNotice[lang]);
       return;
     }
-
-    if (item.type === 'pillar') {
-      if (setCI) {
-        AF.click();
-        setCI(item.rawKey, !item.isDone, selectedDate);
-      }
-    } else {
-      if (onToggleHabit) {
-        onToggleHabit(item.rawKey, selectedDate);
-      }
+    if (setCI) {
+      AF.click();
+      setCI(p.key, !p.isDone, selectedDate);
     }
   };
 
+  // Clique em Hábito
+  const handleHabitToggle = (h) => {
+    if (isFuture) {
+      if (onNotify) onNotify(HABITFLOW_I18N.futureNotice[lang]);
+      return;
+    }
+    if (isPastLocked) {
+      AF.tone(110, 0.25, 'sine', 0.15, 0, 50);
+      if (onNotify) onNotify(HABITFLOW_I18N.lockedPastNotice[lang]);
+      return;
+    }
+    if (onToggleHabit) {
+      onToggleHabit(h.id, selectedDate);
+    }
+  };
+
+  // Filtragem dos Pilares e Hábitos: os que forem concluídos SOMEM da tela!
+  const visiblePillars = showFinishedPillars ? pillarCards : pillarCards.filter((p) => !p.isDone);
+  const visibleHabits = showFinishedHabits ? habitCards : habitCards.filter((h) => !h.isDone);
+
   return (
-    <div className="flex flex-col gap-4 w-full max-w-full min-w-0">
-      {/* 1. BARRA SUPERIOR DE DATA & SELETOR DE DIAS (EXATAMENTE COMO NO PRINT DO HABITFLOW) */}
-      <div className="flex items-center justify-between gap-2 p-3 sm:p-3.5 rounded-2xl border border-[#2B2D31] bg-[#181A1C] shadow-sm select-none">
+    <div className="flex flex-col gap-4 w-full max-w-full min-w-0 select-none">
+      {/* 1. BARRA SUPERIOR DE DATA (EXATA DO HABITFLOW COM PALETA OURO & AÇO) */}
+      <div className="flex items-center justify-between gap-2 p-3 sm:p-3.5 rounded-2xl border border-line/80 bg-[#14141E] shadow-sm">
         <div className="flex items-center gap-2.5 min-w-0">
-          {/* Botão Seta Anterior */}
+          {/* Seta Anterior */}
           <button
             type="button"
             onClick={handlePrevDay}
-            className="w-8 h-8 rounded-xl border border-[#2F3136] bg-[#222428] hover:border-[#4E5058] text-[#949BA4] hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
+            className="w-8 h-8 rounded-xl border border-line/80 bg-[#1D1B28] hover:border-gold/50 text-muted hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 shrink-0"
             title="Dia anterior"
           >
             <ChevronLeft size={16} />
           </button>
 
-          {/* Título da Data + Badge Hoje */}
+          {/* Data + Badge */}
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-display font-black text-sm sm:text-base text-white tracking-wide truncate">
+              <span className="font-display font-black text-sm sm:text-base text-[#EDE5D5] tracking-wide truncate">
                 {dateFormattedTitle}
               </span>
               {isToday ? (
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-gold/50 text-gold text-[10px] font-black uppercase tracking-wider">
                   {HABITFLOW_I18N.todayBadge[lang]}
                 </span>
               ) : isYesterday ? (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] font-black uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[10px] font-black uppercase tracking-wider">
                   {HABITFLOW_I18N.yesterdayBadge[lang]}
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full bg-[#2B2D31] text-[#949BA4] text-[10px] font-mono flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-full bg-[#1D1B28] text-muted text-[10px] font-mono flex items-center gap-1">
                   <Lock size={9} />
                   <span>{fmtD(selectedDate)}</span>
                 </span>
               )}
             </div>
-            <span className="text-[11px] font-mono text-[#8E9296] truncate mt-0.5">
-              {HABITFLOW_I18N.habitsSummary[lang](doneCount, totalCount, progressPct)}
+            <span className="text-[11px] font-mono text-muted truncate mt-0.5">
+              {HABITFLOW_I18N.habitsSummary[lang](grandDone, grandTotal, progressPct)}
             </span>
           </div>
 
-          {/* Botão Seta Próximo */}
+          {/* Seta Próximo */}
           <button
             type="button"
             disabled={isToday}
             onClick={handleNextDay}
             className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center shrink-0 ${
               isToday
-                ? 'border-[#242629] bg-[#161719] text-[#4E5058] cursor-not-allowed'
-                : 'border-[#2F3136] bg-[#222428] hover:border-[#4E5058] text-[#949BA4] hover:text-white cursor-pointer active:scale-95'
+                ? 'border-line/40 bg-[#101016] text-muted/30 cursor-not-allowed'
+                : 'border-line/80 bg-[#1D1B28] hover:border-gold/50 text-muted hover:text-white cursor-pointer active:scale-95'
             }`}
             title="Próximo dia"
           >
@@ -308,65 +425,71 @@ export default function HabitDailyCardsView({
           </button>
         </div>
 
-        {/* Botão "+ Novo Hábito" Verde Esmeralda Exato do Print */}
+        {/* Botão "+ Novo Hábito" Dourado Forja */}
         <button
           type="button"
           onClick={() => {
             if (onCreateHabit) onCreateHabit();
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-[#00C48C] hover:bg-[#00D699] text-white font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_12px_rgba(0,196,140,0.3)] active:scale-95 transition-all cursor-pointer shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_12px_rgba(250,204,21,0.35)] active:scale-95 transition-all cursor-pointer shrink-0"
         >
           <Plus size={15} strokeWidth={3} />
           <span>{HABITFLOW_I18N.btnNewHabit[lang]}</span>
         </button>
       </div>
 
-      {/* 2. CARD GRANDE DE "CONSISTÊNCIA DIÁRIA" COM ANEL DE 33% (EXATAMENTE COMO NO PRINT) */}
-      <div className="p-4 sm:p-5 rounded-2xl border border-[#2B2D31] bg-[#181A1C] shadow-md flex flex-col gap-3">
+      {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (ANEL DOURADO + LEMA & 24H NO RODAPÉ) */}
+      <div className="p-4 sm:p-5 rounded-2xl border border-line/80 bg-[#14141E] shadow-md flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col gap-2 min-w-0">
-            {/* Tag de Motivação Verde Ciano */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00C48C]/15 border border-[#00C48C]/35 text-[#00C48C] text-[11px] font-mono font-bold w-fit">
-              <Sparkles size={12} className="shrink-0" />
+            {/* Tag de Motivação Dourada */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[11px] font-mono font-bold w-fit">
+              <Sparkles size={12} className="shrink-0 text-gold" />
               <span className="truncate">{HABITFLOW_I18N.motivationalPhrase[lang]}</span>
             </div>
 
             {/* Título: Consistência Diária */}
-            <h2 className="font-display font-black text-xl sm:text-2xl text-white tracking-wide">
+            <h2 className="font-display font-black text-xl sm:text-2xl text-[#EDE5D5] tracking-wide">
               {HABITFLOW_I18N.dailyConsistency[lang]}
             </h2>
 
-            {/* Badges de Nível & Conquistas */}
+            {/* Badges de Nível & Pilares Conquistados */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-[#3A3D44] bg-[#222428] text-white text-[11px] font-mono font-bold">
-                <Crown size={13} className="text-[#F1C40F]" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-white text-[11px] font-mono font-bold">
+                <Crown size={13} className="text-gold" />
                 <span>
                   <strong>Nível {stageNum}:</strong> {tierName}
                 </span>
-                <span className="text-[#F1C40F] font-bold">({progressDays * 250 + 550} XP)</span>
+                <span className="text-gold font-bold">({progressDays * 250 + 550} XP)</span>
               </span>
 
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#3A3D44] bg-[#222428] text-[#F1C40F] text-[11px] font-mono font-bold">
-                <Trophy size={12} className="text-[#F1C40F]" />
-                <span>{HABITFLOW_I18N.conquests[lang](doneCount, totalCount)}</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-gold text-[11px] font-mono font-bold">
+                <Trophy size={12} className="text-gold" />
+                <span>{HABITFLOW_I18N.conquests[lang](pillarsDoneCount, reqPillars.length)}</span>
               </span>
+
+              {nt && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/30 bg-amber-500/10 text-amber-200 text-[11px] font-mono font-bold">
+                  <span>⏳ Faltam {Math.max(1, nt.min - progressDays)}d para {nt.name}</span>
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Anel Circular com Porcentagem (ex: 33% FEITO) */}
+          {/* Anel Circular com Porcentagem em Ouro/Âmbar */}
           <div className="relative flex-none w-18 h-18 sm:w-20 sm:h-20 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              {/* Fundo do círculo */}
+              {/* Círculo base */}
               <path
-                className="text-[#25282C]"
+                className="text-[#201F2C]"
                 strokeWidth="3.2"
                 stroke="currentColor"
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
-              {/* Arco preenchido ciano/esmeralda */}
+              {/* Arco preenchido em ouro forjado */}
               <path
-                className="text-[#00C48C] transition-all duration-700 ease-out"
+                className="text-amber-400 transition-all duration-700 ease-out"
                 strokeDasharray={`${progressPct}, 100`}
                 strokeWidth="3.2"
                 strokeLinecap="round"
@@ -376,112 +499,324 @@ export default function HabitDailyCardsView({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="font-display font-black text-sm sm:text-base text-white leading-none">
+              <span className="font-display font-black text-sm sm:text-base text-gold leading-none">
                 {progressPct}%
               </span>
-              <span className="text-[7.5px] sm:text-[8px] font-mono font-black text-[#8E9296] tracking-widest uppercase mt-0.5">
+              <span className="text-[7.5px] sm:text-[8px] font-mono font-black text-muted tracking-widest uppercase mt-0.5">
                 {HABITFLOW_I18N.doneLabel[lang]}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Linha Fina Cinza Divisória na Base */}
-        <div className="w-full h-1 rounded-full bg-[#25282C] mt-1" />
+        {/* Linha Divisória */}
+        <div className="w-full h-px bg-line/60 mt-1" />
+
+        {/* Lema Tático das 24h & Tempo Restante do Dia (INTEGRADO DISCRETAMENTE NO RODAPÉ DO CARD) */}
+        <div className="flex items-center justify-between text-[11px] font-mono text-muted gap-2 flex-wrap">
+          <span className="italic text-gold/80 font-serif">
+            {HABITFLOW_I18N.mottoQuote[lang]}
+          </span>
+          <span className="font-bold text-amber-300">
+            {HABITFLOW_I18N.hoursRemainingSuffix[lang](remHours, remMinutes)} · {HABITFLOW_I18N.dayPercentSuffix[lang](dayProgressPct)}
+          </span>
+        </div>
       </div>
 
-      {/* 3. GRADE DOS CARDS DE HÁBITOS (EXATAMENTE COMO NO PRINT EM 4 COLUNAS) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full">
-        {allCardItems.map((item) => {
-          return (
-            <div
-              key={item.id}
-              onClick={() => handleToggleItem(item)}
-              className={`flex items-center justify-between p-3 rounded-2xl border transition-all select-none cursor-pointer active:scale-[0.98] ${
-                item.isDone
-                  ? 'border-[#2B2D31] bg-[#181A1C]'
-                  : 'border-[#2B2D31] bg-[#181A1C] hover:border-[#3F4248]'
-              }`}
+      {/* 3. SEÇÃO DOS 3 PILARES DE COMBATE (DESTAQUE NOBRE COM BORDA DOURADA & SOMEM AO CONCLUIR) */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10.5px] font-mono font-black text-gold uppercase tracking-widest flex items-center gap-1.5">
+            <Shield size={13} className="text-gold" />
+            <span>{HABITFLOW_I18N.pillarsSectionTitle[lang]}</span>
+          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-muted font-bold">
+              {pillarsDoneCount}/3 {HABITFLOW_I18N.doneLabel[lang]}
+            </span>
+            {pillarsDoneCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setShowFinishedPillars((v) => !v);
+                }}
+                className="text-[10px] font-mono font-bold text-gold/80 hover:text-gold underline cursor-pointer"
+              >
+                {showFinishedPillars ? HABITFLOW_I18N.hideCompleted[lang] : HABITFLOW_I18N.showCompleted[lang]}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Se todos os 3 pilares foram blindados e o guerreiro não pediu para exibir, mostra selo de honra intacta */}
+        {allPillarsDone && !showFinishedPillars ? (
+          <div className="p-3.5 rounded-2xl border border-gold/50 bg-gradient-to-r from-amber-950/40 via-[#181624] to-amber-950/40 flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <ShieldCheck size={18} className="text-gold flex-none" />
+              <span className="text-xs font-mono font-bold text-gold truncate">
+                {HABITFLOW_I18N.pillarsAllDone[lang]}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                AF.click();
+                setShowFinishedPillars(true);
+              }}
+              className="px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/15 text-gold text-[10.5px] font-mono font-bold hover:bg-gold/25 transition-all cursor-pointer shrink-0"
             >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                {/* Checkbox Quadrado com Cantos Arredondados */}
+              {HABITFLOW_I18N.showCompleted[lang]}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {visiblePillars.map((p) => {
+              const isExpanded = expandedPillar === p.key;
+
+              return (
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none ${
-                    item.isDone
-                      ? 'bg-[#00C48C] text-white shadow-[0_0_10px_rgba(0,196,140,0.35)]'
-                      : 'border-2 border-[#3F4248] bg-[#222428]'
+                  key={p.id}
+                  className={`flex flex-col rounded-2xl border transition-all overflow-hidden ${
+                    p.isDone
+                      ? 'border-gold/70 bg-gradient-to-r from-amber-950/40 to-[#14131C] shadow-[0_0_12px_rgba(250,204,21,0.15)]'
+                      : 'border-gold/40 bg-gradient-to-r from-amber-950/20 via-[#161522] to-amber-950/20 hover:border-gold/70 shadow-sm'
                   }`}
                 >
-                  {item.isDone && <Check size={18} strokeWidth={3.5} className="text-white" />}
-                </div>
+                  <div className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Checkbox Dourado */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePillarToggle(p);
+                        }}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none cursor-pointer active:scale-90 ${
+                          p.isDone
+                            ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
+                            : 'border-2 border-gold/40 bg-[#1D1B28] hover:border-gold'
+                        }`}
+                        title="Marcar pilar como vencido hoje"
+                      >
+                        {p.isDone && <Check size={18} strokeWidth={3.5} className="text-black" />}
+                      </button>
 
-                {/* Nome do Hábito + Tags (Categoria, Horário, Streak) */}
-                <div className="flex flex-col min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base flex-none">{item.icon}</span>
-                    <span
-                      className={`font-display font-black text-xs sm:text-sm tracking-wide truncate ${
-                        item.isDone ? 'line-through text-[#8E9296]' : 'text-white'
+                      {/* Informações do Pilar (Clique revela Cronômetro de Precisão) */}
+                      <div
+                        onClick={() => {
+                          AF.click();
+                          setExpandedPillar((prev) => (prev === p.key ? null : p.key));
+                        }}
+                        className="flex flex-col min-w-0 flex-1 cursor-pointer group"
+                        title="Toque para ver cronômetro de precisão segundo a segundo"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base flex-none">{p.icon}</span>
+                          <span className={`font-display font-black text-xs sm:text-sm tracking-wide truncate group-hover:text-gold transition-colors ${
+                            p.isDone ? 'line-through text-muted' : 'text-[#EDE5D5]'
+                          }`}>
+                            {p.name}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="px-1.5 py-0.2 rounded bg-gold/15 text-gold border border-gold/30 text-[9.5px] font-mono font-bold">
+                            {p.cat}
+                          </span>
+                          <span className="text-[10px] font-mono text-muted flex items-center gap-0.5">
+                            <Flame size={10} className="fill-amber-400 text-amber-400" />
+                            <span>{p.days}d {HABITFLOW_I18N.timeInVigilLabel[lang]}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Toggle de Cronômetro de Precisão */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        AF.click();
+                        setExpandedPillar((prev) => (prev === p.key ? null : p.key));
+                      }}
+                      className="p-1 rounded-md text-muted hover:text-gold transition-colors flex-none pl-1"
+                      title="Cronômetro de precisão"
+                    >
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+                  </div>
+
+                  {/* Gaveta do Cronômetro de Precisão (Segundo a Segundo) */}
+                  {isExpanded && (
+                    <div className="p-2.5 border-t border-gold/30 bg-black/40 flex items-center justify-between gap-2 text-xs">
+                      <span className="flex items-center gap-1 text-[9.5px] font-mono font-bold text-muted uppercase tracking-wider">
+                        <Timer size={12} className="text-gold" />
+                        <span>{HABITFLOW_I18N.precisionTimerLabel[lang]}</span>
+                      </span>
+                      <span className="font-mono font-black text-xs text-amber-300 tracking-wider">
+                        {p.timer}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 4. SEÇÃO DOS HÁBITOS DA FORJA (GRADE EM 4 COLUNAS & SOMEM AO CONCLUIR) */}
+      <div className="flex flex-col gap-2 mt-1">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10.5px] font-mono font-black text-gold/80 uppercase tracking-widest flex items-center gap-1.5">
+            <Swords size={13} className="text-gold" />
+            <span>{HABITFLOW_I18N.forgeHabitsTitle[lang]}</span>
+          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-muted font-bold">
+              {habitsDoneCount}/{habitCards.length} {HABITFLOW_I18N.doneLabel[lang]}
+            </span>
+            {habitsDoneCount > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  AF.click();
+                  setShowFinishedHabits((v) => !v);
+                }}
+                className="text-[10px] font-mono font-bold text-gold/80 hover:text-gold underline cursor-pointer"
+              >
+                {showFinishedHabits ? HABITFLOW_I18N.hideCompleted[lang] : HABITFLOW_I18N.showCompleted[lang]}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Se todos os hábitos foram concluídos e não pediu para exibir, mostra banner de vitória */}
+        {allHabitsDone && !showFinishedHabits ? (
+          <div className="p-3.5 rounded-2xl border border-gold/40 bg-gradient-to-r from-amber-950/30 via-[#14141E] to-amber-950/30 flex items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <Check size={18} strokeWidth={3} className="text-gold flex-none" />
+              <span className="text-xs font-mono font-bold text-gold truncate">
+                {HABITFLOW_I18N.habitsAllDone[lang]}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                AF.click();
+                setShowFinishedHabits(true);
+              }}
+              className="px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/15 text-gold text-[10.5px] font-mono font-bold hover:bg-gold/25 transition-all cursor-pointer shrink-0"
+            >
+              {HABITFLOW_I18N.showCompleted[lang]}
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full">
+            {visibleHabits.map((h) => {
+              return (
+                <div
+                  key={h.id}
+                  onClick={() => handleHabitToggle(h)}
+                  className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer active:scale-[0.98] ${
+                    h.isDone
+                      ? 'border-gold/60 bg-gradient-to-r from-amber-950/30 to-[#14131C]'
+                      : 'border-line/70 bg-[#14141E] hover:border-gold/50 hover:bg-[#181826]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {/* Checkbox Dourado */}
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-none ${
+                        h.isDone
+                          ? 'bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.4)]'
+                          : 'border-2 border-line/80 bg-[#1D1B28]'
                       }`}
                     >
-                      {item.name}
-                    </span>
+                      {h.isDone && <Check size={18} strokeWidth={3.5} className="text-black" />}
+                    </div>
+
+                    {/* Nome + Tags */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-base flex-none">{h.icon}</span>
+                        <span
+                          className={`font-display font-black text-xs sm:text-sm tracking-wide truncate ${
+                            h.isDone ? 'line-through text-muted' : 'text-[#EDE5D5]'
+                          }`}
+                        >
+                          {h.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className="px-1.5 py-0.2 rounded bg-surface border border-line/60 text-muted text-[9.5px] font-mono">
+                          {h.cat}
+                        </span>
+
+                        {h.time && (
+                          <span className="flex items-center gap-0.5 text-[9.5px] font-mono text-gold font-bold">
+                            <Bell size={10} className="text-gold" />
+                            <span>{h.time}</span>
+                          </span>
+                        )}
+
+                        {h.streak > 0 && (
+                          <span className="flex items-center gap-0.5 text-[9.5px] font-mono font-bold text-amber-400">
+                            <Flame size={10} className="fill-amber-400 text-amber-400" />
+                            <span>{h.streak} {h.streak === 1 ? HABITFLOW_I18N.daysWord[lang] : HABITFLOW_I18N.daysPluralWord[lang]}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {/* Categoria */}
-                    <span className="px-1.5 py-0.2 rounded bg-[#25282C] text-[#8E9296] text-[9.5px] font-mono">
-                      {item.cat}
-                    </span>
-
-                    {/* Horário com Sino */}
-                    {item.time && (
-                      <span className="flex items-center gap-0.5 text-[9.5px] font-mono text-[#F1C40F]">
-                        <Bell size={10} className="text-[#F1C40F]" />
-                        <span>{item.time}</span>
-                      </span>
-                    )}
-
-                    {/* Streak com Fogo */}
-                    {item.streak > 0 && (
-                      <span className="flex items-center gap-0.5 text-[9.5px] font-mono font-bold text-[#FF5A5F]">
-                        <Flame size={10} className="fill-[#FF5A5F]" />
-                        <span>{item.streak} {item.streak === 1 ? HABITFLOW_I18N.daysWord[lang] : HABITFLOW_I18N.daysPluralWord[lang]}</span>
-                      </span>
-                    )}
+                  {/* Ações Lápis e Lixeira */}
+                  <div className="flex items-center gap-1 flex-none text-muted/60 pl-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onCreateHabit) onCreateHabit();
+                      }}
+                      className="p-1 hover:text-gold transition-colors"
+                      title="Editar na Forja"
+                    >
+                      <Edit2 size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onNotify) onNotify('Hábito pode ser gerenciado na aba A Forja');
+                      }}
+                      className="p-1 hover:text-red-400 transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Botões Lápis e Lixeira Discretos à Direita */}
-              <div className="flex items-center gap-1 flex-none text-[#5C6068] pl-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onCreateHabit) onCreateHabit();
-                  }}
-                  className="p-1 hover:text-[#949BA4] transition-colors"
-                  title="Editar"
-                >
-                  <Edit2 size={13} />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onNotify) onNotify('Hábito pode ser gerenciado na aba A Forja');
-                  }}
-                  className="p-1 hover:text-red-400 transition-colors"
-                  title="Excluir"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      {/* 5. BOTÃO SOLENE DE QUEDA EM COMBATE NO RODAPÉ (MINIMALISTA, DISCRETO E SÓBRIO) */}
+      {onFailFlow && (
+        <div className="w-full mt-2">
+          <button
+            type="button"
+            onClick={onFailFlow}
+            className="w-full py-2.5 px-4 rounded-xl border border-red-500/30 bg-gradient-to-r from-red-950/30 via-[#151015] to-red-950/30 hover:border-red-500/60 hover:bg-red-950/50 text-red-400/90 hover:text-red-300 text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.99] shadow-xs"
+          >
+            <span>{HABITFLOW_I18N.btnRegisterFall[lang]}</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
