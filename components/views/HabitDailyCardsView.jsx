@@ -428,47 +428,47 @@ export default function HabitDailyCardsView({
 
       </div>
 
-      {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (ANEL DOURADO + LEMA & 24H NO RODAPÉ) */}
-      <div className="p-4 sm:p-5 rounded-2xl border border-line/80 bg-[#14141E] shadow-md flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-col gap-2 min-w-0">
+      {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (TOTALMENTE OTIMIZADO PARA MOBILE & DESKTOP) */}
+      <div className="p-3.5 sm:p-5 rounded-2xl border border-line/80 bg-[#14141E] shadow-md flex flex-col gap-3 min-w-0">
+        <div className="flex items-center justify-between gap-3 min-w-0">
+          <div className="flex flex-col gap-1.5 sm:gap-2 min-w-0 flex-1">
             {/* Tag de Motivação Dourada */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[11px] font-mono font-bold w-fit">
-              <Sparkles size={12} className="shrink-0 text-gold" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[10px] sm:text-[11px] font-mono font-bold w-fit max-w-full truncate">
+              <Sparkles size={11} className="shrink-0 text-gold" />
               <span className="truncate">{HABITFLOW_I18N.motivationalPhrase[lang]}</span>
             </div>
 
             {/* Título: Consistência Diária */}
-            <h2 className="font-display font-black text-xl sm:text-2xl text-[#EDE5D5] tracking-wide">
+            <h2 className="font-display font-black text-lg sm:text-2xl text-[#EDE5D5] tracking-wide truncate">
               {HABITFLOW_I18N.dailyConsistency[lang]}
             </h2>
 
             {/* Badges de Nível & Pilares Conquistados */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-white text-[11px] font-mono font-bold">
-                <Crown size={13} className="text-gold" />
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-white text-[10px] sm:text-[11px] font-mono font-bold">
+                <Crown size={12} className="text-gold shrink-0" />
                 <span>
                   <strong>Nível {stageNum}:</strong> {tierName}
                 </span>
-                <span className="text-gold font-bold">({progressDays * 250 + 550} XP)</span>
+                <span className="text-gold font-bold ml-1">({progressDays * 250 + 550} XP)</span>
               </span>
 
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-gold text-[11px] font-mono font-bold">
-                <Trophy size={12} className="text-gold" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-gold text-[10px] sm:text-[11px] font-mono font-bold">
+                <Trophy size={11} className="text-gold shrink-0" />
                 <span>{HABITFLOW_I18N.conquests[lang](pillarsDoneCount, reqPillars.length)}</span>
               </span>
 
               {nt && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-gold/30 bg-amber-500/10 text-amber-200 text-[11px] font-mono font-bold">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/30 bg-amber-500/10 text-amber-200 text-[10px] sm:text-[11px] font-mono font-bold">
                   <span>⏳ Faltam {Math.max(1, nt.min - progressDays)}d para {nt.name}</span>
                 </span>
               )}
             </div>
           </div>
 
-          {/* Anel Circular com Porcentagem em Ouro/Âmbar */}
-          <div className="relative flex-none w-18 h-18 sm:w-20 sm:h-20 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+          {/* Anel Circular com Porcentagem em Ouro/Âmbar (com dimensões explícitas em pixels para evitar overflow no mobile) */}
+          <div className="relative flex-none w-[76px] h-[76px] sm:w-[86px] sm:h-[86px] flex items-center justify-center shrink-0">
+            <svg className="w-[76px] h-[76px] sm:w-[86px] sm:h-[86px] -rotate-90 block" viewBox="0 0 36 36">
               {/* Círculo base */}
               <path
                 className="text-[#201F2C]"

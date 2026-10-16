@@ -1215,7 +1215,7 @@ export default function QgView() {
   return (
     <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-x-hidden pb-16 lg:pb-8">
             {/* BARRA SUPERIOR TIPO HABITFLOW (HOJE | PLANILHA | VISUAL CLÁSSICO) + BOTÃO PISCANTE DE MISSÕES */}
-      <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-2xl border border-gold/30 bg-[#14141E] select-none flex-wrap">
+      <div className="flex items-center justify-between gap-2 p-1.5 sm:p-2.5 rounded-2xl border border-gold/30 bg-[#14141E] select-none">
         {/* Seletor de Modo Estilo HabitFlow com Ícones e Pílulas Modernas */}
         <div className="flex items-center gap-1 p-1 rounded-xl bg-[#0D0D14] border border-line/70">
           <button
