@@ -1227,7 +1227,7 @@ export default function QgView() {
             }}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               masterViewMode === 'today'
-                ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                 : 'text-[#8E9296] hover:text-white'
             }`}
           >
@@ -1244,7 +1244,7 @@ export default function QgView() {
             }}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               masterViewMode === 'spreadsheet'
-                ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                 : 'text-[#8E9296] hover:text-white'
             }`}
           >

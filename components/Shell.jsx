@@ -265,20 +265,22 @@ export default function Shell() {
           <div className="w-full flex items-center justify-between gap-3 px-1 sm:px-2">
             {/* LOGO & BRAND (DESKTOP E MOBILE) */}
             <div className="flex items-center gap-2.5 min-w-0 flex-none cursor-pointer" onClick={() => go('qg')}>
-              <div className="w-8 h-8 rounded-full border-2 border-emerald-400/80 bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.25)]">
-                <Check size={18} strokeWidth={3} />
-              </div>
+              {!S.settings.discreet ? (
+                <WarriorLogo size={36} glow={true} className="shrink-0" />
+              ) : (
+                <ShieldCheck size={32} className="text-gold shrink-0" strokeWidth={1.6} />
+              )}
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-display text-[16px] sm:text-[18px] font-black leading-tight tracking-[.02em] text-white truncate">
-                    ForjandoGuerreiros
+                  <span className="font-display text-[15px] sm:text-[17px] font-black leading-tight tracking-[.06em] text-transparent bg-clip-text bg-gradient-to-r from-[#FFF2B2] via-[#F5C242] to-[#B38018] truncate">
+                    FORJANDO GUERREIROS
                   </span>
-                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[9px] font-mono font-black tracking-wider uppercase">
-                    SHEETS
+                  <span className="px-1.5 py-0.2 rounded bg-gold/15 border border-gold/40 text-gold text-[8.5px] font-mono font-black tracking-wider uppercase hidden sm:inline">
+                    FORJA
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-[#8E9296] truncate">
-                  Planilha de Hábitos Diários
+                <span className="text-[10px] font-mono text-gold/70 truncate">
+                  {progressDays(S)} {t('dret')} · Sistema de Honra
                 </span>
               </div>
             </div>
@@ -290,11 +292,11 @@ export default function Shell() {
                 onClick={() => go('qg')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
                   tab === 'qg'
-                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                     : 'text-[#8E9296] hover:text-white'
                 }`}
               >
-                <Castle size={14} className={tab === 'qg' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <Castle size={14} className={tab === 'qg' ? 'text-gold' : 'text-[#8E9296]'} />
                 <span>Hoje</span>
               </button>
 
@@ -303,11 +305,11 @@ export default function Shell() {
                 onClick={() => go('forge')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
                   tab === 'forge'
-                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                     : 'text-[#8E9296] hover:text-white'
                 }`}
               >
-                <Hammer size={14} className={tab === 'forge' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <Hammer size={14} className={tab === 'forge' ? 'text-gold' : 'text-[#8E9296]'} />
                 <span>A Forja</span>
               </button>
 
@@ -316,11 +318,11 @@ export default function Shell() {
                 onClick={() => go('ops')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
                   tab === 'ops'
-                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                     : 'text-[#8E9296] hover:text-white'
                 }`}
               >
-                <Target size={14} className={tab === 'ops' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <Target size={14} className={tab === 'ops' ? 'text-gold' : 'text-[#8E9296]'} />
                 <span>Missões</span>
               </button>
 
@@ -329,11 +331,11 @@ export default function Shell() {
                 onClick={() => go('stats')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
                   tab === 'stats'
-                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                     : 'text-[#8E9296] hover:text-white'
                 }`}
               >
-                <ChartNoAxesColumn size={14} className={tab === 'stats' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <ChartNoAxesColumn size={14} className={tab === 'stats' ? 'text-gold' : 'text-[#8E9296]'} />
                 <span>Gráficos</span>
               </button>
 
@@ -342,11 +344,11 @@ export default function Shell() {
                 onClick={() => go('journal')}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
                   tab === 'journal'
-                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    ? 'bg-[#2B2E33] text-gold shadow-sm font-black'
                     : 'text-[#8E9296] hover:text-white'
                 }`}
               >
-                <BookOpen size={14} className={tab === 'journal' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <BookOpen size={14} className={tab === 'journal' ? 'text-gold' : 'text-[#8E9296]'} />
                 <span>Diário</span>
               </button>
             </nav>

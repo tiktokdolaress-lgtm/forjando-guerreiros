@@ -425,17 +425,7 @@ export default function HabitDailyCardsView({
           </button>
         </div>
 
-        {/* Botão "+ Novo Hábito" Dourado Forja */}
-        <button
-          type="button"
-          onClick={() => {
-            if (onCreateHabit) onCreateHabit();
-          }}
-          className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-black font-display font-black text-xs sm:text-sm tracking-wide shadow-[0_0_12px_rgba(250,204,21,0.35)] active:scale-95 transition-all cursor-pointer shrink-0"
-        >
-          <Plus size={15} strokeWidth={3} />
-          <span>{HABITFLOW_I18N.btnNewHabit[lang]}</span>
-        </button>
+
       </div>
 
       {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (ANEL DOURADO + LEMA & 24H NO RODAPÉ) */}
