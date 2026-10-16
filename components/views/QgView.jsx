@@ -1225,10 +1225,10 @@ export default function QgView() {
               setMasterViewMode('today');
               try { localStorage.setItem('fg_qg_view_mode', 'today'); } catch {}
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               masterViewMode === 'today'
-                ? 'bg-gold text-black shadow-md font-black scale-100'
-                : 'text-muted hover:text-ink hover:bg-surface/50'
+                ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                : 'text-[#8E9296] hover:text-white'
             }`}
           >
             <Calendar size={13} strokeWidth={masterViewMode === 'today' ? 3 : 2} />
@@ -1242,10 +1242,10 @@ export default function QgView() {
               setMasterViewMode('spreadsheet');
               try { localStorage.setItem('fg_qg_view_mode', 'spreadsheet'); } catch {}
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               masterViewMode === 'spreadsheet'
-                ? 'bg-gold text-black shadow-md font-black scale-100'
-                : 'text-muted hover:text-ink hover:bg-surface/50'
+                ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                : 'text-[#8E9296] hover:text-white'
             }`}
           >
             <TableProperties size={13} strokeWidth={masterViewMode === 'spreadsheet' ? 3 : 2} />

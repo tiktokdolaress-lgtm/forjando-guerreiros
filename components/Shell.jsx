@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
-import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass } from 'lucide-react';
+import { Castle, Hammer, Target, BookOpen, ChartNoAxesColumn, Settings, Siren, ShieldCheck, Scroll, Crown, Mail, Compass, Check } from 'lucide-react';
 import { useApp } from '@/lib/store';
 import { TABS, LIFE_STATUS } from '@/lib/data';
 import { cx } from '@/lib/content-i18n';
@@ -265,58 +265,90 @@ export default function Shell() {
           <div className="w-full flex items-center justify-between gap-3 px-1 sm:px-2">
             {/* LOGO & BRAND (DESKTOP E MOBILE) */}
             <div className="flex items-center gap-2.5 min-w-0 flex-none cursor-pointer" onClick={() => go('qg')}>
-              {!S.settings.discreet ? (
-                <WarriorLogo size={32} glow={true} className="shrink-0" />
-              ) : (
-                <ShieldCheck size={28} className="text-gold shrink-0" strokeWidth={1.6} />
-              )}
+              <div className="w-8 h-8 rounded-full border-2 border-emerald-400/80 bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.25)]">
+                <Check size={18} strokeWidth={3} />
+              </div>
               <div className="flex flex-col min-w-0">
-                <span className="font-display text-[15px] sm:text-[17px] font-black leading-tight tracking-[.08em] text-transparent bg-clip-text bg-gradient-to-r from-[#FFF2B2] via-[#F5C242] to-[#B38018] truncate">
-                  FORJANDO GUERREIROS
-                </span>
-                <span className="text-[8px] font-mono uppercase tracking-[.2em] text-gold/60 hidden sm:block">
-                  {progressDays(S)} {t('dret')}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-display text-[16px] sm:text-[18px] font-black leading-tight tracking-[.02em] text-white truncate">
+                    ForjandoGuerreiros
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[9px] font-mono font-black tracking-wider uppercase">
+                    SHEETS
+                  </span>
+                </div>
+                <span className="text-[11px] font-mono text-[#8E9296] truncate">
+                  Planilha de Hábitos Diários
                 </span>
               </div>
             </div>
 
             {/* MENU SUPERIOR HORIZONTAL CENTRALIZADO (ESTILO HABITFLOW) - EXCLUSIVO DESKTOP */}
-            <nav className="hidden lg:flex items-center gap-1 p-1 rounded-2xl bg-[#14141E] border border-line/80 shadow-md">
-              {TABS.filter(([id]) => id !== 'settings').map(([id]) => {
-                const Ic = ICONS[id];
-                if (!Ic) return null;
-                const active = tab === id;
-                const lb = t(id).toLowerCase().replace(/(^|\s)\w/g, (c) => c.toUpperCase());
-                return (
-                  <button
-                    key={id}
-                    onClick={() => go(id)}
-                    type="button"
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
-                      active
-                        ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black shadow-[0_0_12px_rgba(250,204,21,0.35)] font-black'
-                        : 'text-muted hover:text-ink hover:bg-surface/60'
-                    }`}
-                  >
-                    <Ic size={14} strokeWidth={active ? 2.5 : 1.8} className={active ? 'text-black' : 'text-gold/70'} />
-                    <span>{lb}</span>
-                  </button>
-                );
-              })}
-              {isAdmin && (
-                <button
-                  onClick={() => go('admin')}
-                  type="button"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
-                    tab === 'admin'
-                      ? 'border border-amber-400 bg-amber-500/25 text-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                      : 'border border-amber-600/30 bg-amber-950/30 text-amber-400 hover:bg-amber-900/50'
-                  }`}
-                >
-                  <Crown size={14} className="text-amber-400" />
-                  <span>DONO</span>
-                </button>
-              )}
+            <nav className="hidden md:flex items-center gap-1 p-1 rounded-2xl bg-[#1A1C1E] border border-[#2B2D31] shadow-inner">
+              <button
+                type="button"
+                onClick={() => go('qg')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                  tab === 'qg'
+                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    : 'text-[#8E9296] hover:text-white'
+                }`}
+              >
+                <Castle size={14} className={tab === 'qg' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <span>Hoje</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => go('forge')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                  tab === 'forge'
+                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    : 'text-[#8E9296] hover:text-white'
+                }`}
+              >
+                <Hammer size={14} className={tab === 'forge' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <span>A Forja</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => go('ops')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                  tab === 'ops'
+                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    : 'text-[#8E9296] hover:text-white'
+                }`}
+              >
+                <Target size={14} className={tab === 'ops' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <span>Missões</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => go('stats')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                  tab === 'stats'
+                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    : 'text-[#8E9296] hover:text-white'
+                }`}
+              >
+                <ChartNoAxesColumn size={14} className={tab === 'stats' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <span>Gráficos</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => go('journal')}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer select-none ${
+                  tab === 'journal'
+                    ? 'bg-[#2B2E33] text-emerald-400 shadow-sm font-black'
+                    : 'text-[#8E9296] hover:text-white'
+                }`}
+              >
+                <BookOpen size={14} className={tab === 'journal' ? 'text-emerald-400' : 'text-[#8E9296]'} />
+                <span>Diário</span>
+              </button>
             </nav>
 
             <div className="flex items-center gap-1.5 sm:gap-2 flex-none">
