@@ -74,14 +74,14 @@ const HABITFLOW_I18N = {
     es: 'El futuro aún no existe. Vence solo el día de hoy.',
   },
   pillarsSectionTitle: {
-    pt: 'OS 3 PILARES DE COMBATE (HONRA SAGRADA)',
-    en: 'THE 3 COMBAT PILLARS (SACRED HONOR)',
-    es: 'LOS 3 PILARES DE COMBATE (HONOR SAGRADO)',
+    pt: 'OS 3 PILARES',
+    en: 'THE 3 PILLARS',
+    es: 'LOS 3 PILARES',
   },
   forgeHabitsTitle: {
-    pt: 'HÁBITOS DA FORJA (DISCIPLINA DIÁRIA)',
-    en: 'FORGE HABITS (DAILY DISCIPLINE)',
-    es: 'HÁBITOS DE LA FORJA (DISCIPLINA DIARIA)',
+    pt: 'HÁBITOS DA FORJA',
+    en: 'FORGE HABITS',
+    es: 'HÁBITOS DE LA FORJA',
   },
   pillarsAllDone: {
     pt: '⚔️ Os 3 Pilares foram blindados hoje. Honra intacta!',
@@ -428,48 +428,34 @@ export default function HabitDailyCardsView({
 
       </div>
 
-      {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (TOTALMENTE OTIMIZADO PARA MOBILE & DESKTOP) */}
-      <div className="p-3.5 sm:p-5 rounded-2xl border border-line/80 bg-[#14141E] shadow-md flex flex-col gap-3 min-w-0">
+      {/* 2. CARD GRANDE DE CONSISTÊNCIA DIÁRIA (PURIFICADO, ULTRA-LIMPO E SEM POLUIÇÃO) */}
+      <div className="p-3 sm:p-4 rounded-2xl border border-line/80 bg-[#14141E] shadow-sm flex flex-col gap-2.5 min-w-0">
         <div className="flex items-center justify-between gap-3 min-w-0">
-          <div className="flex flex-col gap-1.5 sm:gap-2 min-w-0 flex-1">
-            {/* Tag de Motivação Dourada */}
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full bg-amber-500/10 border border-gold/30 text-amber-300 text-[10px] sm:text-[11px] font-mono font-bold w-fit max-w-full truncate">
-              <Sparkles size={11} className="shrink-0 text-gold" />
-              <span className="truncate">{HABITFLOW_I18N.motivationalPhrase[lang]}</span>
-            </div>
-
+          <div className="flex flex-col gap-1.5 min-w-0 flex-1">
             {/* Título: Consistência Diária */}
-            <h2 className="font-display font-black text-lg sm:text-2xl text-[#EDE5D5] tracking-wide truncate">
+            <h2 className="font-display font-black text-base sm:text-xl text-[#EDE5D5] tracking-wide truncate">
               {HABITFLOW_I18N.dailyConsistency[lang]}
             </h2>
 
-            {/* Badges de Nível & Pilares Conquistados */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-white text-[10px] sm:text-[11px] font-mono font-bold">
-                <Crown size={12} className="text-gold shrink-0" />
-                <span>
-                  <strong>Nível {stageNum}:</strong> {tierName}
-                </span>
-                <span className="text-gold font-bold ml-1">({progressDays * 250 + 550} XP)</span>
-              </span>
-
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/40 bg-[#1D1B28] text-gold text-[10px] sm:text-[11px] font-mono font-bold">
-                <Trophy size={11} className="text-gold shrink-0" />
-                <span>{HABITFLOW_I18N.conquests[lang](pillarsDoneCount, reqPillars.length)}</span>
+            {/* Badges de Nível & Meta Compactos */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-gold/40 bg-[#1D1B28] text-white text-[10px] sm:text-[11px] font-mono font-bold">
+                <Crown size={11} className="text-gold shrink-0" />
+                <span><strong>Nv. {stageNum}:</strong> {tierName}</span>
+                <span className="text-gold font-bold ml-0.5">({progressDays * 250 + 550} XP)</span>
               </span>
 
               {nt && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg border border-gold/30 bg-amber-500/10 text-amber-200 text-[10px] sm:text-[11px] font-mono font-bold">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border border-gold/30 bg-amber-500/10 text-amber-200 text-[10px] sm:text-[11px] font-mono font-bold">
                   <span>⏳ Faltam {Math.max(1, nt.min - progressDays)}d para {nt.name}</span>
                 </span>
               )}
             </div>
           </div>
 
-          {/* Anel Circular com Porcentagem em Ouro/Âmbar (com dimensões explícitas em pixels para evitar overflow no mobile) */}
-          <div className="relative flex-none w-[76px] h-[76px] sm:w-[86px] sm:h-[86px] flex items-center justify-center shrink-0">
-            <svg className="w-[76px] h-[76px] sm:w-[86px] sm:h-[86px] -rotate-90 block" viewBox="0 0 36 36">
-              {/* Círculo base */}
+          {/* Anel Circular Compacto (72px no mobile) */}
+          <div className="relative flex-none w-[72px] h-[72px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0">
+            <svg className="w-[72px] h-[72px] sm:w-[82px] sm:h-[82px] -rotate-90 block" viewBox="0 0 36 36">
               <path
                 className="text-[#201F2C]"
                 strokeWidth="3.2"
@@ -477,7 +463,6 @@ export default function HabitDailyCardsView({
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
-              {/* Arco preenchido em ouro forjado */}
               <path
                 className="text-amber-400 transition-all duration-700 ease-out"
                 strokeDasharray={`${progressPct}, 100`}
@@ -489,62 +474,34 @@ export default function HabitDailyCardsView({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="font-display font-black text-sm sm:text-base text-gold leading-none">
+              <span className="font-display font-black text-sm text-gold leading-none">
                 {progressPct}%
               </span>
-              <span className="text-[7.5px] sm:text-[8px] font-mono font-black text-muted tracking-widest uppercase mt-0.5">
+              <span className="text-[7.5px] font-mono font-black text-muted tracking-widest uppercase mt-0.5">
                 {HABITFLOW_I18N.doneLabel[lang]}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Linha Divisória */}
-        <div className="w-full h-px bg-line/60 mt-1" />
-
-        {/* Lema Tático das 24h & Tempo Restante do Dia (INTEGRADO DISCRETAMENTE NO RODAPÉ DO CARD) */}
-        <div className="flex items-center justify-between text-[11px] font-mono text-muted gap-2 flex-wrap">
-          <span className="italic text-gold/80 font-serif">
+        {/* Rodapé do Card: apenas contagem no mobile e lema opcional no desktop */}
+        <div className="flex items-center justify-between text-[10.5px] font-mono text-muted gap-2 pt-1.5 border-t border-line/40">
+          <span className="hidden md:inline italic text-gold/80 font-serif truncate">
             {HABITFLOW_I18N.mottoQuote[lang]}
           </span>
-          <span className="font-bold text-amber-300">
+          <span className="font-bold text-amber-300/90 text-right w-full md:w-auto">
             {HABITFLOW_I18N.hoursRemainingSuffix[lang](remHours, remMinutes)} · {HABITFLOW_I18N.dayPercentSuffix[lang](dayProgressPct)}
           </span>
         </div>
       </div>
 
-      {/* 3. SEÇÃO DOS 3 PILARES DE COMBATE (DESTAQUE NOBRE COM BORDA DOURADA & SOMEM AO CONCLUIR) */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[10.5px] font-mono font-black text-gold uppercase tracking-widest flex items-center gap-1.5">
-            <Shield size={13} className="text-gold" />
-            <span>{HABITFLOW_I18N.pillarsSectionTitle[lang]}</span>
-          </span>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-muted font-bold">
-              {pillarsDoneCount}/3 {HABITFLOW_I18N.doneLabel[lang]}
-            </span>
-            {pillarsDoneCount > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  AF.click();
-                  setShowFinishedPillars((v) => !v);
-                }}
-                className="text-[10px] font-mono font-bold text-gold/80 hover:text-gold underline cursor-pointer"
-              >
-                {showFinishedPillars ? HABITFLOW_I18N.hideCompleted[lang] : HABITFLOW_I18N.showCompleted[lang]}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Se todos os 3 pilares foram blindados e o guerreiro não pediu para exibir, mostra selo de honra intacta */}
+      {/* 3. SEÇÃO DOS 3 PILARES (SEM TEXTO DUPLICADO QUANDO CONCLUÍDOS) */}
+      <div className="flex flex-col gap-1.5">
         {allPillarsDone && !showFinishedPillars ? (
-          <div className="p-3.5 rounded-2xl border border-gold/50 bg-gradient-to-r from-amber-950/40 via-[#181624] to-amber-950/40 flex items-center justify-between gap-2 shadow-xs">
+          /* Linha Única Limpa de Pilares Blindados */
+          <div className="p-2.5 px-3 rounded-xl border border-gold/40 bg-gradient-to-r from-amber-950/30 via-[#161522] to-amber-950/30 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <ShieldCheck size={18} className="text-gold flex-none" />
+              <ShieldCheck size={16} className="text-gold flex-none" />
               <span className="text-xs font-mono font-bold text-gold truncate">
                 {HABITFLOW_I18N.pillarsAllDone[lang]}
               </span>
@@ -555,12 +512,37 @@ export default function HabitDailyCardsView({
                 AF.click();
                 setShowFinishedPillars(true);
               }}
-              className="px-2.5 py-1 rounded-lg border border-gold/40 bg-gold/15 text-gold text-[10.5px] font-mono font-bold hover:bg-gold/25 transition-all cursor-pointer shrink-0"
+              className="px-2 py-0.5 rounded-md border border-gold/30 bg-gold/10 text-gold text-[10px] font-mono font-bold hover:bg-gold/20 transition-all cursor-pointer shrink-0"
             >
               {HABITFLOW_I18N.showCompleted[lang]}
             </button>
           </div>
         ) : (
+          <>
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-mono font-black text-gold uppercase tracking-wider flex items-center gap-1.5">
+                <Shield size={12} className="text-gold" />
+                <span>{HABITFLOW_I18N.pillarsSectionTitle[lang]}</span>
+              </span>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-muted font-bold">
+                  {pillarsDoneCount}/3 {HABITFLOW_I18N.doneLabel[lang]}
+                </span>
+                {pillarsDoneCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      AF.click();
+                      setShowFinishedPillars((v) => !v);
+                    }}
+                    className="text-[10px] font-mono font-bold text-gold/80 hover:text-gold underline cursor-pointer"
+                  >
+                    {showFinishedPillars ? HABITFLOW_I18N.hideCompleted[lang] : HABITFLOW_I18N.showCompleted[lang]}
+                  </button>
+                )}
+              </div>
+            </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {visiblePillars.map((p) => {
               const isExpanded = expandedPillar === p.key;
@@ -653,6 +635,7 @@ export default function HabitDailyCardsView({
               );
             })}
           </div>
+          </>
         )}
       </div>
 
