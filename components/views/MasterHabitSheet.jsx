@@ -88,10 +88,12 @@ export default function MasterHabitSheet({
 
   // Geração da lista de datas em ordem cronológica decrescente (ou crescente)
   // No print do HabitFlow vai de datas passadas até hoje
+  // Geração da lista de datas em ordem cronológica decrescente:
+  // HOJE na primeiríssima linha, depois Ontem, depois os dias anteriores.
   const dateList = useMemo(() => {
     const list = [];
     const base = parseD(todayStr);
-    for (let i = rangeDays - 1; i >= 0; i--) {
+    for (let i = 0; i < rangeDays; i++) {
       const dt = new Date(base.getTime() - i * 86400000);
       list.push(dstr(dt));
     }
