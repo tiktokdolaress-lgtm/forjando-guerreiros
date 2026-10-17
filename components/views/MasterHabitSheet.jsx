@@ -267,58 +267,36 @@ export default function MasterHabitSheet({
 
   return (
     <div className="flex flex-col gap-3.5 w-full max-w-full min-w-0">
-      {/* 1. TOPO DA PLANILHA (TÍTULO, BADGE MATRIZ INTERATIVA, FILTRO DE DIAS E BAIXAR CSV) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl border border-line/80 bg-[#14141E] shadow-sm select-none">
-        <div className="flex flex-col gap-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="w-7 h-7 rounded-lg bg-gold/15 border border-gold/40 flex items-center justify-center text-gold">
-              <FileSpreadsheet size={16} />
-            </div>
-            <h2 className="font-display font-black text-base sm:text-lg text-[#EDE5D5] tracking-wide">
-              {SHEET_I18N.title[lang]}
-            </h2>
-            <span className="px-2 py-0.5 rounded-full bg-gold/15 border border-gold/40 text-gold text-[10px] font-mono font-bold uppercase tracking-wider">
-              {SHEET_I18N.badgeInteractive[lang]}
-            </span>
+      {/* 1. TOPO DA PLANILHA (ULTRA-LIMPO: TÍTULO ENXUTO E SELETOR DE PERÍODO) */}
+      <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3.5 rounded-2xl border border-line/80 bg-[#14141E] shadow-sm select-none">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-7 h-7 rounded-lg bg-gold/15 border border-gold/40 flex items-center justify-center text-gold shrink-0">
+            <FileSpreadsheet size={15} />
           </div>
-          <p className="text-xs font-mono text-muted max-w-2xl mt-0.5">
-            {SHEET_I18N.subtitle[lang]}
-          </p>
+          <h2 className="font-display font-black text-xs sm:text-base text-[#EDE5D5] tracking-wide truncate">
+            {SHEET_I18N.title[lang]}
+          </h2>
         </div>
 
-        {/* CONTROLES: FILTRO DE PERÍODO (7, 14, 30 DIAS) + BOTÃO BAIXAR CSV */}
-        <div className="flex items-center gap-2 flex-wrap self-start md:self-auto">
-          {/* Seletor de Período estilo HabitFlow */}
-          <div className="flex items-center gap-0.5 p-1 rounded-xl bg-[#0D0D14] border border-line/70">
-            {[7, 14, 30].map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => {
-                  AF.click();
-                  setRangeDays(d);
-                }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
-                  rangeDays === d
-                    ? 'bg-gold text-black shadow-md font-black'
-                    : 'text-muted hover:text-ink'
-                }`}
-              >
-                {d === 7 ? SHEET_I18N.days7[lang] : d === 14 ? SHEET_I18N.days14[lang] : SHEET_I18N.days30[lang]}
-              </button>
-            ))}
-          </div>
-
-          {/* Botão Baixar CSV */}
-          <button
-            type="button"
-            onClick={exportToCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-line/80 bg-surface hover:border-gold/60 text-ink hover:text-gold text-xs font-mono font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
-            title="Exportar planilha para formato CSV"
-          >
-            <Download size={13} className="text-gold" />
-            <span>{SHEET_I18N.downloadCsv[lang]}</span>
-          </button>
+        {/* Seletor de Período Compacto [ 7 dias | 14 dias | 30 dias ] */}
+        <div className="flex items-center gap-0.5 p-0.5 sm:p-1 rounded-xl bg-[#0D0D14] border border-line/70 shrink-0">
+          {[7, 14, 30].map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => {
+                AF.click();
+                setRangeDays(d);
+              }}
+              className={`px-2 sm:px-2.5 py-1 rounded-lg text-[10.5px] sm:text-xs font-mono font-bold transition-all cursor-pointer ${
+                rangeDays === d
+                  ? 'bg-gold text-black shadow-sm font-black'
+                  : 'text-muted hover:text-ink'
+              }`}
+            >
+              {d === 7 ? SHEET_I18N.days7[lang] : d === 14 ? SHEET_I18N.days14[lang] : SHEET_I18N.days30[lang]}
+            </button>
+          ))}
         </div>
       </div>
 
