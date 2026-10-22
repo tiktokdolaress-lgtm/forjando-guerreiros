@@ -1533,96 +1533,58 @@ export default function ForgeView() {
       {/* 1. PROTOCOLO ATIVO */}
       {activeCategory === 'active' && (
         <div id="tour-forge-habits" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO UNIFICADO: Status Rápido + Termômetro de Carga + Ações Táteis */}
-          <div className="w-full flex flex-col gap-2.5 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
-            {/* Linha Superior: Status Resumido + Botões de Ação */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 min-w-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="grid h-9 w-9 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
-                  <Flame size={18} />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                    <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase">
-                      {curLang === 'en' ? 'ACTIVE FORGE' : curLang === 'es' ? 'FORJA ACTIVA' : 'FORJA ATIVA'}
-                    </span>
-                    {/* Contador Rápido: Restantes / Forjados */}
-                    {activeHabits.length > 0 && (
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/35 text-amber-300">
-                        ⚡ {LBL.quickRemainingCount[curLang](activeHabits.length - completedHabitsCount)} • {LBL.quickDoneCount[curLang](completedHabitsCount)}
-                      </span>
-                    )}
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-gold/15 border border-gold/40 text-gold">
-                      {activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {curLang === 'en' ? 'SLOTS' : curLang === 'es' ? 'SLOTS' : 'SLOTS'}
-                    </span>
-                  </div>
-                  <span className="text-[10px] sm:text-[10.5px] text-muted font-mono truncate mt-0.5">
-                    {curTier ? `${curTier.name} · ${maxSlots >= 99 ? (curLang === 'en' ? 'Unlimited slots unlocked' : curLang === 'es' ? 'Slots ilimitados desbloqueados' : 'Slots ilimitados liberados') : `${maxSlots} ${curLang === 'en' ? 'slots unlocked' : curLang === 'es' ? 'slots desbloqueados' : 'slots liberados'}`}` : ''}
+          {/* TOPO MINIMALISTA: Status Direto & Ações Rápidas */}
+          <div className="w-full flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-xl border border-gold/30 bg-[#14141E] shadow-xs select-none">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-gold/15 border border-gold/35 text-gold flex-none">
+                <Flame size={16} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-black text-xs sm:text-sm text-[#F5EEDC] tracking-wide uppercase truncate">
+                    {curLang === 'en' ? 'THE FORGE' : curLang === 'es' ? 'LA FORJA' : 'A FORJA'}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-gold/15 border border-gold/30 text-gold">
+                    {completedHabitsCount}/{activeHabits.length}
                   </span>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto flex-none">
                 {activeHabits.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={markAllDone}
-                    title={isAllActiveDone ? LBL.undoAllHabitsBtn[curLang] : LBL.sealAllHabitsBtn[curLang]}
-                    className={`py-1.5 px-3 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg transition-all active:scale-95 cursor-pointer flex-none ${
-                      isAllActiveDone
-                        ? 'bg-gold/20 border border-gold text-gold hover:bg-gold/30'
-                        : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black shadow-[0_0_12px_rgba(255,200,70,0.25)]'
-                    }`}
-                  >
-                    <CheckCircle2 size={13} strokeWidth={2.5} />
-                    <span>{isAllActiveDone ? LBL.allHabitsForgedBadge[curLang] : LBL.sealAllHabitsBtn[curLang]}</span>
-                  </button>
+                  <div className="w-20 sm:w-28 h-1 rounded-full bg-surface border border-line/40 overflow-hidden mt-1">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300 rounded-full"
+                      style={{ width: `${forgeHeatPct}%` }}
+                    />
+                  </div>
                 )}
-
-                <button
-                  type="button"
-                  onClick={openCreateModal}
-                  className="btn-gold py-1.5 px-3 sm:px-4 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-[0_0_12px_rgba(255,200,70,0.2)] active:scale-95 cursor-pointer flex-none"
-                >
-                  <Plus size={14} strokeWidth={3} className="text-[#141414]" />
-                  <span>{LBL.createHabit[curLang]}</span>
-                </button>
               </div>
             </div>
 
-            {/* Linha Inferior: Termômetro Integrado e Carga Térmica */}
-            {activeHabits.length > 0 && (
-              <div className="pt-2 border-t border-line/40 flex flex-col gap-1.5 w-full">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider truncate font-mono ${
-                    isAllActiveDone ? 'text-gold' : forgeHeatPct >= 50 ? 'text-orange-300' : forgeHeatPct > 0 ? 'text-amber-300' : 'text-muted'
-                  }`}>
-                    {isAllActiveDone
-                      ? LBL.forgeHeatDamascus[curLang]
-                      : forgeHeatPct >= 50
-                      ? LBL.forgeHeatGlowing[curLang](completedHabitsCount, activeHabits.length, forgeHeatPct)
-                      : forgeHeatPct > 0
-                      ? LBL.forgeHeatHeating[curLang](completedHabitsCount, activeHabits.length, forgeHeatPct)
-                      : LBL.forgeHeatCold[curLang]}
-                  </span>
-                  <span className="text-[10.5px] font-mono font-black text-gold flex-none">
-                    {forgeHeatPct}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 rounded-full bg-surface border border-line/60 overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-500 rounded-full ${
-                      isAllActiveDone
-                        ? 'bg-gradient-to-r from-amber-400 via-yellow-300 to-gold shadow-[0_0_10px_rgba(255,200,70,0.5)]'
-                        : forgeHeatPct >= 50
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]'
-                        : 'bg-gradient-to-r from-amber-600 to-amber-400'
-                    }`}
-                    style={{ width: `${forgeHeatPct}%` }}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 flex-none">
+              {activeHabits.length > 0 && (
+                <button
+                  type="button"
+                  onClick={markAllDone}
+                  title={isAllActiveDone ? LBL.undoAllHabitsBtn[curLang] : LBL.sealAllHabitsBtn[curLang]}
+                  className={`py-1.5 px-2.5 text-[11px] font-mono font-bold rounded-lg transition-all active:scale-95 cursor-pointer ${
+                    isAllActiveDone
+                      ? 'bg-gold/20 border border-gold text-gold'
+                      : 'border border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{isAllActiveDone ? 'Desmarcar Todos' : 'Selar Todos'}</span>
+                  <span className="sm:hidden">{isAllActiveDone ? '✓ Todos' : '⚡ Selar'}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="btn-gold py-1.5 px-3 text-xs font-black flex items-center justify-center gap-1.5 rounded-lg shadow-sm active:scale-95 cursor-pointer"
+              >
+                <Plus size={13} strokeWidth={3} className="text-[#141414]" />
+                <span className="hidden sm:inline">{LBL.createHabit[curLang]}</span>
+                <span className="sm:hidden">Criar</span>
+              </button>
+            </div>
           </div>
 
           {/* BANNER DE VITÓRIA: 100% FORJADO NO AÇO */}
@@ -1647,33 +1609,7 @@ export default function ForgeView() {
             </div>
           )}
 
-          {/* EFEITOS BIOLÓGICOS DO PATAMAR (CARD COMPACTO) */}
-          {curTier && (
-            <div className="p-2 sm:p-2.5 rounded-xl border border-line/70 bg-surface2/50 text-left">
-              <button
-                type="button"
-                onClick={() => setShowBioBanner(!showBioBanner)}
-                className="flex items-center justify-between w-full text-[11px] font-mono font-bold text-muted hover:text-gold transition-colors cursor-pointer select-none"
-              >
-                <span className="flex items-center gap-1.5 truncate">
-                  <Sparkles size={13} className="text-gold flex-none" />
-                  <span className="text-gold uppercase tracking-wider">{curTier.name} ({d} {LBL.daysWord[curLang]}):</span>
-                  <span className="text-ink truncate">{showBioBanner ? LBL.bioEffectsHide[curLang] : LBL.bioEffectsToggle[curLang]}</span>
-                </span>
-                {showBioBanner ? <ChevronUp size={13} className="text-gold flex-none" /> : <ChevronDown size={13} className="text-muted flex-none" />}
-              </button>
-              {showBioBanner && (
-                <div className="mt-2 pt-2 border-t border-line/40 grid grid-cols-1 sm:grid-cols-3 gap-1.5 animate-fade-in">
-                  {getBioPerksI18n(d, curLang).perks.map((perk, pIdx) => (
-                    <div key={pIdx} className="p-1.5 rounded bg-surface/70 border border-line/50 text-[10px] text-muted flex items-start gap-1.5">
-                      <span className="text-gold font-bold">✓</span>
-                      <span className="leading-tight">{perk}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          
 
           {/* 2. ALERTA DE NEGLIGÊNCIA RETRÁTIL */}
           {neglected.length > 0 && (
@@ -1724,7 +1660,7 @@ export default function ForgeView() {
           {/* 3. ATIVOS NO PROTOCOLO */}
           <div className="w-full max-w-full min-w-0">
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-              <K className="mb-0">{LBL.activeInProtocolTitle[curLang]} ({activeCount}/{maxSlots >= 99 ? '∞' : maxSlots} {LBL.slotsWord[curLang]})</K>
+              <K className="mb-0">{curLang === 'en' ? 'TODAY\'S HABITS' : curLang === 'es' ? 'HÁBITOS DE HOY' : 'HÁBITOS DE HOJE'} ({activeCount})</K>
 
               <div className="flex items-center gap-1.5 flex-wrap">
                 {/* Seletor Modo Planilha / Modo Cards */}
@@ -1864,11 +1800,7 @@ export default function ForgeView() {
                                     <span>{tm}</span>
                                   </span>
                                 )}
-                                {isCustom && (
-                                  <span className="text-gold/90 font-semibold truncate flex-none">
-                                    {LBL.customStar[curLang]}
-                                  </span>
-                                )}
+                                
                               </div>
                             </div>
                           </div>
