@@ -3104,20 +3104,23 @@ export default function OpsView() {
                           <Edit3 size={12} />
                           <span>{tx.editTaskTitle[curLang]}</span>
                         </button>
-                        {tItem.rep === 'diaria' && streak >= 14 && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenTaskMenuId(null);
-                              openPromoteToHabitModal(tItem);
-                            }}
-                            className="py-1 px-2.5 rounded-lg bg-gradient-to-r from-amber-500/25 via-gold/30 to-amber-500/25 text-gold border border-gold/70 font-extrabold flex items-center gap-1.5 cursor-pointer animate-pulse"
-                          >
-                            <Zap size={12} className="text-gold fill-gold" />
-                            <span>{tx.btnPromoteToHabitBadge[curLang]}</span>
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenTaskMenuId(null);
+                            openPromoteToHabitModal(tItem);
+                          }}
+                          className={`py-1 px-2.5 rounded-lg border font-bold flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all ${
+                            streak >= 14
+                              ? 'bg-gradient-to-r from-amber-500/25 via-gold/30 to-amber-500/25 text-gold border-gold/70 animate-pulse font-extrabold'
+                              : 'border-gold/40 bg-gold/10 hover:bg-gold/20 text-gold'
+                          }`}
+                          title="Transformar esta tarefa em um hábito oficial na Forja"
+                        >
+                          <Zap size={12} className="text-gold fill-gold shrink-0" />
+                          <span>{streak >= 14 ? tx.btnPromoteToHabitBadge[curLang] : 'Tornar Hábito'}</span>
+                        </button>
                         <button
                           type="button"
                           onClick={(e) => {
