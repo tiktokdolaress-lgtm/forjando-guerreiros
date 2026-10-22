@@ -2880,34 +2880,24 @@ export default function OpsView() {
       {/* 1. ABA DE TAREFAS */}
       {activeMainTab === 'tasks' && (
         <div id="tour-ops-tasks" className="flex flex-col gap-3.5 w-full max-w-full min-w-0 overflow-hidden">
-          {/* TOPO UNIFICADO: Status Operacional Tático */}
-          <div className="w-full flex flex-col gap-2 p-3 sm:p-3.5 rounded-xl border border-gold/30 bg-gradient-to-r from-[#17151F] via-[#121218] to-[#17151F] shadow-sm select-none">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-surface2/90 border border-line/80 flex items-center justify-center text-gold flex-none">
-                  <Target size={16} />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-xs sm:text-sm font-display font-black tracking-wide text-ink uppercase truncate block">
-                    {tx.opsHeadlineTasks[curLang]}
-                  </span>
-                  <p className="text-[11px] text-muted truncate">
-                    {tx.opsSubtitleTasks[curLang]}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                <span className="text-[10px] sm:text-xs font-mono font-bold px-2 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">
-                  {tx.opsProgressPill[curLang](todayTasks.filter((x) => !L.isDone(x, today())).length, completedToday, pct)}
-                </span>
-              </div>
+          {/* TOPO MINIMALISTA: Progresso Linear Compacto */}
+          <div className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl border border-gold/25 bg-[#14141E] shadow-xs select-none">
+            <div className="flex items-center gap-2 min-w-0">
+              <Target size={14} className="text-gold shrink-0" />
+              <span className="text-xs font-mono font-bold text-[#EDE5D5] truncate">
+                {todayTasks.filter((x) => !L.isDone(x, today())).length} pendentes hoje
+              </span>
             </div>
-            {/* Barra de Progresso Tática */}
-            <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden border border-line/40">
-              <div
-                className="h-full bg-gradient-to-r from-amber-600 via-gold to-amber-300 transition-all duration-300 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.25)]"
-                style={{ width: `${pct}%` }}
-              />
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-20 sm:w-28 h-1.5 rounded-full bg-surface overflow-hidden border border-line/50">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 transition-all duration-300 rounded-full"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono font-black text-gold">
+                {pct}%
+              </span>
             </div>
           </div>
 
@@ -3041,6 +3031,20 @@ export default function OpsView() {
                       </div>
 
                       <div className="flex items-center gap-1 flex-none">
+                        {/* Botão Direto de Transformar em Hábito na Forja */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openPromoteToHabitModal(tItem);
+                          }}
+                          title="Tornar este item um hábito oficial na Forja"
+                          className="px-2 py-1 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/25 text-gold text-[10.5px] font-mono font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Zap size={11} className="text-gold fill-gold" />
+                          <span className="hidden sm:inline">Hábito</span>
+                        </button>
+
                         {!isDone && (
                           <button
                             type="button"
@@ -3058,15 +3062,15 @@ export default function OpsView() {
                             <CalendarClock size={13} />
                           </button>
                         )}
+
                         <button
                           type="button"
-                          title={isMenuOpen ? tx.btnCollapseActions[curLang] : tx.btnMoreActions[curLang]}
+                          title="Mais opções da tarefa"
                           onClick={(e) => {
                             e.stopPropagation();
                             setOpenTaskMenuId(isMenuOpen ? null : tItem.id);
-                            AF.click();
                           }}
-                          className={`p-1.5 rounded-lg border transition-all cursor-pointer active:scale-95 ${
+                          className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
                             isMenuOpen
                               ? 'border-gold bg-gold/20 text-gold'
                               : 'border-transparent text-muted hover:text-gold hover:border-gold/30 hover:bg-gold/10'
