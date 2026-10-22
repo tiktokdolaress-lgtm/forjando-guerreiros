@@ -628,22 +628,8 @@ export default function ForgeView() {
   const ALLH = cxHabits(curLang, L.allH(S));
   const d = L.progressDays(S);
 
-  let maxSlots = 2;
-  try {
-    if (typeof L.slotLimit === 'function') {
-      maxSlots = L.slotLimit(S);
-    } else if (typeof L.maxSlots === 'function') {
-      maxSlots = L.maxSlots(d);
-    } else if (Array.isArray(CURRENT_RULES)) {
-      const found = CURRENT_RULES.slice().reverse().find((r) => d >= r.min);
-      maxSlots = found ? found.slots : 2;
-    }
-  } catch {
-    maxSlots = 2;
-  }
-  if (!maxSlots || isNaN(maxSlots) || maxSlots < 2) {
-    maxSlots = 2;
-  }
+  // Criação e ativação 100% ilimitada de hábitos
+  let maxSlots = 999;
   const nextRule = Array.isArray(CURRENT_RULES) ? CURRENT_RULES.find((r) => r.min > d) : null;
 
   const activeIds = (S && S.forge && Array.isArray(S.forge.active)) ? S.forge.active : [];
@@ -859,11 +845,7 @@ export default function ForgeView() {
       AF.click();
       toast(LBL.toastHabitMovedReserve[curLang]);
     } else {
-      if (activeCount >= maxSlots && maxSlots < 99) {
-        toast(LBL.toastLimitReached[curLang](maxSlots));
-        AF.tone(110, 0.35, 'sine', 0.18, 0, 55);
-        return;
-      }
+      // Ilimitado: permite ativar qualquer hábito sem restrição
       update((s) => {
         s.forge.active = s.forge.active || [];
         s.forge.active.push(id);
@@ -2018,7 +2000,7 @@ export default function ForgeView() {
                         <Plus size={20} strokeWidth={2.5} />
                       </div>
                       <b className="text-xs text-gold font-bold uppercase tracking-wider block">
-                        {LBL.availableSlot[curLang]} ({activeCount + 1}/{maxSlots >= 99 ? '∞' : maxSlots})
+                        + {LBL.createHabit[curLang]} (∞ Ilimitado)
                       </b>
                       <span className="text-[11px] text-muted mt-1">
                         {LBL.tapToActivate[curLang]}
